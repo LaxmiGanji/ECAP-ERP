@@ -1,0 +1,87 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  display: block !important; /* Ensure scrollbars are visible */
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  border: 2px solid #f8fafc;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Global table container styling for horizontal scroll */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 5px;
+  width: 100%;
+  max-height: 70vh; /* Constrain height so scrollbar is always visible */
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.overflow-x-auto table {
+  min-width: 1200px !important; /* Force minimum width */
+  width: 100% !important;
+  border-collapse: separate !important; /* REQUIRED for sticky headers */
+  border-spacing: 0 !important;
+}
+
+/* Sticky Header */
+.overflow-x-auto thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-color: #2563eb !important; /* Blue-600 */
+  color: white !important;
+}
+
+/* Fix alignment and borders in scrollable tables */
+.overflow-x-auto th, 
+.overflow-x-auto td {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Ensure background color for sticky header matches the theme */
+.overflow-x-auto thead tr {
+  background: #2563eb !important; /* Standard blue-600 */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}

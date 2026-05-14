@@ -1,0 +1,67 @@
+🔐 LOGIN FIX - QUICK CHECKLIST
+================================
+
+✅ ALREADY DONE:
+  [x] Updated Student credential controller with bcrypt
+  [x] Updated Faculty credential controller with bcrypt
+  [x] Updated Admin credential controller with bcrypt
+  [x] Updated Library credential controller with bcrypt
+  [x] Updated Transport credential controller with bcrypt
+  [x] Installed bcrypt package
+  [x] Created password migration script
+
+📋 YOU NEED TO DO:
+
+Step 1️⃣: Migrate Existing Passwords
+  Command: node scripts/migrate_passwords.js
+  From: c:\Users\Laxmi\Downloads\localhost1\backend
+  
+  OR in terminal:
+  cd backend
+  node scripts/migrate_passwords.js
+
+Step 2️⃣: Restart Backend
+  Command: npm start
+  From: backend directory
+
+Step 3️⃣: Test Login
+  Try logging in with your existing credentials
+
+Step 4️⃣: Create New Users
+  New users will automatically get secure hashed passwords
+
+---
+
+⚠️ IMPORTANT NOTES:
+
+1. The migration script MUST be run once to convert existing plain-text
+   passwords to bcrypt hashed passwords
+
+2. After migration, your existing login credentials will still work
+   because the passwords will be properly hashed
+
+3. All NEW registrations will automatically be hashed
+
+4. If you get "Wrong Credentials" error after running backend:
+   - Make sure migration script completed successfully
+   - Check the script output for any errors
+   - Run it again if needed
+
+---
+
+📚 FILES MODIFIED:
+
+Controllers:
+  - backend/controllers/Student/credential.controller.js
+  - backend/controllers/Faculty/credential.controller.js
+  - backend/controllers/Admin/credential.controller.js
+  - backend/controllers/Library/credential.controller.js
+  - backend/controllers/Transport/credential.controller.js
+
+New Files:
+  - backend/scripts/migrate_passwords.js
+  - LOGIN_FIX_GUIDE.md
+
+---
+
+Need Help? See: LOGIN_FIX_GUIDE.md for detailed explanation

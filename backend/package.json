@@ -1,0 +1,46 @@
+{
+  "name": "cms-backend",
+  "version": "1.0.0",
+  "description": "MERN Stack College Acadamic System",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "seed:obe": "node seeds/obe.seed.js"
+  },
+  "author": "Ganji Laxmi",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.484.0",
+    "@aws-sdk/s3-request-presigner": "^3.484.0",
+    "@heroicons/react": "^2.1.5",
+    "axios": "^1.13.5",
+    "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "exceljs": "^4.3.0",
+    "express": "^4.18.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.3.2",
+    "google-auth-library": "^10.6.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "mongoose": "^7.0.2",
+    "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "pdfkit": "^0.13.0",
+    "styled-components": "^6.1.13",
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "nodemon": "^2.0.21"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
