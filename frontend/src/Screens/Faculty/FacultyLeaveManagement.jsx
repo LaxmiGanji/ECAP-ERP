@@ -5,7 +5,7 @@ import { baseApiURL } from "../../baseUrl";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 
-const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
+const FacultyLeaveManagement = ({ onClose, onSuccess, setSelectedMenu }) => {
   const router = useLocation();
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,9 +21,25 @@ const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
   const [showSubstituteModal, setShowSubstituteModal] = useState(false);
   const [leaveToCancel, setLeaveToCancel] = useState(null);
   const [activeLeaveForSubstitute, setActiveLeaveForSubstitute] = useState(null);
+  const [quotas, setQuotas] = useState({});
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const leaveTypes = ["Casual Leave", "Sick Leave", "Optional Leave", "Earned Leave", "Maternity Leave", "Paternity Leave", "Duty Leave"];
+  const leaveTypes = [
+    "Casual Leave", 
+    "Earned Leave", 
+    "Medical Leave",
+    "Sick Leave",
+    "Vacation Leave", 
+    "Commuted Leave (Half Pay Leave)", 
+    "Maternity Leave", 
+    "Study Leave", 
+    "Sabbatical Leave", 
+    "Overseas Assignment Leave",
+    "Half Day Leave",
+    "Optional Leave", 
+    "Paternity Leave", 
+    "Duty Leave"
+  ];
 
   const [holidays, setHolidays] = useState([]);
 
@@ -32,6 +48,7 @@ const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
     fetchAllFaculties();
     fetchLeaveHistory();
     fetchMonthlyHolidays();
+    fetchQuotas();
   }, []);
 
   const fetchMonthlyHolidays = async () => {
@@ -93,6 +110,21 @@ const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
     }
   };
 
+  const fetchQuotas = async () => {
+    try {
+      const year = new Date().getFullYear();
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${baseApiURL()}/faculty/leave/quotas?year=${year}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success && response.data.quotas) {
+        setQuotas(response.data.quotas);
+      }
+    } catch (error) {
+      console.error("Error fetching quotas:", error);
+    }
+  };
+
   const generateDateOptions = () => {
     const dates = [];
     const today = new Date();
@@ -100,7 +132,7 @@ const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dateString = date.toISOString().split('T')[0];
-      
+
       // Skip Sundays and Global Holidays
       if (date.getDay() !== 0 && !holidays.includes(dateString)) {
         const dayName = daysOfWeek[date.getDay() - 1];
@@ -174,20 +206,34 @@ const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
       });
 
       if (response.data.success) {
-        toast.success("Substitute assigned! Leave confirmed.");
+        toast.success("Substitute assigned! Redirecting to your timetable...");
         setShowSubstituteModal(false);
         fetchLeaveHistory();
+
+        // Redirect to MyFacultyTimeTable after a short delay
+        if (setSelectedMenu && activeLeaveForSubstitute.dates && activeLeaveForSubstitute.dates.length > 0) {
+          setTimeout(() => {
+            // Get the day of the week for the first leave date
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const firstDate = new Date(activeLeaveForSubstitute.dates[0]);
+            const dayName = daysOfWeek[firstDate.getDay()];
+
+            // Redirect using setSelectedMenu
+            setSelectedMenu("MyFacultyTimeTable");
+
+            // Store context in session storage so MyFacultyTimeTable can read it
+            sessionStorage.setItem("initialTimetableDay", dayName);
+            sessionStorage.setItem("initialTimetableDate", activeLeaveForSubstitute.dates[0]);
+            sessionStorage.setItem("substitutingForLeaveId", activeLeaveForSubstitute._id);
+            sessionStorage.setItem("substitutingForFacultyId", router.state.loginid);
+          }, 1500);
+        }
       }
     } catch (error) {
       toast.error("Failed to assign substitute");
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return `${dateString}`;
   };
 
   const getStatusColor = (status) => {
@@ -219,7 +265,20 @@ const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
             <div>
               <label className="block font-medium mb-1">Leave Type</label>
               <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} className="w-full p-2 border rounded">
-                {leaveTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                {leaveTypes.map((type) => {
+                  const used = leaveRecords
+                    .filter(l => l.leaveType === type && (l.status === 'confirmed' || l.status === 'approved_by_principal'))
+                    .reduce((acc, l) => acc + (l.leaveType === 'Half Day Leave' ? 0.5 : l.dates.length), 0);
+                  
+                  const quotaKey = type === "Medical Leave" || type === "Sick Leave" ? "Medical Leave" : type;
+                  const total = quotas[quotaKey] || 0;
+
+                  return (
+                    <option key={type} value={type}>
+                      {type} {total > 0 ? `(${used}/${total})` : (used > 0 ? `(Used: ${used})` : '')}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div>
@@ -262,7 +321,22 @@ const FacultyLeaveManagement = ({ onClose, onSuccess }) => {
               </div>
               <div className="flex flex-col space-y-2">
                 {record.status === "approved_by_principal" && (
-                  <button onClick={() => { setActiveLeaveForSubstitute(record); setShowSubstituteModal(true); }} className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                  <button
+                    onClick={() => {
+                      // Store leave context and redirect
+                      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                      const firstDate = new Date(record.dates[0]);
+                      const dayName = daysOfWeek[firstDate.getDay()];
+
+                      sessionStorage.setItem("initialTimetableDay", dayName);
+                      sessionStorage.setItem("initialTimetableDate", record.dates[0]);
+                      sessionStorage.setItem("substitutingForLeaveId", record._id);
+                      sessionStorage.setItem("substitutingForFacultyId", router.state.loginid);
+
+                      setSelectedMenu("MyFacultyTimeTable");
+                    }}
+                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                  >
                     Assign Substitute
                   </button>
                 )}

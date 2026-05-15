@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const { 
   getDetails, 
+  getDetails2,
   addDetails, 
   updateDetails, 
   deleteDetails, 
@@ -12,6 +13,7 @@ const {
   validateTimetable,
   getFacultyWithFreePeriods,
   substituteFaculty,
+  updateSubstitutionStatus,
   undoSubstitution,
   resetTimetable,
   getSubstitutionHistory
@@ -31,18 +33,7 @@ const handleMultiPart = (req, res, next) => {
 
 router.post("/getDetails", getDetails);
 
-router.get("/getDetails2", async (req, res) => {
-    try {
-      let faculties = await facultyDetails.find(); // Fetch all faculty details
-      if (!faculties || faculties.length === 0) {
-        return res.status(400).json({ success: false, message: "No Faculties Found" });
-      }
-      res.json({ success: true, message: "Faculty Details Found!", faculties });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ success: false, message: "Internal Server Error" });
-    }
-  });
+router.get("/getDetails2", getDetails2);
 
 router.post("/addDetails", handleMultiPart, addDetails);
 
@@ -61,6 +52,7 @@ router.get("/reports/byBatchBranch", getFacultyByBatchAndBranch);
 // Substitution routes
 router.get("/faculty-with-free-periods", getFacultyWithFreePeriods);
 router.post("/substitute", substituteFaculty);
+router.post("/update-status", updateSubstitutionStatus);
 router.post("/undo-substitution", undoSubstitution);
 router.post("/reset-timetable", resetTimetable);
 router.get("/substitution-history/:facultyId", getSubstitutionHistory);

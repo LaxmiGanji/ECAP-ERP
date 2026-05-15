@@ -3,6 +3,34 @@ const FacultyLeave = require("../../models/Faculty/leave.model.js");
 const FacultyDetail = require("../../models/Faculty/details.model.js");
 const FacultyAttendance = require("../../models/Accounts/facultyAttendance.model.js");
 const AttendanceConfig = require("../../models/Accounts/attendanceConfig.model.js");
+const Substitution = require("../../models/Faculty/substitution.model.js");
+const LeaveQuota = require("../../models/Faculty/leaveQuota.model.js");
+
+const setLeaveQuotas = async (req, res) => {
+  try {
+    const { year, quotas } = req.body;
+    const updated = await LeaveQuota.findOneAndUpdate(
+      { year },
+      { quotas, updatedAt: new Date() },
+      { upsert: true, new: true }
+    );
+    res.json({ success: true, quotas: updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const getLeaveQuotas = async (req, res) => {
+  try {
+    const { year } = req.query;
+    const quotas = await LeaveQuota.findOne({ year: parseInt(year) });
+    res.json({ success: true, quotas: quotas ? quotas.quotas : null });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 // Request leave - initially pending
 const requestLeave = async (req, res) => {
@@ -87,7 +115,7 @@ const rejectLeave = async (req, res) => {
 
     const leave = await FacultyLeave.findByIdAndUpdate(
       leaveId,
-      { 
+      {
         status: "rejected",
         rejectionReason,
         hodApprovedBy: rejectedBy // Reusing this field
@@ -136,10 +164,10 @@ const approveLeaveByPrincipal = async (req, res) => {
     const month = leaveDate.getMonth() + 1;
     const year = leaveDate.getFullYear();
 
-    let attendance = await FacultyAttendance.findOne({ 
-      facultyId: normalizedId, 
-      month, 
-      year 
+    let attendance = await FacultyAttendance.findOne({
+      facultyId: normalizedId,
+      month,
+      year
     });
 
     if (!attendance) {
@@ -159,7 +187,7 @@ const approveLeaveByPrincipal = async (req, res) => {
       const prevAtt = await FacultyAttendance.findOne({ facultyId: normalizedId, month: m, year });
       if (prevAtt) totalUsedThisYear += (prevAtt.optionalLeavesUsed || 0);
     }
-    
+
     const totalAvailableToDate = month; // 1 per month
     const currentAvailable = Math.max(1, totalAvailableToDate - totalUsedThisYear);
 
@@ -168,9 +196,9 @@ const approveLeaveByPrincipal = async (req, res) => {
     } else {
       attendance.regularLeavesTaken += leave.dates.length;
     }
-    
+
     attendance.optionalLeavesAvailable = currentAvailable;
-    
+
     // Recalculate presentDays
     const config = await AttendanceConfig.findOne({ month, year });
     const totalWorking = config ? config.totalWorkingDays : 25;
@@ -197,7 +225,7 @@ const rejectLeaveByPrincipal = async (req, res) => {
 
     const leave = await FacultyLeave.findByIdAndUpdate(
       leaveId,
-      { 
+      {
         status: "rejected",
         rejectionReason,
         principalApprovedBy: rejectedBy
@@ -223,10 +251,10 @@ const rejectLeaveByPrincipal = async (req, res) => {
 // Get pending leaves for Principal (all branches)
 const getPendingLeavesForPrincipal = async (req, res) => {
   try {
-    const leaves = await FacultyLeave.find({ 
-      status: "approved_by_hod" 
+    const leaves = await FacultyLeave.find({
+      status: "approved_by_hod"
     }).sort({ createdAt: -1 });
-    
+
     res.json({ success: true, leaves });
   } catch (error) {
     console.error(error);
@@ -240,23 +268,88 @@ const assignSubstitute = async (req, res) => {
     const { leaveId } = req.params;
     const { substituteId, substituteName } = req.body;
 
-    const leave = await FacultyLeave.findByIdAndUpdate(
-      leaveId,
-      { 
-        substituteId,
-        substituteName,
-        status: "confirmed"
-      },
-      { new: true }
-    );
-
+    const leave = await FacultyLeave.findById(leaveId);
     if (!leave) {
       return res.status(404).json({ success: false, message: "Leave not found" });
     }
 
+    leave.substituteId = substituteId;
+    leave.substituteName = substituteName;
+    leave.status = "confirmed";
+    await leave.save();
+
+    // Now create Substitution records for the timetable
+    const originalFaculty = await FacultyDetail.findOne({ employeeId: leave.facultyId });
+    const substituteFaculty = await FacultyDetail.findOne({ employeeId: substituteId });
+
+    if (originalFaculty && substituteFaculty && originalFaculty.timetable) {
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+      for (const dateStr of leave.dates) {
+        const date = new Date(dateStr);
+        const dayName = daysOfWeek[date.getDay()];
+
+        const daySchedule = originalFaculty.timetable.find(t => t.day === dayName);
+        if (daySchedule) {
+          for (const period of daySchedule.periods) {
+            // Only substitute academic periods (not Break, Lunch, etc.)
+            if (!['Break', 'Lunch', 'Sports', 'Library', 'Other'].includes(period.subject)) {
+              // Check if a substitution already exists for this slot and date
+              const startOfDay = new Date(dateStr);
+              startOfDay.setHours(0, 0, 0, 0);
+              const endOfDay = new Date(dateStr);
+              endOfDay.setHours(23, 59, 59, 999);
+
+              const existingSub = await Substitution.findOne({
+                originalFacultyId: leave.facultyId,
+                substitutionDate: {
+                  $gte: startOfDay,
+                  $lte: endOfDay
+                },
+                periodNumber: period.periodNumber,
+                status: 'active'
+              });
+
+              if (!existingSub) {
+                // Find substitute's original period at this slot to store it
+                let subOriginalPeriod = null;
+                const subDaySchedule = substituteFaculty.timetable?.find(t => t.day === dayName);
+                if (subDaySchedule) {
+                  subOriginalPeriod = subDaySchedule.periods.find(p => p.periodNumber === period.periodNumber);
+                }
+
+                await Substitution.create({
+                  originalFacultyId: leave.facultyId,
+                  substituteFacultyId: substituteId,
+                  day: dayName,
+                  periodNumber: period.periodNumber,
+                  subject: period.subject,
+                  branch: period.branch,
+                  semester: period.semester,
+                  section: period.section,
+                  startTime: period.startTime,
+                  endTime: period.endTime,
+                  substitutionDate: new Date(dateStr),
+                  substituteOriginalPeriod: subOriginalPeriod ? {
+                    subject: subOriginalPeriod.subject,
+                    branch: subOriginalPeriod.branch || "",
+                    semester: subOriginalPeriod.semester || "",
+                    section: subOriginalPeriod.section || "",
+                    startTime: subOriginalPeriod.startTime,
+                    endTime: subOriginalPeriod.endTime
+                  } : null,
+                  status: 'active'
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
     res.json({
       success: true,
-      message: "Substitute assigned and leave confirmed!",
+      message: "Substitute assigned and timetable updated for leave dates!",
       leave,
     });
   } catch (error) {
@@ -282,11 +375,11 @@ const getFacultyLeaves = async (req, res) => {
 const getPendingLeavesByBranch = async (req, res) => {
   try {
     const { branch } = req.params;
-    const leaves = await FacultyLeave.find({ 
-      branch: { $regex: new RegExp(`^${branch}$`, 'i') }, 
-      status: "pending" 
+    const leaves = await FacultyLeave.find({
+      branch: { $regex: new RegExp(`^${branch}$`, 'i') },
+      status: "pending"
     }).sort({ createdAt: -1 });
-    
+
     res.json({ success: true, leaves });
   } catch (error) {
     console.error(error);
@@ -313,17 +406,17 @@ const cancelLeave = async (req, res) => {
     if (!leave) return res.status(404).json({ success: false, message: "Leave not found" });
 
     const normalizedId = leave.facultyId.trim().toUpperCase();
-    
+
     // If it was already approved, we need to revert the attendance change
     if (leave.status === "approved_by_hod" || leave.status === "approved_by_principal" || leave.status === "confirmed") {
       const leaveDate = new Date(leave.dates[0]);
       const month = leaveDate.getMonth() + 1;
       const year = leaveDate.getFullYear();
 
-      const attendance = await FacultyAttendance.findOne({ 
-        facultyId: normalizedId, 
-        month, 
-        year 
+      const attendance = await FacultyAttendance.findOne({
+        facultyId: normalizedId,
+        month,
+        year
       });
 
       if (attendance) {
@@ -332,20 +425,70 @@ const cancelLeave = async (req, res) => {
         } else {
           attendance.regularLeavesTaken = Math.max(0, attendance.regularLeavesTaken - leave.dates.length);
         }
-        
+
         // Recalculate presentDays
         const config = await AttendanceConfig.findOne({ month, year });
         const totalWorking = config ? config.totalWorkingDays : 25;
         attendance.presentDays = Math.max(0, totalWorking - attendance.regularLeavesTaken);
-        
+
         await attendance.save();
       }
     }
 
     leave.status = "cancelled";
     await leave.save();
-    
+
     res.json({ success: true, message: "Leave cancelled and attendance restored", leave });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const getLeaveSummary = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+    const m = parseInt(month);
+    const y = parseInt(year);
+
+    // Get all confirmed or principal-approved leaves
+    const leaves = await FacultyLeave.find({
+      status: { $in: ["confirmed", "approved_by_principal"] }
+    });
+
+    const summary = {};
+    leaves.forEach(leave => {
+      leave.dates.forEach(dateStr => {
+        const d = new Date(dateStr);
+        if (d.getMonth() + 1 === m && d.getFullYear() === y) {
+          const facultyId = leave.facultyId.trim().toUpperCase();
+          if (!summary[facultyId]) {
+            summary[facultyId] = {
+              "Casual Leave": 0,
+              "Earned Leave": 0,
+              "Vacation Leave": 0,
+              "Commuted Leave (Half Pay Leave)": 0,
+              "Maternity Leave": 0,
+              "Study Leave": 0,
+              "Sabbatical Leave": 0,
+              "Overseas Assignment Leave": 0,
+              "Half Day Leave": 0,
+              "Sick Leave": 0,
+              "Optional Leave": 0,
+              "Paternity Leave": 0,
+              "Duty Leave": 0,
+              total: 0
+            };
+          }
+          
+          const increment = leave.leaveType === "Half Day Leave" ? 0.5 : 1;
+          summary[facultyId][leave.leaveType] = (summary[facultyId][leave.leaveType] || 0) + increment;
+          summary[facultyId].total += increment;
+        }
+      });
+    });
+
+    res.json({ success: true, summary });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -363,5 +506,8 @@ module.exports = {
   approveLeaveByPrincipal,
   rejectLeaveByPrincipal,
   getAllLeaves,
+  getLeaveSummary,
   cancelLeave,
-};
+  setLeaveQuotas,
+  getLeaveQuotas,
+};

@@ -81,7 +81,7 @@ const Home = () => {
       case "Final CO/PO Attainment":
         return <FinalCOPOAttainment />;
       case "Leave Management":
-        return <FacultyLeaveManagement />;
+        return <FacultyLeaveManagement setSelectedMenu={setSelectedMenu} />;
       default:
         return <Profile />;
     }

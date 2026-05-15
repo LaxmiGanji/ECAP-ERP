@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { baseApiURL } from "../../baseUrl";
 import { toast } from "react-hot-toast";
 
-const MyFacultyTimeTable = () => {
+const MyFacultyTimeTable = ({ facultyId, isHODView = false }) => {
   const router = useLocation();
   const [timetable, setTimetable] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,13 +26,41 @@ const MyFacultyTimeTable = () => {
   const [resetLoading, setResetLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [undoLoading, setUndoLoading] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [approveLoading, setApproveLoading] = useState(false);
+  
+  const [leaveContext, setLeaveContext] = useState(null);
   
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   useEffect(() => {
     fetchFacultyData();
     fetchAllFaculty();
-  }, []);
+    fetchPendingRequests();
+
+    // Check for initial day and date from redirection
+    const initialDay = sessionStorage.getItem("initialTimetableDay");
+    const initialDate = sessionStorage.getItem("initialTimetableDate");
+    const leaveId = sessionStorage.getItem("substitutingForLeaveId");
+    const ownerId = sessionStorage.getItem("substitutingForFacultyId");
+
+    // Only set leave context if it belongs to the currently viewed faculty
+    const idToUse = facultyId || router.state?.loginid;
+    if (initialDate && ownerId === idToUse) {
+      setLeaveContext({ date: initialDate, id: leaveId });
+      if (initialDay) {
+        setSelectedDay(initialDay);
+      }
+    } else {
+      // Clear stale context if IDs don't match
+      if (!isHODView) {
+        sessionStorage.removeItem("initialTimetableDay");
+        sessionStorage.removeItem("initialTimetableDate");
+        sessionStorage.removeItem("substitutingForLeaveId");
+        sessionStorage.removeItem("substitutingForFacultyId");
+      }
+    }
+  }, [facultyId, router.state?.loginid]); 
 
   const fetchAllFaculty = async () => {
     try {
@@ -46,7 +74,8 @@ const MyFacultyTimeTable = () => {
   };
 
   const fetchFacultyData = () => {
-    if (!router.state?.loginid) {
+    const idToUse = facultyId || router.state?.loginid;
+    if (!idToUse) {
       toast.error("Faculty ID not found");
       setLoading(false);
       return;
@@ -57,10 +86,15 @@ const MyFacultyTimeTable = () => {
       "Content-Type": "application/json",
     };
 
+    const initialDate = sessionStorage.getItem("initialTimetableDate");
+    const url = initialDate 
+      ? `${baseApiURL()}/faculty/details/getDetails?date=${initialDate}` 
+      : `${baseApiURL()}/faculty/details/getDetails`;
+
     axios
       .post(
-        `${baseApiURL()}/faculty/details/getDetails`,
-        { employeeId: router.state.loginid },
+        url,
+        { employeeId: idToUse },
         {
           headers: headers,
         }
@@ -99,6 +133,45 @@ const MyFacultyTimeTable = () => {
       }
     } catch (error) {
       console.error("Error loading substitution history:", error);
+    }
+  };
+
+  const fetchPendingRequests = async () => {
+    const idToUse = facultyId || router.state?.loginid;
+    if (!idToUse) return;
+    try {
+      const response = await axios.get(`${baseApiURL()}/faculty/details/substitution-history/${idToUse}`);
+      if (response.data.success) {
+        const pending = response.data.substitutions.filter(s => 
+          s.substituteFacultyId === idToUse && 
+          s.status === 'pending'
+        );
+        setPendingRequests(pending);
+      }
+    } catch (error) {
+      console.error("Error fetching pending requests:", error);
+    }
+  };
+
+  const handleSubstitutionResponse = async (substitutionId, status) => {
+    setApproveLoading(true);
+    toast.loading(`${status === 'active' ? 'Approving' : 'Rejecting'}...`);
+    try {
+      const response = await axios.post(`${baseApiURL()}/faculty/details/update-status`, {
+        substitutionId,
+        status
+      });
+      toast.dismiss();
+      if (response.data.success) {
+        toast.success(`Substitution ${status === 'active' ? 'approved' : 'rejected'}!`);
+        fetchFacultyData();
+        fetchPendingRequests();
+      }
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to update status");
+    } finally {
+      setApproveLoading(false);
     }
   };
 
@@ -157,6 +230,10 @@ const MyFacultyTimeTable = () => {
   const checkFacultyStatus = (faculty, day, startTime, endTime) => {
     if (faculty.employeeId === facultyData?.employeeId) {
       return { status: "current", label: "Current Faculty", color: "gray" };
+    }
+
+    if (faculty.onLeave) {
+      return { status: "leave", label: "On Leave (Unavailable)", color: "red" };
     }
 
     if (!faculty.timetable || !Array.isArray(faculty.timetable) || faculty.timetable.length === 0) {
@@ -225,10 +302,13 @@ const MyFacultyTimeTable = () => {
     }
 
     setLoadingFaculty(true);
+    const initialDate = sessionStorage.getItem("initialTimetableDate");
+    const url = initialDate 
+      ? `${baseApiURL()}/faculty/details/getDetails2?date=${initialDate}` 
+      : `${baseApiURL()}/faculty/details/getDetails2`;
+
     try {
-      const response = await axios.get(
-        `${baseApiURL()}/faculty/details/getDetails2`
-      );
+      const response = await axios.get(url);
 
       if (response.data.success) {
         const faculties = response.data.faculties.filter(
@@ -315,6 +395,8 @@ const MyFacultyTimeTable = () => {
       case 'sports': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'library': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'other': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'current': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'leave': return 'bg-red-100 text-red-800 border-red-200';
       case 'busy': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -343,7 +425,9 @@ const MyFacultyTimeTable = () => {
           subject: selectedPeriodForSubstitution.subject,
           branch: selectedPeriodForSubstitution.branch,
           semester: selectedPeriodForSubstitution.semester,
-          section: selectedPeriodForSubstitution.section
+          section: selectedPeriodForSubstitution.section,
+          date: sessionStorage.getItem("initialTimetableDate") || new Date().toISOString().split('T')[0],
+          status: isHODView ? 'active' : 'pending'
         }
       );
 
@@ -550,8 +634,125 @@ const MyFacultyTimeTable = () => {
     );
   }
 
+    const getUnsubstitutedPeriods = () => {
+      const daySchedule = getDayTimetable(selectedDay);
+      return daySchedule.filter(p => 
+        p.subject && 
+        !['Break', 'Lunch', 'Sports', 'Library', 'Other', 'Substituted'].includes(p.subject) && 
+        !p.substituted
+      );
+    };
+
+    const isAllSubstituted = getUnsubstitutedPeriods().length === 0;
+    const pendingCount = getDayTimetable(selectedDay).filter(p => p.substitutionPending).length;
+
+    const finishSubstitution = async () => {
+      if (!isAllSubstituted) {
+        if (pendingCount > 0) {
+          toast.error(`Please wait for all substitutes to approve (${pendingCount} pending).`);
+        } else {
+          toast.error(`Please assign substitutes for all periods (${getUnsubstitutedPeriods().length} remaining).`);
+        }
+        return;
+      }
+      
+      try {
+        const leaveId = sessionStorage.getItem("substitutingForLeaveId");
+        if (leaveId) {
+          await axios.put(`${baseApiURL()}/faculty/leave/assignSubstitute/${leaveId}`, {
+            substituteId: "MANUAL_PER_PERIOD",
+            substituteName: "Assigned Per Period"
+          });
+        }
+        
+        sessionStorage.removeItem("initialTimetableDay");
+        sessionStorage.removeItem("initialTimetableDate");
+        sessionStorage.removeItem("substitutingForLeaveId");
+        sessionStorage.removeItem("substitutingForFacultyId");
+        setLeaveContext(null);
+        toast.success("Substitution process completed! Leave confirmed.");
+        
+        fetchFacultyData();
+      } catch (error) {
+        console.error("Error finishing substitution:", error);
+        toast.error("Failed to confirm leave");
+      }
+    };
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Pending Requests Section */}
+      {pendingRequests.length > 0 && (
+        <div className="bg-white shadow-lg rounded-lg overflow-hidden mb-8 border-l-4 border-yellow-500">
+          <div className="bg-yellow-50 p-4 border-b border-yellow-100 flex items-center justify-between">
+            <div className="flex items-center">
+              <svg className="w-6 h-6 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <h2 className="text-lg font-bold text-yellow-800">Substitution Requests ({pendingRequests.length})</h2>
+            </div>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {pendingRequests.map((req) => (
+              <div key={req._id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <p className="font-bold text-gray-900">{req.originalFacultyName} requests you to take their class</p>
+                  <p className="text-sm text-gray-600">
+                    {req.day}, {new Date(req.substitutionDate).toLocaleDateString()} • Period {req.periodNumber} • {req.subject}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {req.branch} - Sem {req.semester} - {req.section} ({req.startTime} - {req.endTime})
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleSubstitutionResponse(req._id, 'active')}
+                    disabled={approveLoading}
+                    className="px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleSubstitutionResponse(req._id, 'rejected')}
+                    disabled={approveLoading}
+                    className="px-4 py-2 bg-red-100 text-red-600 text-sm font-bold rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {leaveContext && (
+        <div className="bg-gradient-to-r from-green-600 to-green-500 text-white p-4 rounded-lg mb-6 shadow-lg flex items-center justify-between animate-pulse">
+          <div className="flex items-center">
+            <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-bold">Leave Substitution Mode</p>
+              <p className="text-sm opacity-90">Assign substitutes for your leave on <span className="underline font-semibold">{leaveContext.date}</span></p>
+            </div>
+          </div>
+          <button 
+            onClick={finishSubstitution}
+            className={`px-6 py-2 font-bold rounded-full transition-colors shadow-md ${
+              isAllSubstituted 
+                ? "bg-white text-green-600 hover:bg-green-50" 
+                : "bg-gray-200 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            {isAllSubstituted 
+              ? "Finish & Confirm Leave" 
+              : pendingCount > 0 
+                ? `${pendingCount} Pending Approvals` 
+                : `${getUnsubstitutedPeriods().length} Periods Remaining`}
+          </button>
+        </div>
+      )}
       <div className="bg-white shadow-xl rounded-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6">
@@ -642,9 +843,20 @@ const MyFacultyTimeTable = () => {
                       ${period.substitutedFrom ? 'border-green-300 bg-green-50' : ''}
                       ${period.isSubstitute ? 'border-purple-300 bg-purple-50' : ''}
                       ${period.substituted ? 'border-orange-300 bg-orange-50' : ''}
+                      ${period.substitutionPending ? 'border-yellow-300 bg-yellow-50' : ''}
                     `}
                   >
                     {/* Substitution Indicators */}
+                    {period.substitutionPending && (
+                      <div className="absolute top-2 right-2">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 animate-pulse">
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Waiting for Approval
+                        </span>
+                      </div>
+                    )}
                     {period.substituted && (
                       <div className="absolute top-2 right-2">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
@@ -712,7 +924,7 @@ const MyFacultyTimeTable = () => {
                       </div>
                     )}
 
-                    {/* Substitution Button - Only show for academic periods that are not substituted out */}
+                    {/* Substitution Button - Show for all academic periods that are not substituted out */}
                     {period.subject && 
                      !['Break', 'Lunch', 'Sports', 'Library', 'Other', 'Substituted'].includes(period.subject) && 
                      !period.substituted && (
@@ -859,10 +1071,11 @@ const MyFacultyTimeTable = () => {
                           <label
                             key={faculty.employeeId}
                             className={`
-                              block p-4 cursor-pointer transition-colors
+                              block p-4 transition-colors
+                              ${faculty.statusInfo.status === 'leave' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}
                               ${selectedSubstituteFaculty === faculty.employeeId 
                                 ? 'bg-blue-50 border-l-4 border-blue-500' 
-                                : 'hover:bg-gray-50'
+                                : ''
                               }
                             `}
                           >
@@ -872,8 +1085,9 @@ const MyFacultyTimeTable = () => {
                                 name="substituteFaculty"
                                 value={faculty.employeeId}
                                 checked={selectedSubstituteFaculty === faculty.employeeId}
+                                disabled={faculty.statusInfo.status === 'leave'}
                                 onChange={(e) => setSelectedSubstituteFaculty(e.target.value)}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 disabled:opacity-0"
                               />
                               <div className="flex-1">
                                 <div className="flex items-center justify-between">

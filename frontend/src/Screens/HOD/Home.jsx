@@ -18,6 +18,7 @@ import OBEConfig from "../Admin/OBE/OBEConfig";
 import Material from "../Faculty/Material";
 import ViewMarks from "../Faculty/ViewMarks";
 import FacultyAttendance from "./FacultyAttendance";
+import FacultySubstitution from "./FacultySubstitution";
 import Profile from "../Admin/Profile";
 
 const HODHome = () => {
@@ -179,6 +180,8 @@ const HODHome = () => {
         return <ViewMarks branch={branch} setShowViewMarks={() => setSelectedMenu("Leave Approvals")} />;
       case "FacultyAttendance":
         return <FacultyAttendance branch={branch} />;
+      case "FacultySubstitution":
+        return <FacultySubstitution />;
       case "Profile":
         return <Profile />;
       default:

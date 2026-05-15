@@ -60,8 +60,8 @@ const substitutionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'cancelled'],
-    default: 'active'
+    enum: ['active', 'cancelled', 'pending', 'rejected'],
+    default: 'pending'
   }
 }, { timestamps: true });
 

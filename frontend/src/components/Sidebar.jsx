@@ -115,6 +115,7 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Material", label: "Materials", icon: FiBookOpen, color: "from-teal-500 to-teal-600" },
           { id: "Marks", label: "View Marks", icon: FiFileText, color: "from-orange-500 to-orange-600" },
           { id: "FacultyAttendance", label: "Faculty Tracking", icon: FiBarChart2, color: "from-blue-500 to-emerald-500" },
+          { id: "FacultySubstitution", label: "Faculty Substitution", icon: FiCalendar, color: "from-orange-500 to-red-500" },
           { id: "Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" },
         ];
       case "Principal":

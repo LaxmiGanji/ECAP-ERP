@@ -1,20 +1,120 @@
 // Faculty Details Controller
 const facultyDetails = require("../../models/Faculty/details.model.js")
 const Substitution = require("../../models/Faculty/substitution.model.js");
+const FacultyLeave = require("../../models/Faculty/leave.model.js");
 const { validatePhoneNumber } = require("../../utils/validation.js");
+
+const getAugmentedTimetable = async (faculty, dateStr) => {
+    try {
+        if (!faculty) return null;
+        if (!faculty.timetable) return faculty.toObject ? faculty.toObject() : faculty;
+
+        // Use provided date or today
+        const today = new Date();
+        const targetDate = dateStr ? new Date(dateStr) : today;
+        
+        const startOfDay = new Date(targetDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(targetDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        // Find active OR pending substitutions for this faculty for this date
+        const subsAsOriginal = await Substitution.find({
+            originalFacultyId: faculty.employeeId,
+            substitutionDate: { $gte: startOfDay, $lte: endOfDay },
+            status: { $in: ['active', 'pending'] }
+        });
+
+        const subsAsSubstitute = await Substitution.find({
+            substituteFacultyId: faculty.employeeId,
+            substitutionDate: { $gte: startOfDay, $lte: endOfDay },
+            status: { $in: ['active', 'pending'] }
+        });
+
+        if (subsAsOriginal.length === 0 && subsAsSubstitute.length === 0) {
+            return faculty.toObject();
+        }
+
+        let augmentedTimetable = JSON.parse(JSON.stringify(faculty.timetable));
+
+        subsAsOriginal.forEach(sub => {
+            const dayIndex = augmentedTimetable.findIndex(d => d.day === sub.day);
+            if (dayIndex !== -1) {
+                const periodIndex = augmentedTimetable[dayIndex].periods.findIndex(p => p.periodNumber === sub.periodNumber);
+                if (periodIndex !== -1) {
+                    augmentedTimetable[dayIndex].periods[periodIndex] = {
+                        ...augmentedTimetable[dayIndex].periods[periodIndex],
+                        substituted: sub.status === 'active',
+                        substitutionPending: sub.status === 'pending',
+                        substitutedTo: sub.substituteFacultyId,
+                        substitutionId: sub._id,
+                        subject: sub.status === 'active' ? "Substituted" : augmentedTimetable[dayIndex].periods[periodIndex].subject,
+                        originalSubject: augmentedTimetable[dayIndex].periods[periodIndex].subject
+                    };
+                }
+            }
+        });
+
+        subsAsSubstitute.forEach(sub => {
+            if (sub.status !== 'active') return; // Only show active substitutions in the substitute's timetable
+            
+            let dayData = augmentedTimetable.find(d => d.day === sub.day);
+            if (!dayData) {
+                dayData = { day: sub.day, periods: [] };
+                augmentedTimetable.push(dayData);
+            }
+
+            const existingPeriodIndex = dayData.periods.findIndex(p => p.periodNumber === sub.periodNumber);
+            const newPeriod = {
+                periodNumber: sub.periodNumber,
+                subject: sub.subject,
+                branch: sub.branch,
+                semester: sub.semester,
+                section: sub.section,
+                startTime: sub.startTime,
+                endTime: sub.endTime,
+                isSubstitute: true,
+                substitutionId: sub._id,
+                substitutedFrom: sub.originalFacultyId
+            };
+
+            if (existingPeriodIndex !== -1) {
+                const original = dayData.periods[existingPeriodIndex];
+                dayData.periods[existingPeriodIndex] = {
+                    ...newPeriod,
+                    replacedOriginalSubject: original.subject,
+                    replacedOriginalData: original
+                };
+            } else {
+                dayData.periods.push(newPeriod);
+                dayData.periods.sort((a, b) => a.periodNumber - b.periodNumber);
+            }
+        });
+
+        const facultyObj = (faculty && faculty.toObject) ? faculty.toObject() : faculty;
+        return { ...facultyObj, timetable: augmentedTimetable };
+    } catch (error) {
+        console.error("Error augmenting timetable:", error);
+        return (faculty && faculty.toObject) ? faculty.toObject() : faculty;
+    }
+};
 
 const getDetails = async (req, res) => {
     try {
-        let user = await facultyDetails.find(req.body);
-        if (!user) {
+        let users = await facultyDetails.find(req.body);
+        if (!users || users.length === 0) {
             return res
                 .status(400)
                 .json({ success: false, message: "No Faculty Found" });
         }
+
+        // Augment each faculty's timetable with today's substitutions
+        const augmentedUsers = await Promise.all(users.map(u => getAugmentedTimetable(u, req.query.date)));
+
         const data = {
             success: true,
             message: "Faculty Details Found!",
-            user,
+            user: augmentedUsers,
         };
         res.json(data);
     } catch (error) {
@@ -612,7 +712,7 @@ const substituteFaculty = async (req, res) => {
       });
     }
 
-    // Create substitution record with substitute's original period data
+    // Create substitution record - THIS IS NOW THE PRIMARY SOURCE OF TRUTH FOR TEMPORARY CHANGES
     const substitution = new Substitution({
       originalFacultyId,
       substituteFacultyId,
@@ -633,24 +733,17 @@ const substituteFaculty = async (req, res) => {
         endTime: substituteOriginalPeriod.endTime,
         isSpecialPeriod: substituteOriginalPeriod.isSpecialPeriod
       } : null,
-      status: 'active'
+      status: req.body.status || 'pending',
+      substitutionDate: req.body.date ? new Date(req.body.date) : new Date() // Use provided date or today
     });
     await substitution.save();
 
-    // Update both faculties
-    await facultyDetails.findOneAndUpdate(
-      { employeeId: originalFacultyId },
-      { $set: { timetable: updatedOriginalTimetable } }
-    );
-
-    await facultyDetails.findOneAndUpdate(
-      { employeeId: substituteFacultyId },
-      { $set: { timetable: updatedSubstituteTimetable } }
-    );
+    // CRITICAL: We no longer modify the base timetable in the DB!
+    // The dynamic augmentation in getDetails will handle it.
 
     return res.json({
       success: true,
-      message: "Faculty substituted successfully",
+      message: "Substitution request sent to faculty. Pending their approval.",
       data: {
         originalFacultyId,
         substituteFacultyId,
@@ -658,16 +751,40 @@ const substituteFaculty = async (req, res) => {
         periodNumber,
         subject: periodToMove.subject,
         substitutionId: substitution._id,
-        substituteOriginalRestored: substituteOriginalPeriod ? substituteOriginalPeriod.subject : "No original period"
+        status: 'pending'
       }
     });
-  } catch (error) {
-    console.error("Error substituting faculty:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-      error: error.message
+} catch (error) {
+    console.error("Error in substituteFaculty:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+// Update substitution status (Approve/Reject)
+const updateSubstitutionStatus = async (req, res) => {
+  try {
+    const { substitutionId, status } = req.body;
+    
+    if (!['active', 'rejected'].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status update" });
+    }
+
+    const sub = await Substitution.findById(substitutionId);
+    if (!sub) {
+      return res.status(404).json({ success: false, message: "Substitution request not found" });
+    }
+
+    sub.status = status;
+    await sub.save();
+
+    res.json({
+      success: true,
+      message: `Substitution ${status === 'active' ? 'approved' : 'rejected'} successfully!`,
+      substitution: sub
     });
+  } catch (error) {
+    console.error("Error updating substitution status:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -1123,8 +1240,48 @@ const getSubstitutionHistory = async (req, res) => {
   }
 };
 
+const getDetails2 = async (req, res) => {
+    try {
+        const { date } = req.query;
+        let faculties = await facultyDetails.find();
+        if (!faculties || faculties.length === 0) {
+            return res.status(400).json({ success: false, message: "No Faculties Found" });
+        }
+        
+        // Fetch leaves for this date
+        let leaveMap = {};
+        if (date) {
+            const leaves = await FacultyLeave.find({
+                dates: date,
+                status: { $in: ['approved_by_hod', 'approved_by_principal', 'confirmed'] }
+            });
+            leaves.forEach(l => {
+              leaveMap[l.facultyId.trim().toUpperCase()] = l;
+            });
+        }
+
+        // Augment each faculty's timetable and add leave status
+        const augmentedFaculties = await Promise.all(faculties.map(async f => {
+            const augmented = await getAugmentedTimetable(f, date);
+            const employeeId = f.employeeId || "";
+            const facultyId = employeeId.trim().toUpperCase();
+            return {
+                ...augmented,
+                onLeave: facultyId ? !!leaveMap[facultyId] : false,
+                leaveDetails: facultyId ? (leaveMap[facultyId] || null) : null
+            };
+        }));
+        
+        res.json({ success: true, message: "Faculty Details Found!", faculties: augmentedFaculties });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
 module.exports = { 
   getDetails, 
+  getDetails2,
   addDetails, 
   updateDetails, 
   deleteDetails, 
@@ -1134,7 +1291,8 @@ module.exports = {
   validateTimetable,
   getFacultyWithFreePeriods,
   substituteFaculty,
+  updateSubstitutionStatus,
   undoSubstitution,
   resetTimetable,
   getSubstitutionHistory
-};
+};

@@ -13,6 +13,9 @@ const {
   rejectLeave,
   assignSubstitute,
   getAllLeaves,
+  getLeaveSummary,
+  setLeaveQuotas,
+  getLeaveQuotas,
 } = require("../../controllers/Faculty/leave.controller.js");
 
 // Request leave (pending)
@@ -43,5 +46,12 @@ router.get("/principal/pending", getPendingLeavesForPrincipal);
 
 // Get all leaves (Admin/Accounts)
 router.get("/all", getAllLeaves);
+
+// Get leave summary for Accounts
+router.get("/get-summary", getLeaveSummary);
+
+// Leave Quota routes
+router.post("/quotas", setLeaveQuotas);
+router.get("/quotas", getLeaveQuotas);
 
 module.exports = router;
