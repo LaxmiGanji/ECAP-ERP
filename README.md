@@ -1,84 +1,135 @@
 # ECAP_SPHN - Educational Campus Administration Portal
 
-A comprehensive, responsive, and feature-rich campus management system designed to streamline academic and administrative workflows for Students, Faculty, HODs, Admins, and more.
+A premium, comprehensive, and responsive campus management system designed to streamline academic and administrative workflows. The portal is equipped with role-based access control, interactive visualization dashboards, and native report generation for Students, Faculty, HODs, Admins, Accounts, Library, and Transport teams.
 
-## 🚀 Key Modules
+---
 
-### 🚍 Transport Management Module
-Efficiently manage campus transportation with end-to-end workflows.
-- **Admin Capabilities**: Configure buses, routes, stops, and location-based fare structures. Manage seat capacity and track occupancy in real-time.
-- **Student Features**: Browse available routes, check live seat availability, enroll in a bus after providing payment reference, and view/download active transport passes.
-- **Backend APIs**:
-    - `POST /api/transport/routes` | `PUT /api/transport/routes/:id`: CRUD for buses and routes.
-    - `GET /api/transport/routes`: Fetch all routes with occupancy data.
-    - `POST /api/transport/enroll`: Student enrollment and payment logging.
-    - `GET /api/transport/student/:enrollmentNo`: Retrieve student transport pass details.
+## 🎨 Design Philosophy & User Experience
 
-### 📊 OBE & CO/PO Attainment
-Advanced academic tracking for Outcome Based Education.
-- Automated calculation of Course Outcome (CO) attainment from Internal Assessment (IA) and Semester End Examination (SEE) marks.
-- Generation of detailed Excel reports with CO-PO mapping and attainment summaries.
-- Faculty interface for uploading marks and visualizing attainment trends.
+- **Glassmorphism & Rich Aesthetics**: Beautiful, Harmonious, HSL-tailored colors, smooth gradients, and sleek dark modes.
+- **Vibrant Interactive Dashboards**: Built with dynamic animations (Framer Motion) and micro-interactions.
+- **Mobile-First & Responsive Layout**: Optimized across Desktop, Tablet, and Mobile viewport grids.
+- **Role-Based Workspaces**: Tailored user dashboards dynamically adapting layout and permissions based on JWT access tokens.
 
-### 🏢 Departmental Management (HOD & Faculty)
-- **HOD Dashboard**: Real-time leave request approvals, faculty performance tracking, and departmental analytics.
-- **Faculty Dashboard**: Attendance tracking, marks management, digital material sharing, and automated timetable views.
-- **Leave Management**: Integrated leave application and tracking system with role-based approval workflows.
+---
 
-### 💳 Accounts & Administration
-- **Accounts Hub**: Monthly attendance configuration, global holiday management, and automated faculty attendance tracking based on working days.
-- **Admin Panel**: Centralized control for student/faculty registration, notice board management, and campus-wide configuration.
+## 🚀 Modules & Features
 
-### 📚 Library & Placement
-- **Library System**: Digital cataloging for books and newspapers, with issue/return tracking for students and faculty.
-- **Placement Cell**: End-to-end placement drive management, company registration, student applications, and training reports.
+### 🔐 1. Authentication & Security
+- **Role-Based Access Control (RBAC)**: Secure routes and actions based on user roles (Admin, HOD, Faculty, Student, Accounts, Library, Transport).
+- **JWT Authentication**: Secure token-based session management.
+- **Alphanumeric Password Encryption**: Secure handling and password migration systems.
+
+### 🚍 2. Transport Management
+- **Route & Bus Configuration**: Register buses, define routes, stops, and dynamic location-based fare structures.
+- **Seat Allocation & Availability Tracking**: Real-time capacity counting and seat verification.
+- **Student Enrollment Hub**: Direct stop selection, seat reservation, and fee logging with payment references.
+- **Digital Bus Pass**: Automated PDF/view generation of active student transport passes.
+
+### 📊 3. OBE (Outcome-Based Education) & Attainment
+- **CO-PO Mapping Matrix**: Set strength mappings (1: Weak, 2: Medium, 3: Strong) for Course Outcomes (COs) and Program Outcomes (POs/PSOs).
+- **Exam Configuration**: Map exam questions (internals, externals, and assignments) to Course Outcomes (CO1-CO6) and set maximum marks.
+- **Split Template Downloads**: Separate pre-populated student lists into IA (Internal Assessment) and SEE (Semester End Exam) Excel sheets.
+- **Interactive Attainment Dashboard**: 
+  - Dynamic recalculation of direct attainment (80%) and indirect attainment (20%).
+  - Live recalculations of PO and overall attainment upon editing Course End Survey (CES) student ratings or manual indirect level overrides.
+  - Interactive Attainment bar charts powered by Recharts.
+- **Action Plans**: Direct input of targets, observations, gap analysis, CAYm1 action outcomes, and PO action plan details.
+- **Multi-Sheet Report Generation**: Exporter compiles data, recalculates formula dependencies, and builds a comprehensive 7-sheet Excel workbook with native Excel charts.
+
+### 🏢 4. Faculty & HOD Workspace
+- **Personalized Timetables**: Dynamic scheduling with class substitution requests and approval flows.
+- **Student Attendance Management**: Add, delete, and view attendance reports by date/subject, with automatic student percentage trackers.
+- **Study Materials Hub**: File sharing system enabling faculty to upload notes, PDFs, links, and lecture materials for students.
+- **Marks Management**: Pre-fill templates, import bulk marks from Excel, and manually override student marks.
+- **Leave Application Management**: Request leaves, track approval status, and view historical leave requests.
+- **HOD Dashboard**: Approval console for faculty leave requests, faculty listings, and departmental analytics.
+
+### 💳 5. Accounts & Administration
+- **Academic Setup**: Configure branches, semesters, regulations (e.g. R22, R18), and subject mappings.
+- **Monthly Attendance Settings**: Configure working days, holidays, and attendance thresholds.
+- **Notice Board System**: Global notice posting console visible across student and faculty dashboards.
+- **Student & Faculty Registry**: Centralized control to register, update, and manage student profiles.
+
+### 📚 6. Library System
+- **Digital Cataloging**: Add, catalog, and track books and newspapers.
+- **Issue & Return Tracking**: Integrated student checkout system with live borrow status and return dates.
+
+### 💼 7. Placement Cell
+- **Drive Management**: Configure placement drives with eligibility criteria, packages, job profiles, and interview rounds.
+- **Student Placement Panel**: Apply to placement drives, view registration statuses, and track selection.
 
 ---
 
 ## 🛠 Tech Stack
 
-- **Frontend**: React.js, Tailwind CSS (for modern, responsive UI), Framer Motion (for smooth animations), React Icons.
+- **Frontend**: React.js, Tailwind CSS (for modern layout control), Framer Motion (for animations), React Icons.
 - **Backend**: Node.js, Express.js.
 - **Database**: MongoDB with Mongoose ODM.
-- **Report Generation**: ExcelJS for generating complex academic reports.
-- **Authentication**: JWT-based role-protected routes.
+- **Excel Processor**: ExcelJS for generating complex calculations and native charts in exported sheets.
 
 ---
 
-## 📱 Design Philosophy
-- **Fully Responsive**: Optimized for Mobile, Tablet, and Desktop using flexible grid systems and mobile-first navigation.
-- **Modern Aesthetics**: Vibrant color palettes, glassmorphism effects, and micro-animations for a premium user experience.
-- **Role-Based Access**: Dedicated dashboards for Admin, Student, Faculty, HOD, Accounts, Library, and Transport.
+## 🔄 Module Workflows
 
----
-
-## 🛠 Installation & Setup
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/LaxmiGanji/ECAP_SPHN.git
+### 🚍 Transport Module Workflow
+```mermaid
+graph TD
+    A[Admin creates Route, Stops, Fare & Bus] --> B[Student searches Stop and checks Seat Availability]
+    B --> C[Student selects Stop, enters Payment Reference & Submits]
+    C --> D[Transport Admin verifies Payment & Allocates Seat]
+    D --> E[Student views & downloads Digital Bus Pass]
 ```
 
-### 2. Backend Setup
-```bash
-cd backend
-npm install
-# Create a .env file and add your MONGO_URL, JWT_SECRET, etc.
-npm start
+### 📊 OBE & CO-PO Attainment Workflow
+```mermaid
+graph TD
+    A[Admin adds Regulation, Branch & Subjects] --> B[HOD/Faculty sets CO-PO Mapping Strength]
+    B --> C[Faculty maps Exam & CIA Questions to COs & Max Marks]
+    C --> D[Faculty downloads pre-filled IA & SEE Excel Templates]
+    D --> E[Faculty uploads filled IA & SEE Marks Sheets]
+    E --> F[Web Dashboard recalculates Direct Attainment]
+    F --> G[Faculty inputs Course End Survey counts & Action Plans]
+    G --> H[System recalculates PO Attainment & Exports 7-Sheet Workbook with Charts]
 ```
 
-### 3. Frontend Setup
-```bash
-cd frontend
-npm install
-# Create a .env file and add your REACT_APP_BASE_URL
-npm start
+### 🏢 Attendance & Marks Workflow
+```mermaid
+graph TD
+    A[Faculty selects Branch, Sem, Section & Subject] --> B[Faculty selects Exam Type & downloads Excel Template]
+    B --> C[Faculty uploads filled Marks Excel sheet]
+    C --> D[System validates Max Marks & displays editable Marks Grid]
+    D --> E[Faculty submits Marks to database]
+    F[Faculty selects Period/Time & marks Student Absentees] --> G[System updates Student Attendance percentage]
+```
+
+### 🏢 Leave & Timetable Workflow
+```mermaid
+graph TD
+    A[Admin uploads/generates Branch Timetables] --> B[Faculty requests Leave]
+    B --> C[System prompts Class Substitution options]
+    C --> D[Substitute Faculty accepts/declares availability]
+    D --> E[HOD reviews and approves/rejects Leave Request]
+    E --> F[Personalized Timetables update to reflect substitution]
+```
+
+### 📚 Library Borrowing Workflow
+```mermaid
+graph TD
+    A[Librarian logs Books & Newspapers] --> B[Student searches Catalog and requests Book Issue]
+    B --> C[Librarian checks availability & marks Book Issued]
+    C --> D[Student borrows Book]
+    D --> E[Student returns Book & Librarian marks Book Returned]
+```
+
+### 💼 Placement Cell Workflow
+```mermaid
+graph TD
+    A[Placement Cell adds Company details & eligibility criteria] --> B[Eligible Students browse drives on Placement panel]
+    B --> C[Students apply to drives and upload resumes]
+    C --> D[Coordinator tracks selection stages & marks results]
 ```
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License.
-
----
 **Developed by Laxmi Ganji**

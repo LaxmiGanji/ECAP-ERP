@@ -1,6 +1,7 @@
 // controllers/Other/subject.controller.js
 const Subject = require("../../models/Other/subject.model");
 const coattainmentService = require("../../services/coattainment.service");
+const { filterSubjectsByStudentRegulation } = require("../../utils/subjectFilter");
 
 const getSubject = async (req, res) => {
     try {
@@ -10,6 +11,9 @@ const getSubject = async (req, res) => {
                 .status(400)
                 .json({ success: false, message: "No Subject Available" });
         }
+        
+        // Filter subjects dynamically according to student regulations
+        subject = await filterSubjectsByStudentRegulation(subject);
         const data = {
             success: true,
             message: "All Subject Loaded!",
@@ -58,6 +62,9 @@ const getSubjectsByBranch = async (req, res) => {
                 .status(400)
                 .json({ success: false, message: "No Subjects Available for this Branch" });
         }
+
+        // Filter subjects dynamically according to student regulations
+        subjects = await filterSubjectsByStudentRegulation(subjects);
         const data = {
             success: true,
             message: "Subjects Loaded for Branch!",

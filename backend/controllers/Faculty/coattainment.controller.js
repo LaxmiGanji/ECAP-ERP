@@ -3,6 +3,7 @@ const Subject = require('../../models/Other/subject.model');
 const Branch = require('../../models/Other/branch.model');
 const Student = require('../../models/Students/details.model');
 const coattainmentService = require('../../services/coattainment.faculty.service');
+const { filterSubjectsByStudentRegulation } = require('../../utils/subjectFilter');
 
 /**
  * Get all subjects for a faculty with their COs
@@ -18,9 +19,11 @@ exports.getSubjectsWithCOs = async (req, res) => {
             });
         }
 
-        const subjects = await Subject.find()
+        let subjects = await Subject.find()
             .populate('branch', 'name')
-            .select('code name semester courseOutcomes branch');
+            .select('code name semester courseOutcomes branch regulation');
+
+        subjects = await filterSubjectsByStudentRegulation(subjects);
 
         return res.status(200).json({
             success: true,

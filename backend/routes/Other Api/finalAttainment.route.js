@@ -13,9 +13,9 @@ const upload = multer({
 router.post('/template', finalAttainmentController.generateTemplate);
 
 // Route to upload filled template and calculate
-router.post('/upload', upload.single('file'), finalAttainmentController.uploadAndCalculate);
+router.post('/upload', upload.fields([{ name: 'iaFile', maxCount: 1 }, { name: 'seeFile', maxCount: 1 }]), finalAttainmentController.uploadAndCalculate);
 
 // Route to export final results in Excel
-router.post('/export', upload.single('file'), finalAttainmentController.exportWithResults);
+router.post('/export', upload.fields([{ name: 'iaFile', maxCount: 1 }, { name: 'seeFile', maxCount: 1 }]), finalAttainmentController.exportWithResults);
 
 module.exports = router;

@@ -3,12 +3,25 @@ const path = require('path');
 const fs = require('fs');
 const Subject = require('../../models/Other/subject.model');
 const StudentDetails = require('../../models/Students/details.model');
+const Branch = require('../../models/Other/branch.model');
 
 const TEMPLATE_PATH = path.join(__dirname, '../../templates/COPO_TEMPLATE.xlsx');
 
+const formatBranchName = (branchName) => {
+  if (!branchName) return "";
+  let formatted = branchName.trim();
+  if (!formatted.toLowerCase().startsWith('department of')) {
+    formatted = `Department of ${formatted}`;
+  }
+  if (!formatted.toLowerCase().endsWith('program')) {
+    formatted = `${formatted} Program`;
+  }
+  return formatted;
+};
+
 exports.generateTemplate = async (req, res) => {
   try {
-    const { subjectId, branch, semester, facultyName, academicYear, iaQuestions, seeQuestions, assignmentQuestions } = req.body;
+    const { subjectId, branch, semester, facultyName, academicYear, iaQuestions, seeQuestions, assignmentQuestions, templateType } = req.body;
 
     if (!subjectId || !branch || !semester) {
       return res.status(400).json({ success: false, message: 'Missing required parameters' });
@@ -18,7 +31,7 @@ exports.generateTemplate = async (req, res) => {
     if (!subject) {
       return res.status(404).json({ success: false, message: 'Subject not found' });
     }
-    const branchName = subject?.branch?.name || branch;
+    const branchName = formatBranchName(subject?.branch?.name || branch);
 
     // 1. Fetch Students (Sorted by enrollmentNo using standard string sort for correct alphanumeric order)
     const students = await StudentDetails.find({ branch, semester })
@@ -87,7 +100,8 @@ exports.generateTemplate = async (req, res) => {
     const seeSheet = workbook.getWorksheet('SEE Marks');
     if (seeSheet) {
       if (facultyName) seeSheet.getCell('I5').value = facultyName; // I5:R5 is merged
-      seeSheet.getCell('M4').value = academicYear || "2024-2025";
+      seeSheet.getCell('L4').value = academicYear || "2024-2025";
+      seeSheet.getCell('M4').value = `${subject.name}/${subject.code}`;
       seeSheet.getCell('AB4').value = semester;
       seeSheet.getCell('AM4').value = subject.code;
       seeSheet.getCell('AV4').value = students.length;
@@ -262,9 +276,30 @@ exports.generateTemplate = async (req, res) => {
       sheet.autoFilter = `A12:${maxQCol}${currentRow > 13 ? currentRow - 1 : 13}`;
     }
 
+    // Filter worksheets based on templateType if provided
+    if (templateType === 'ia') {
+      workbook.worksheets.forEach(sheet => {
+        if (sheet.name !== 'IA Marks') {
+          workbook.removeWorksheet(sheet.id);
+        }
+      });
+    } else if (templateType === 'see') {
+      workbook.worksheets.forEach(sheet => {
+        if (sheet.name !== 'SEE Marks') {
+          workbook.removeWorksheet(sheet.id);
+        }
+      });
+    }
+
+    const filename = templateType === 'ia'
+      ? `IA_Marks_Template_${branchName}_Sem${semester}.xlsx`
+      : templateType === 'see'
+        ? `SEE_Marks_Template_${branchName}_Sem${semester}.xlsx`
+        : `Final_COPO_Template_${branchName}_Sem${semester}.xlsx`;
+
     // 4. Send File
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=Final_COPO_Template_${branch}_Sem${semester}.xlsx`);
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
     
     // Force Excel to recalculate all formulas when the file is opened
     workbook.calcProperties.fullCalcOnLoad = true;
@@ -277,29 +312,110 @@ exports.generateTemplate = async (req, res) => {
   }
 };
 
+const copySheetData = (srcSheet, destSheet, maxColIndex) => {
+  srcSheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+    if (rowNumber === 7 || rowNumber === 8 || rowNumber === 9 || rowNumber >= 13) {
+      for (let colNumber = 1; colNumber <= maxColIndex; colNumber++) {
+        const srcCell = row.getCell(colNumber);
+        const destCell = destSheet.getCell(rowNumber, colNumber);
+        destCell.value = srcCell.value;
+      }
+    }
+  });
+};
+
 exports.uploadAndCalculate = async (req, res) => {
   try {
     const { subjectId } = req.body;
-    if (!req.file || !subjectId) {
-      return res.status(400).json({ success: false, message: 'File and subjectId are required' });
+    const iaFileArray = req.files ? req.files['iaFile'] : null;
+    const seeFileArray = req.files ? req.files['seeFile'] : null;
+
+    if (!iaFileArray || !seeFileArray || iaFileArray.length === 0 || seeFileArray.length === 0) {
+      return res.status(400).json({ success: false, message: 'Both IA Marks and SEE Marks files are required' });
     }
+
+    const iaFileBuffer = iaFileArray[0].buffer;
+    const seeFileBuffer = seeFileArray[0].buffer;
 
     const subject = await Subject.findById(subjectId);
     if (!subject) {
       return res.status(404).json({ success: false, message: 'Subject not found' });
     }
 
-    console.log('--- Step 1: Loading Workbook ---');
+    console.log('--- Step 1: Loading Workbooks ---');
+    const iaWorkbook = new ExcelJS.Workbook();
+    await iaWorkbook.xlsx.load(iaFileBuffer);
+    const uploadedIaSheet = iaWorkbook.getWorksheet('IA Marks');
+
+    const seeWorkbook = new ExcelJS.Workbook();
+    await seeWorkbook.xlsx.load(seeFileBuffer);
+    const uploadedSeeSheet = seeWorkbook.getWorksheet('SEE Marks');
+
+    if (!uploadedIaSheet || !uploadedSeeSheet) {
+      return res.status(400).json({ success: false, message: 'Invalid template structure. Missing IA Marks or SEE Marks sheet.' });
+    }
+
+    // Load base template to run formulas properly
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(req.file.buffer);
+    await workbook.xlsx.readFile(TEMPLATE_PATH);
 
     const iaSheet = workbook.getWorksheet('IA Marks');
     const seeSheet = workbook.getWorksheet('SEE Marks');
-    const cesSheet = workbook.getWorksheet('Course End Survey (CES)');
-    const coAttainmentSheet = workbook.getWorksheet('CO Attainment');
+
+    // Copy data to base template
+    copySheetData(uploadedIaSheet, iaSheet, 59);
+    copySheetData(uploadedSeeSheet, seeSheet, 34);
+
+    // Inject formulas into base sheets
+    const validCOs = subject?.courseOutcomes?.map(co => parseInt(co.coNumber.replace(/co/i, ''))).filter(n => !isNaN(n)) || [1,2,3,4,5,6];
+    const sheetsToSetup = [iaSheet, seeSheet];
     
-    if (!iaSheet || !seeSheet) {
-      return res.status(400).json({ success: false, message: 'Invalid template structure. Missing IA Marks or SEE Marks sheet.' });
+    for (const sheet of sheetsToSetup) {
+      let currentRow = 13;
+      let index = 1;
+      const maxQCol = sheet.name === 'IA Marks' ? 'BG' : 'AH';
+      
+      while (sheet.getCell(currentRow, 2).value) {
+        sheet.getCell(`A${currentRow}`).value = index++;
+        
+        for (let i = 1; i <= 6; i++) {
+          if (validCOs.includes(i)) {
+            const startCol = sheet.name === 'IA Marks' ? 61 + (i - 1) * 3 : 35 + (i - 1) * 3;
+            const sumColLetter = sheet.getColumn(startCol).letter;
+            const countColLetter = sheet.getColumn(startCol + 1).letter;
+            
+            sheet.getCell(currentRow, startCol).value = { formula: `SUMIF($D$7:$${maxQCol}$7,"CO${i}",$D${currentRow}:$${maxQCol}${currentRow})` };
+            sheet.getCell(currentRow, startCol + 1).value = { formula: `SUMIFS($D$9:$${maxQCol}$9,$D$7:$${maxQCol}$7,"CO${i}",$D${currentRow}:$${maxQCol}${currentRow},">"&-1)` };
+            sheet.getCell(currentRow, startCol + 2).value = { formula: `ROUNDUP(IF(${countColLetter}${currentRow},${sumColLetter}${currentRow}/${countColLetter}${currentRow}%,0),2)` };
+          }
+        }
+        currentRow++;
+      }
+
+      const finalRow = Math.max(200, currentRow - 1);
+      for (let i = 1; i <= 6; i++) {
+        if (validCOs.includes(i)) {
+          const startCol = sheet.name === 'IA Marks' ? 61 + (i - 1) * 3 : 35 + (i - 1) * 3;
+          const sumColLetter = sheet.getColumn(startCol).letter;
+          const percColLetter = sheet.getColumn(startCol + 2).letter;
+          
+          sheet.getCell(11, startCol).value = { formula: `COUNTIF(${sumColLetter}13:${sumColLetter}${finalRow},">"&0)` };
+          sheet.getCell(11, startCol + 2).value = { formula: `COUNTIF(${percColLetter}13:${percColLetter}${finalRow},">="&Z5)` };
+        }
+      }
+
+      for (let i = 1; i <= 6; i++) {
+        if (!validCOs.includes(i)) {
+          const startCol = sheet.name === 'IA Marks' ? 61 + (i - 1) * 3 : 35 + (i - 1) * 3;
+          sheet.getColumn(startCol).hidden = true;
+          sheet.getColumn(startCol + 1).hidden = true;
+          sheet.getColumn(startCol + 2).hidden = true;
+          
+          sheet.getCell(8, startCol).value = null;
+          sheet.getCell(8, startCol + 1).value = null;
+          sheet.getCell(8, startCol + 2).value = null;
+        }
+      }
     }
 
     const getCellValue = (cell) => {
@@ -327,7 +443,7 @@ exports.uploadAndCalculate = async (req, res) => {
 
     console.log('IA Thresholds:', { iaLevel1, iaLevel2, iaLevel3, iaTargetPerc });
 
-    // Get SEE thresholds from the template (from columns AY in SEE sheet)
+    // Get SEE thresholds from the template
     const seeLevel1 = parseNum(getCellValue(seeSheet.getCell('AY11')), 60);
     const seeLevel2 = parseNum(getCellValue(seeSheet.getCell('AY12')), 70);
     const seeLevel3 = parseNum(getCellValue(seeSheet.getCell('AY13')), 80);
@@ -350,10 +466,12 @@ exports.uploadAndCalculate = async (req, res) => {
     }
     console.log('IA Columns found:', iaCols.length);
 
+    let studentCount = 0;
     const iaCoScores = {};
     for (let r = START_ROW; r < START_ROW + MAX_ROWS; r++) {
-      const usn = getCellValue(iaSheet.getCell(r, 2)); // Column B is USN
+      const usn = getCellValue(iaSheet.getCell(r, 2));
       if (!usn) continue;
+      studentCount++;
 
       for (const colDef of iaCols) {
         const mark = getCellValue(iaSheet.getCell(r, colDef.col));
@@ -390,11 +508,10 @@ exports.uploadAndCalculate = async (req, res) => {
       }
     }
     console.log('SEE Columns found:', seeCols.length);
-    console.log('SEE Target %:', seeTargetPerc);
 
     const seeCoScores = {};
     for (let r = START_ROW; r < START_ROW + MAX_ROWS; r++) {
-      const usn = getCellValue(seeSheet.getCell(r, 2)); // Column B is USN
+      const usn = getCellValue(seeSheet.getCell(r, 2));
       if (!usn) continue;
 
       for (const colDef of seeCols) {
@@ -404,8 +521,6 @@ exports.uploadAndCalculate = async (req, res) => {
            seeCoScores[colDef.co].total++;
            
            const perc = (Number(mark) / colDef.maxMarks) * 100;
-           console.log(`- USN ${usn}: ${colDef.co} Mark=${mark}/${colDef.maxMarks} (${perc.toFixed(1)}%) - Target=${seeTargetPerc}%`);
-           
            if (perc >= seeTargetPerc) {
              seeCoScores[colDef.co].meetingTarget++;
            }
@@ -422,13 +537,13 @@ exports.uploadAndCalculate = async (req, res) => {
       else if (percMeeting >= seeLevel2) level = 2;
       else if (percMeeting >= seeLevel1) level = 1;
       seeAttainment[co] = { level, percMeeting };
-      console.log(`SEE ${co}: ${percMeeting.toFixed(2)}% meeting target (${stats.meetingTarget}/${stats.total}) -> Level ${level}`);
+      console.log(`SEE ${co}: ${percMeeting.toFixed(2)}% meeting target -> Level ${level}`);
     }
 
     console.log('--- Step 4: Processing Assignments (CIA) ---');
     const assignmentAttainment = {};
     const assCols = [];
-    for (let c = 53; c <= 59; c++) { // BA to BG
+    for (let c = 53; c <= 59; c++) {
       const coVal = getCellValue(iaSheet.getCell(7, c));
       const maxMarks = getCellValue(iaSheet.getCell(9, c));
       if (coVal && maxMarks > 0) {
@@ -468,31 +583,7 @@ exports.uploadAndCalculate = async (req, res) => {
       }
     }
 
-    console.log('--- Step 5: Processing Indirect Attainment ---');
-    const indirectAttainment = {};
-    if (coAttainmentSheet) {
-      for (let i = 1; i <= 6; i++) {
-        const val = getCellValue(coAttainmentSheet.getCell(8 + i, 5));
-        if (val !== null && !isNaN(Number(val))) {
-          indirectAttainment[`CO${i}`] = { level: Number(val) };
-          console.log(`Indirect CO${i}: Level ${val}`);
-        }
-      }
-    }
-
-    if (Object.keys(indirectAttainment).length === 0 && cesSheet) {
-      for (let c = 2; c <= 7; c++) { // Columns B-G for CO1-CO6
-        const coVal = getCellValue(cesSheet.getCell(4, c));
-        const level = getCellValue(cesSheet.getCell(9, c));
-        if (coVal && !isNaN(Number(level))) {
-          let coNum = String(coVal).split('.')[1] || String(coVal).replace(/[^0-9]/g, '');
-          indirectAttainment[`CO${coNum}`] = { level: Number(level) };
-          console.log(`CES Indirect CO${coNum}: Level ${level}`);
-        }
-      }
-    }
-
-    console.log('--- Step 6: Combining CO Results ---');
+    console.log('--- Step 5: Combining CO Results ---');
     const iaWeight = (getCellValue(iaSheet.getCell('BG1')) || 40) / 100;
     const seeWeight = (getCellValue(iaSheet.getCell('BG2')) || 60) / 100;
     const directWeight = (getCellValue(iaSheet.getCell('BG3')) || 80) / 100;
@@ -500,16 +591,15 @@ exports.uploadAndCalculate = async (req, res) => {
 
     console.log('Weights:', { iaWeight, seeWeight, directWeight, indirectWeight });
 
-    const allCOs = new Set([...Object.keys(iaAttainment), ...Object.keys(seeAttainment), ...Object.keys(assignmentAttainment), ...Object.keys(indirectAttainment)]);
+    const allCOs = new Set([...Object.keys(iaAttainment), ...Object.keys(seeAttainment), ...Object.keys(assignmentAttainment)]);
     const finalCoResults = [];
 
     allCOs.forEach(co => {
       const iaLvl = iaAttainment[co]?.level || 0;
       const seeLvl = seeAttainment[co]?.level || 0;
       const assLvl = assignmentAttainment[co]?.level || 0;
-      const indLvl = indirectAttainment[co]?.level || 2; // Default to 2 if not found
+      const indLvl = 2; // Default starting indirect level
       
-      // Formative assessment average of IA and Assignments (if both exist)
       let formative = iaLvl;
       if (assLvl > 0 && iaLvl > 0) {
         formative = (iaLvl + assLvl) / 2;
@@ -520,18 +610,6 @@ exports.uploadAndCalculate = async (req, res) => {
       const direct = (iaWeight * formative) + (seeWeight * seeLvl);
       const overall = (directWeight * direct) + (indirectWeight * indLvl);
 
-      // Add or update to subject COs
-      const existingCoIndex = subject.courseOutcomes.findIndex(c => c.coNumber === co);
-      if (existingCoIndex >= 0) {
-        subject.courseOutcomes[existingCoIndex].attainment = Number(overall.toFixed(2));
-      } else {
-        subject.courseOutcomes.push({
-          coNumber: co,
-          description: 'Auto-generated during upload',
-          attainment: Number(overall.toFixed(2))
-        });
-      }
-
       finalCoResults.push({
         coNumber: co,
         iaLevel: iaLvl,
@@ -541,8 +619,6 @@ exports.uploadAndCalculate = async (req, res) => {
         indirectAttainment: indLvl,
         overallAttainment: Number(overall.toFixed(2))
       });
-      
-      console.log(`${co}: IA=${iaLvl}, SEE=${seeLvl}, Assignment=${assLvl}, Indirect=${indLvl} -> Direct=${direct.toFixed(2)}, Overall=${overall.toFixed(2)}`);
     });
 
     // --- Calculate PO Attainment ---
@@ -570,13 +646,6 @@ exports.uploadAndCalculate = async (req, res) => {
           const poIndirect = Number((sumIndirect / countMapped).toFixed(2));
           const poAtt = Number((directWeight * poDirect + indirectWeight * poIndirect).toFixed(2));
 
-          const existingPoIndex = subject.poAttainments.findIndex(p => p.poNumber === po);
-          if (existingPoIndex >= 0) {
-            subject.poAttainments[existingPoIndex].attainment = poAtt;
-          } else {
-            subject.poAttainments.push({ poNumber: po, attainment: poAtt });
-          }
-
           finalPoResults.push({
             poNumber: po,
             attainment: poAtt,
@@ -589,74 +658,19 @@ exports.uploadAndCalculate = async (req, res) => {
 
     console.log('PO Results:', finalPoResults);
 
-    // --- Save Results Back to Workbook ---
-    const coSheet = workbook.getWorksheet('CO Attainment');
-    if (coSheet) {
-      // Write weights for documentation
-      coSheet.getCell('D7').value = directWeight;
-      coSheet.getCell('E7').value = indirectWeight;
-
-      finalCoResults.forEach(res => {
-        const coIdx = parseInt(res.coNumber.replace(/co/i, ''));
-        if (coIdx >= 1 && coIdx <= 6) {
-          // Standard CO Attainment Table
-          coSheet.getCell(8 + coIdx, 4).value = res.directAttainment; // Col D
-          coSheet.getCell(8 + coIdx, 5).value = res.indirectAttainment; // Col E
-          coSheet.getCell(8 + coIdx, 6).value = res.overallAttainment; // Col F
-
-          // Detailed Levels for Verification (Cols G, H, I)
-          coSheet.getCell(8 + coIdx, 7).value = res.iaLevel;
-          coSheet.getCell(8 + coIdx, 8).value = res.assignmentLevel;
-          coSheet.getCell(8 + coIdx, 9).value = res.seeLevel;
-        }
-      });
-      
-      // Add headers for the new columns
-      coSheet.getCell(8, 7).value = 'IA Level';
-      coSheet.getCell(8, 8).value = 'Ass. Level';
-      coSheet.getCell(8, 9).value = 'SEE Level';
-    }
-
-    const poSheet = workbook.getWorksheet('PO ATTAINMENT');
-    if (poSheet) {
-      finalPoResults.forEach(res => {
-        const poMatch = res.poNumber.match(/PO(\d+)/i);
-        if (poMatch) {
-          const poIdx = parseInt(poMatch[1]);
-          if (poIdx >= 1 && poIdx <= 12) {
-            poSheet.getCell(20, 1 + poIdx).value = res.attainment; // Row 20 has the final attainment
-          }
-        }
-        // Also handle PSOs if they are in row 21?
-        const psoMatch = res.poNumber.match(/PSO(\d+)/i);
-        if (psoMatch) {
-          const psoIdx = parseInt(psoMatch[1]);
-          if (psoIdx >= 1 && psoIdx <= 3) {
-            poSheet.getCell(21, 1 + psoIdx).value = res.attainment;
-          }
-        }
-      });
-    }
-
-    // Save the subject with new attainments
-    await subject.save();
-
-    // Send back the results
     res.json({
       success: true,
-      message: 'CO-PO Attainment calculated and saved successfully!',
+      message: 'CO-PO Attainment calculated successfully!',
       results: {
         coAttainments: finalCoResults,
-        poAttainments: finalPoResults
+        poAttainments: finalPoResults,
+        studentCount: studentCount,
+        coPoMappings: subject.coPoMappings
       }
     });
 
   } catch (error) {
-    console.error('CRITICAL ERROR in uploadAndCalculate:', {
-      message: error.message,
-      stack: error.stack,
-      subjectId: req.body.subjectId
-    });
+    console.error('CRITICAL ERROR in uploadAndCalculate:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Server error processing file', 
@@ -667,46 +681,259 @@ exports.uploadAndCalculate = async (req, res) => {
 
 exports.exportWithResults = async (req, res) => {
   try {
-    const { subjectId } = req.body;
-    if (!req.file || !subjectId) {
-      return res.status(400).json({ success: false, message: 'File and subjectId are required' });
+    const { subjectId, academicYear, facultyName, branch, semester } = req.body;
+    const iaFileArray = req.files ? req.files['iaFile'] : null;
+    const seeFileArray = req.files ? req.files['seeFile'] : null;
+
+    if (!iaFileArray || !seeFileArray || iaFileArray.length === 0 || seeFileArray.length === 0) {
+      return res.status(400).json({ success: false, message: 'Both IA Marks and SEE Marks files are required' });
     }
 
-    const subject = await Subject.findById(subjectId);
+    const iaFileBuffer = iaFileArray[0].buffer;
+    const seeFileBuffer = seeFileArray[0].buffer;
+
+    const subject = await Subject.findById(subjectId).populate('branch');
+    if (!subject) {
+      return res.status(404).json({ success: false, message: 'Subject not found' });
+    }
+
+    const iaWorkbook = new ExcelJS.Workbook();
+    await iaWorkbook.xlsx.load(iaFileBuffer);
+    const uploadedIaSheet = iaWorkbook.getWorksheet('IA Marks');
+
+    const seeWorkbook = new ExcelJS.Workbook();
+    await seeWorkbook.xlsx.load(seeFileBuffer);
+    const uploadedSeeSheet = seeWorkbook.getWorksheet('SEE Marks');
+
+    if (!uploadedIaSheet || !uploadedSeeSheet) {
+      return res.status(400).json({ success: false, message: 'Invalid template structure. Missing IA Marks or SEE Marks sheet.' });
+    }
+
+    // Load base template to compile everything
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(req.file.buffer);
+    await workbook.xlsx.readFile(TEMPLATE_PATH);
 
-    // Parse results from request body
-    const results = JSON.parse(req.body.results);
+    const iaSheet = workbook.getWorksheet('IA Marks');
+    const seeSheet = workbook.getWorksheet('SEE Marks');
 
-    const coSheet = workbook.getWorksheet('CO Attainment');
-    if (coSheet && results.coAttainments) {
+    // Copy data to base template
+    copySheetData(uploadedIaSheet, iaSheet, 59);
+    copySheetData(uploadedSeeSheet, seeSheet, 34);
+
+    // Calculate studentCount dynamically from copied data
+    let studentCount = 0;
+    let scanRow = 13;
+    while (iaSheet.getCell(scanRow, 2).value) {
+      studentCount++;
+      scanRow++;
+    }
+
+    // Write correct dynamic headers to the base template
+    const branchName = branch || subject.branch?.name || "";
+    const semVal = semester || subject.semester;
+    const formattedBranch = formatBranchName(branchName);
+
+    if (facultyName) iaSheet.getCell('J5').value = facultyName;
+    iaSheet.getCell('N4').value = academicYear || "2024-2025";
+    iaSheet.getCell('AC4').value = semVal;
+    iaSheet.getCell('AP4').value = subject.code;
+    iaSheet.getCell('AY4').value = studentCount;
+    iaSheet.getCell('AI5').value = subject.name;
+    iaSheet.getCell('D3').value = formattedBranch;
+
+    if (facultyName) seeSheet.getCell('I5').value = facultyName;
+    seeSheet.getCell('L4').value = academicYear || "2024-2025";
+    seeSheet.getCell('AB4').value = semVal;
+    seeSheet.getCell('AM4').value = subject.code;
+    seeSheet.getCell('AV4').value = studentCount;
+    seeSheet.getCell('AF5').value = subject.name;
+    seeSheet.getCell('D3').value = formattedBranch;
+
+    // Inject formulas into base sheets
+    const validCOs = subject?.courseOutcomes?.map(co => parseInt(co.coNumber.replace(/co/i, ''))).filter(n => !isNaN(n)) || [1,2,3,4,5,6];
+    const sheetsToSetup = [iaSheet, seeSheet];
+    
+    for (const sheet of sheetsToSetup) {
+      let currentRow = 13;
+      let index = 1;
+      const maxQCol = sheet.name === 'IA Marks' ? 'BG' : 'AH';
+      
+      while (sheet.getCell(currentRow, 2).value) {
+        sheet.getCell(`A${currentRow}`).value = index++;
+        
+        for (let i = 1; i <= 6; i++) {
+          if (validCOs.includes(i)) {
+            const startCol = sheet.name === 'IA Marks' ? 61 + (i - 1) * 3 : 35 + (i - 1) * 3;
+            const sumColLetter = sheet.getColumn(startCol).letter;
+            const countColLetter = sheet.getColumn(startCol + 1).letter;
+            
+            sheet.getCell(currentRow, startCol).value = { formula: `SUMIF($D$7:$${maxQCol}$7,"CO${i}",$D${currentRow}:$${maxQCol}${currentRow})` };
+            sheet.getCell(currentRow, startCol + 1).value = { formula: `SUMIFS($D$9:$${maxQCol}$9,$D$7:$${maxQCol}$7,"CO${i}",$D${currentRow}:$${maxQCol}${currentRow},">"&-1)` };
+            sheet.getCell(currentRow, startCol + 2).value = { formula: `ROUNDUP(IF(${countColLetter}${currentRow},${sumColLetter}${currentRow}/${countColLetter}${currentRow}%,0),2)` };
+          }
+        }
+        currentRow++;
+      }
+
+      const finalRow = Math.max(200, currentRow - 1);
+      for (let i = 1; i <= 6; i++) {
+        if (validCOs.includes(i)) {
+          const startCol = sheet.name === 'IA Marks' ? 61 + (i - 1) * 3 : 35 + (i - 1) * 3;
+          const sumColLetter = sheet.getColumn(startCol).letter;
+          const percColLetter = sheet.getColumn(startCol + 2).letter;
+          
+          sheet.getCell(11, startCol).value = { formula: `COUNTIF(${sumColLetter}13:${sumColLetter}${finalRow},">"&0)` };
+          sheet.getCell(11, startCol + 2).value = { formula: `COUNTIF(${percColLetter}13:${percColLetter}${finalRow},">="&Z5)` };
+        }
+      }
+
+      for (let i = 1; i <= 6; i++) {
+        if (!validCOs.includes(i)) {
+          const startCol = sheet.name === 'IA Marks' ? 61 + (i - 1) * 3 : 35 + (i - 1) * 3;
+          sheet.getColumn(startCol).hidden = true;
+          sheet.getColumn(startCol + 1).hidden = true;
+          sheet.getColumn(startCol + 2).hidden = true;
+          
+          sheet.getCell(8, startCol).value = null;
+          sheet.getCell(8, startCol + 1).value = null;
+          sheet.getCell(8, startCol + 2).value = null;
+        }
+      }
+    }
+
+    const getCellValue = (cell) => {
+      if (!cell) return null;
+      let val = cell.value;
+      if (val && typeof val === 'object' && val.result !== undefined) {
+        val = val.result;
+      }
+      if (typeof val === 'string' && val.includes('%')) {
+        val = val.replace('%', '').trim();
+      }
+      return val;
+    };
+
+    // Hide invalid COs in PO ATTAINMENT and CO Attainment
+    const poSheet = workbook.getWorksheet('PO ATTAINMENT');
+    if (poSheet) {
+      for(let r = 9; r <= 14; r++) {
+        for(let c = 2; c <= 13; c++) {
+          poSheet.getCell(r, c).value = null;
+        }
+      }
+      subject.coPoMappings.forEach(mapping => {
+        const coIdx = parseInt(String(mapping.coNumber).replace(/co/i, '')) || 0;
+        const poIdx = parseInt(String(mapping.poNumber).replace(/po/i, '')) || 0;
+        if (coIdx >= 1 && coIdx <= 6 && poIdx >= 1 && poIdx <= 12) {
+          poSheet.getCell(8 + coIdx, 1 + poIdx).value = mapping.strength;
+        }
+      });
+      for (let i = 1; i <= 6; i++) {
+        if (!validCOs.includes(i)) {
+          poSheet.getRow(8 + i).hidden = true;
+          poSheet.getRow(23 + i).hidden = true;
+        } else {
+          poSheet.getCell(8 + i, 1).value = `CO${i}`;
+        }
+      }
+    }
+
+    const coAttainmentSheet = workbook.getWorksheet('CO Attainment');
+    if (coAttainmentSheet) {
+      for (let i = 1; i <= 6; i++) {
+        if (!validCOs.includes(i)) {
+          coAttainmentSheet.getRow(8 + i).hidden = true;
+        } else {
+          coAttainmentSheet.getCell(8 + i, 1).value = `CO${i}`;
+        }
+      }
+      coAttainmentSheet.getCell('D15').formula = 'IFERROR(ROUNDUP(AVERAGEIF(D9:D14, ">0"),2),"")';
+      coAttainmentSheet.getCell('E15').formula = 'IFERROR(ROUNDUP(AVERAGEIF(E9:E14, ">0"),2),"")';
+      coAttainmentSheet.getCell('F15').formula = 'IFERROR(ROUNDUP(AVERAGEIF(F9:F14, ">0"),2),"")';
+    }
+
+    const results = JSON.parse(req.body.results || '{}');
+    const uiData = JSON.parse(req.body.uiData || '{}');
+
+    const directWeight = (getCellValue(iaSheet.getCell('BG3')) || 80) / 100;
+    const indirectWeight = (getCellValue(iaSheet.getCell('BG4')) || 20) / 100;
+
+    // 1. Course End Survey (CES)
+    const cesSheet = workbook.getWorksheet('Course End Survey (CES)');
+    if (cesSheet && uiData.cesCounts) {
+      for (let i = 1; i <= 6; i++) {
+        const coKey = `CO${i}`;
+        const counts = uiData.cesCounts[coKey] || { rating1: 0, rating2: 0, rating3: 0 };
+        cesSheet.getCell(10, 1 + i).value = Number(counts.rating1) || 0;
+        cesSheet.getCell(11, 1 + i).value = Number(counts.rating2) || 0;
+        cesSheet.getCell(12, 1 + i).value = Number(counts.rating3) || 0;
+      }
+    }
+
+    // 2. CO Attainment Sheet
+    if (coAttainmentSheet && results.coAttainments) {
+      coAttainmentSheet.getCell('D7').value = directWeight;
+      coAttainmentSheet.getCell('E7').value = indirectWeight;
+
       results.coAttainments.forEach(res => {
         const coIdx = parseInt(res.coNumber.replace(/co/i, ''));
         if (coIdx >= 1 && coIdx <= 6) {
-          coSheet.getCell(8 + coIdx, 4).value = res.directAttainment;
-          coSheet.getCell(8 + coIdx, 5).value = res.indirectAttainment;
-          coSheet.getCell(8 + coIdx, 6).value = res.overallAttainment;
+          coAttainmentSheet.getCell(8 + coIdx, 4).value = res.directAttainment;
           
-          // Added detailed levels
-          coSheet.getCell(8 + coIdx, 7).value = res.iaLevel;
-          coSheet.getCell(8 + coIdx, 8).value = res.assignmentLevel;
-          coSheet.getCell(8 + coIdx, 9).value = res.seeLevel;
+          const indLevel = (uiData.manualIndirect && uiData.manualIndirect[res.coNumber] !== undefined)
+            ? Number(uiData.manualIndirect[res.coNumber])
+            : res.indirectAttainment;
+
+          coAttainmentSheet.getCell(8 + coIdx, 5).value = indLevel;
+          
+          const overallVal = Number((directWeight * res.directAttainment + indirectWeight * indLevel).toFixed(2));
+          coAttainmentSheet.getCell(8 + coIdx, 6).value = overallVal;
+          
+          coAttainmentSheet.getCell(8 + coIdx, 7).value = res.iaLevel;
+          coAttainmentSheet.getCell(8 + coIdx, 8).value = res.assignmentLevel;
+          coAttainmentSheet.getCell(8 + coIdx, 9).value = res.seeLevel;
+
+          // Update Subject Model
+          const existingCoIndex = subject.courseOutcomes.findIndex(c => c.coNumber === res.coNumber);
+          if (existingCoIndex >= 0) {
+            subject.courseOutcomes[existingCoIndex].attainment = overallVal;
+          }
         }
       });
-      // Headers
-      coSheet.getCell(8, 7).value = 'IA Level';
-      coSheet.getCell(8, 8).value = 'Ass. Level';
-      coSheet.getCell(8, 9).value = 'SEE Level';
+      coAttainmentSheet.getCell(8, 7).value = 'IA Level';
+      coAttainmentSheet.getCell(8, 8).value = 'Ass. Level';
+      coAttainmentSheet.getCell(8, 9).value = 'SEE Level';
+
+      subject.markModified('courseOutcomes');
     }
 
-    const poSheet = workbook.getWorksheet('PO ATTAINMENT');
+    // 3. PO Attainment Sheet
     if (poSheet && results.poAttainments) {
+      // Clear shared formulas in row 18, 19, 20 to prevent ExcelJS prep error
+      for (let c = 2; c <= 16; c++) {
+        const cell18 = poSheet.getCell(18, c);
+        cell18.value = null;
+        cell18.formula = undefined;
+        cell18.sharedFormula = undefined;
+
+        const cell19 = poSheet.getCell(19, c);
+        cell19.value = null;
+        cell19.formula = undefined;
+        cell19.sharedFormula = undefined;
+
+        const cell20 = poSheet.getCell(20, c);
+        cell20.value = null;
+        cell20.formula = undefined;
+        cell20.sharedFormula = undefined;
+      }
+
       results.poAttainments.forEach(res => {
         const poMatch = res.poNumber.match(/PO(\d+)/i);
         if (poMatch) {
           const poIdx = parseInt(poMatch[1]);
           if (poIdx >= 1 && poIdx <= 12) {
+            poSheet.getCell(18, 1 + poIdx).value = res.directAttainment;
+            poSheet.getCell(19, 1 + poIdx).value = res.indirectAttainment;
             poSheet.getCell(20, 1 + poIdx).value = res.attainment;
           }
         }
@@ -714,14 +941,67 @@ exports.exportWithResults = async (req, res) => {
         if (psoMatch) {
           const psoIdx = parseInt(psoMatch[1]);
           if (psoIdx >= 1 && psoIdx <= 3) {
-            poSheet.getCell(21, 1 + psoIdx).value = res.attainment;
+            poSheet.getCell(18, 13 + psoIdx).value = res.directAttainment;
+            poSheet.getCell(19, 13 + psoIdx).value = res.indirectAttainment;
+            poSheet.getCell(20, 13 + psoIdx).value = res.attainment;
           }
         }
+
+        const existingPoIndex = subject.poAttainments.findIndex(p => p.poNumber === res.poNumber);
+        if (existingPoIndex >= 0) {
+          subject.poAttainments[existingPoIndex].attainment = res.attainment;
+        } else {
+          subject.poAttainments.push({ poNumber: res.poNumber, attainment: res.attainment });
+        }
       });
+      subject.markModified('poAttainments');
+    }
+
+    await subject.save();
+
+    // 4. Action Plan Sheet
+    const actionPlanSheet = workbook.getWorksheet('Action Plan');
+    if (actionPlanSheet) {
+      if (uiData.actionPlan) {
+        for (let i = 1; i <= 6; i++) {
+          const coKey = `CO${i}`;
+          const plan = uiData.actionPlan[coKey];
+          if (plan) {
+            actionPlanSheet.getCell(7 + i, 2).value = plan.target !== undefined ? Number(plan.target) : null;
+            actionPlanSheet.getCell(7 + i, 5).value = plan.observation || '';
+            actionPlanSheet.getCell(7 + i, 6).value = plan.action || '';
+          }
+        }
+      }
+      if (uiData.caym1Actions && Array.isArray(uiData.caym1Actions)) {
+        uiData.caym1Actions.forEach((item, idx) => {
+          if (idx < 7) {
+            actionPlanSheet.getCell(16 + idx, 5).value = item.action || '';
+            actionPlanSheet.getCell(16 + idx, 6).value = item.change || '';
+          }
+        });
+      }
+    }
+
+    // 5. PO Attainment Action Plan Sheet
+    const poActionPlanSheet = workbook.getWorksheet('PO Attainment Action Plan');
+    if (poActionPlanSheet && uiData.poActionPlan) {
+      for (let i = 1; i <= 12; i++) {
+        const poKey = `PO${i}`;
+        if (uiData.poActionPlan[poKey] !== undefined) {
+          poActionPlanSheet.getCell(7 + i, 5).value = uiData.poActionPlan[poKey] || '';
+        }
+      }
+      for (let i = 1; i <= 3; i++) {
+        const psoKey = `PSO${i}`;
+        if (uiData.poActionPlan[psoKey] !== undefined) {
+          poActionPlanSheet.getCell(19 + i, 5).value = uiData.poActionPlan[psoKey] || '';
+        }
+      }
     }
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=Calculated_COPO_Results.xlsx`);
+    res.setHeader('Content-Disposition', `attachment; filename=Final_COPO_Report_${subject.code}.xlsx`);
     workbook.calcProperties.fullCalcOnLoad = true;
     await workbook.xlsx.write(res);
     res.end();
