@@ -670,7 +670,7 @@ const MyFacultyTimeTable = ({ facultyId, isHODView = false }) => {
         sessionStorage.removeItem("substitutingForLeaveId");
         sessionStorage.removeItem("substitutingForFacultyId");
         setLeaveContext(null);
-        toast.success("Substitution process completed! Leave confirmed.");
+        toast.success("Substitution process completed! Pending HOD approval.");
         
         fetchFacultyData();
       } catch (error) {

@@ -11,3 +11,4 @@ router.put("/update/:id", updateHandler);
 router.delete("/delete/:id", deleteHandler);
 
 module.exports = router;
+

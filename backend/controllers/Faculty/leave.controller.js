@@ -91,6 +91,10 @@ const approveLeave = async (req, res) => {
       return res.status(404).json({ success: false, message: "Leave not found" });
     }
 
+    if (!leave.substituteId) {
+      return res.status(400).json({ success: false, message: "Substitution is not done yet. Faculty must assign a substitute before HOD approval." });
+    }
+
     leave.status = "approved_by_hod";
     leave.hodApprovedAt = new Date();
     leave.hodApprovedBy = approvedBy;
@@ -154,7 +158,7 @@ const approveLeaveByPrincipal = async (req, res) => {
     }
 
     const normalizedId = leave.facultyId.trim().toUpperCase();
-    leave.status = "approved_by_principal";
+    leave.status = "confirmed";
     leave.principalApprovedAt = new Date();
     leave.principalApprovedBy = approvedBy;
     await leave.save();
@@ -275,7 +279,6 @@ const assignSubstitute = async (req, res) => {
 
     leave.substituteId = substituteId;
     leave.substituteName = substituteName;
-    leave.status = "confirmed";
     await leave.save();
 
     // Now create Substitution records for the timetable

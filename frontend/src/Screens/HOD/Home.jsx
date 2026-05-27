@@ -130,17 +130,36 @@ const HODHome = () => {
                         <div className="flex items-center space-x-3 mb-2">
                           <span className="text-lg font-bold text-gray-800">{leave.facultyName}</span>
                           <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded font-medium">{leave.leaveType}</span>
+                          {leave.substituteId ? (
+                            <span className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded font-medium border border-green-100">Substitution Done</span>
+                          ) : (
+                            <span className="bg-rose-50 text-rose-700 text-xs px-2 py-1 rounded font-medium border border-rose-100 animate-pulse">Substitution Pending</span>
+                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-600">
                           <p><span className="font-semibold">Duration:</span> {leave.dates.length} days ({leave.startDate} to {leave.endDate})</p>
                           <p><span className="font-semibold">ID:</span> {leave.facultyId}</p>
                           <p className="col-span-2"><span className="font-semibold">Reason:</span> {leave.reason}</p>
+                          {leave.substituteName && (
+                            <p className="col-span-2 text-xs font-semibold text-green-600 italic">Substitute: {leave.substituteName}</p>
+                          )}
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-0 sm:ml-6">
                         <button 
-                          onClick={() => handleApprove(leave._id)}
-                          className="flex items-center justify-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-sm text-sm"
+                          onClick={() => {
+                            if (!leave.substituteId) {
+                              toast.error("Substitution is not done yet. Faculty must assign a substitute.");
+                              return;
+                            }
+                            handleApprove(leave._id);
+                          }}
+                          disabled={!leave.substituteId}
+                          className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition-colors shadow-sm text-sm ${
+                            leave.substituteId 
+                              ? "bg-green-500 text-white hover:bg-green-600 cursor-pointer" 
+                              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          }`}
                         >
                           <FiCheckCircle /> <span>Approve</span>
                         </button>

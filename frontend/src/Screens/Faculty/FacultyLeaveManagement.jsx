@@ -313,14 +313,21 @@ const FacultyLeaveManagement = ({ onClose, onSuccess, setSelectedMenu }) => {
                 <p className="font-bold">{record.leaveType} ({record.dates.length} days)</p>
                 <p className="text-sm text-gray-600">{record.startDate} to {record.endDate}</p>
                 <p className="text-sm italic">"{record.reason}"</p>
-                <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(record.status)}`}>
-                  {record.status.replace(/_/g, ' ').toUpperCase()}
-                </span>
-                {record.substituteName && <p className="text-xs mt-1">Substitute: {record.substituteName}</p>}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(record.status)}`}>
+                    {record.status.replace(/_/g, ' ').toUpperCase()}
+                  </span>
+                  {record.status === "pending" && (
+                    <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${record.substituteId ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}`}>
+                      {record.substituteId ? 'SUBSTITUTION COMPLETED' : 'SUBSTITUTION PENDING'}
+                    </span>
+                  )}
+                </div>
+                {record.substituteName && <p className="text-xs mt-2 font-medium text-gray-700">Substitute: {record.substituteName}</p>}
                 {record.rejectionReason && <p className="text-xs text-red-600 mt-1 font-bold">Rejected: {record.rejectionReason}</p>}
               </div>
               <div className="flex flex-col space-y-2">
-                {record.status === "approved_by_principal" && (
+                {record.status === "pending" && !record.substituteId && (
                   <button
                     onClick={() => {
                       // Store leave context and redirect
@@ -335,7 +342,7 @@ const FacultyLeaveManagement = ({ onClose, onSuccess, setSelectedMenu }) => {
 
                       setSelectedMenu("MyFacultyTimeTable");
                     }}
-                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 font-semibold"
                   >
                     Assign Substitute
                   </button>
