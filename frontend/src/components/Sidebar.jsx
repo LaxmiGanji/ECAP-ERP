@@ -71,7 +71,6 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Material", label: "Material", icon: FiBookOpen, color: "from-teal-500 to-teal-600" },
           { id: "Attendence", label: "Attendance", icon: FiGrid, color: "from-red-500 to-red-600" },
           { id: "Edit Faculty", label: "Edit Faculty", icon: FiGrid, color: "from-red-500 to-red-600" },
-          { id: "CO Attainment", label: "CO Attainment", icon: MdOutlineSubject, color: "from-indigo-500 to-indigo-600" },
           { id: "Final CO/PO Attainment", label: "Final CO/PO Attainment", icon: MdOutlineSubject, color: "from-purple-500 to-purple-600" },
           { id: "Leave Management", label: "Leave Management", icon: FiCalendar, color: "from-indigo-500 to-indigo-600" },
           { id: "DailyAttendance", label: "Daily Attendance", icon: FiClock, color: "from-orange-500 to-amber-600" }

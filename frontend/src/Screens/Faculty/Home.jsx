@@ -15,7 +15,6 @@ import Marks from "./Marks";
 import Student from "./Student";
 import Attendence from "./Attendence";
 import EditFaculty from "./EditFaculty";
-import COAttainment from "./COAttainment";
 import FinalCOPOAttainment from "./FinalCOPOAttainment";
 import MyFacultyTimeTable from "./MyFacultyTimeTable";
 import FacultyLeaveManagement from "./FacultyLeaveManagement";
@@ -77,8 +76,6 @@ const Home = () => {
         return <Attendence />;
       case "Edit Faculty":
         return <EditFaculty />; // ✅ Added case for EditFaculty
-      case "CO Attainment":
-        return <COAttainment />;
       case "Final CO/PO Attainment":
         return <FinalCOPOAttainment />;
       case "Leave Management":
