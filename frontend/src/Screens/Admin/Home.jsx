@@ -21,6 +21,8 @@ import Timetables from "./Timetables";
 import Reports from "./Reports";
 import OBEConfig from "./OBE/OBEConfig";
 import OBEReports from "./OBE/OBEReports";
+import GeofenceSetup from "./GeofenceSetup";
+import DailyFacultyAttendance from "./DailyFacultyAttendance";
 
 const Home = () => {
   const router = useLocation();
@@ -123,6 +125,10 @@ const Home = () => {
         return <OBEReports />;
       case "Transport Incharge":
         return <TransportIncharge />;
+      case "GeofenceSetup":
+        return <GeofenceSetup />;
+      case "DailyFacultyAttendance":
+        return <DailyFacultyAttendance />;
       default:
         return <Profile />;
     }

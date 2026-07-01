@@ -55,6 +55,12 @@ exports.generateTemplate = async (req, res) => {
     // Process IA Marks Sheet
     const iaSheet = workbook.getWorksheet('IA Marks');
     if (iaSheet) {
+      try {
+        iaSheet.unMergeCells('AK6:AZ6');
+      } catch (err) {}
+      try {
+        iaSheet.unMergeCells('AK7:AZ135');
+      } catch (err) {}
       if (facultyName) iaSheet.getCell('J5').value = facultyName;
       iaSheet.getCell('N4').value = academicYear || "2024-2025";
       iaSheet.getCell('AC4').value = semester;
@@ -70,10 +76,13 @@ exports.generateTemplate = async (req, res) => {
         iaSheet.getCell(9, c).value = null; // Max Marks
       }
 
-      // Inject IA Questions from UI (D-AZ)
+      // Inject IA Questions from UI (D-AZ, jumping over AK-AR (37-44))
       if (iaQuestions && Array.isArray(iaQuestions)) {
         let currentCol = 4; // Start at column D
         for (const q of iaQuestions) {
+          if (currentCol === 37) {
+            currentCol = 45; // Jump AK-AR
+          }
           if (currentCol > 52) break; // Limit IA to AZ
           const coNum = String(q.co).replace(/co/i, '').trim();
           iaSheet.getCell(7, currentCol).value = `CO${coNum}`;
@@ -82,6 +91,57 @@ exports.generateTemplate = async (req, res) => {
           currentCol++;
         }
       }
+
+      // Inject JNTU IA-1 / IA-2 DES, OBJ, ASSIGN, and TOTAL columns
+      // IA-1:
+      // AK (37): IA-1 DES
+      iaSheet.getCell(6, 37).value = "IA-1";
+      iaSheet.getCell(7, 37).value = "";
+      iaSheet.getCell(8, 37).value = "DES (20)";
+      iaSheet.getCell(9, 37).value = 20;
+
+      // AL (38): IA-1 OBJ
+      iaSheet.getCell(6, 38).value = "IA-1";
+      iaSheet.getCell(7, 38).value = "";
+      iaSheet.getCell(8, 38).value = "OBJ (10)";
+      iaSheet.getCell(9, 38).value = 10;
+
+      // AM (39): IA-1 ASSIGN
+      iaSheet.getCell(6, 39).value = "IA-1";
+      iaSheet.getCell(7, 39).value = "";
+      iaSheet.getCell(8, 39).value = "ASSIGN/SPA (05)";
+      iaSheet.getCell(9, 39).value = 5;
+
+      // AN (40): IA-1 TOTAL
+      iaSheet.getCell(6, 40).value = "IA-1";
+      iaSheet.getCell(7, 40).value = "";
+      iaSheet.getCell(8, 40).value = "TOTAL MARKS (35)";
+      iaSheet.getCell(9, 40).value = 35;
+
+      // IA-2:
+      // AO (41): IA-2 DES
+      iaSheet.getCell(6, 41).value = "IA-2";
+      iaSheet.getCell(7, 41).value = "";
+      iaSheet.getCell(8, 41).value = "DES (20)";
+      iaSheet.getCell(9, 41).value = 20;
+
+      // AP (42): IA-2 OBJ
+      iaSheet.getCell(6, 42).value = "IA-2";
+      iaSheet.getCell(7, 42).value = "";
+      iaSheet.getCell(8, 42).value = "OBJ (10)";
+      iaSheet.getCell(9, 42).value = 10;
+
+      // AQ (43): IA-2 ASSIGN
+      iaSheet.getCell(6, 43).value = "IA-2";
+      iaSheet.getCell(7, 43).value = "";
+      iaSheet.getCell(8, 43).value = "ASSIGN/SPA (05)";
+      iaSheet.getCell(9, 43).value = 5;
+
+      // AR (44): IA-2 TOTAL
+      iaSheet.getCell(6, 44).value = "IA-2";
+      iaSheet.getCell(7, 44).value = "";
+      iaSheet.getCell(8, 44).value = "TOTAL MARKS (35)";
+      iaSheet.getCell(9, 44).value = 35;
 
       // Inject Assignment (CIA) Questions from UI (BA-BG)
       const safeAssQs = Array.isArray(assignmentQuestions) ? assignmentQuestions : [];
@@ -229,6 +289,19 @@ exports.generateTemplate = async (req, res) => {
             sheet.getCell(currentRow, startCol + 2).value = { formula: `ROUNDUP(IF(${countColLetter}${currentRow},${sumColLetter}${currentRow}/${countColLetter}${currentRow}%,0),2)` };
           }
         }
+
+        // Dynamically inject custom IA formulas for DES, OBJ, ASSIGN, and TOTAL
+        if (sheet.name === 'IA Marks') {
+          // IA-1 DES (AK)
+          sheet.getCell(`AK${currentRow}`).value = { formula: `SUM(D${currentRow}:S${currentRow})` };
+          // IA-1 TOTAL (AN)
+          sheet.getCell(`AN${currentRow}`).value = { formula: `AK${currentRow}+AL${currentRow}+AM${currentRow}` };
+          
+          // IA-2 DES (AO)
+          sheet.getCell(`AO${currentRow}`).value = { formula: `SUM(U${currentRow}:AJ${currentRow})` };
+          // IA-2 TOTAL (AR)
+          sheet.getCell(`AR${currentRow}`).value = { formula: `AO${currentRow}+AP${currentRow}+AQ${currentRow}` };
+        }
         
         currentRow++;
       }
@@ -327,34 +400,20 @@ const copySheetData = (srcSheet, destSheet, maxColIndex) => {
 exports.uploadAndCalculate = async (req, res) => {
   try {
     const { subjectId } = req.body;
-    const iaFileArray = req.files ? req.files['iaFile'] : null;
-    const seeFileArray = req.files ? req.files['seeFile'] : null;
+    const iaFileArray = req.files && req.files['iaFile'] ? req.files['iaFile'] : null;
+    const seeFileArray = req.files && req.files['seeFile'] ? req.files['seeFile'] : null;
 
-    if (!iaFileArray || !seeFileArray || iaFileArray.length === 0 || seeFileArray.length === 0) {
-      return res.status(400).json({ success: false, message: 'Both IA Marks and SEE Marks files are required' });
+    if (!iaFileArray && !seeFileArray) {
+      return res.status(400).json({ success: false, message: 'At least one of IA Marks or SEE Marks files is required' });
     }
 
-    const iaFileBuffer = iaFileArray[0].buffer;
-    const seeFileBuffer = seeFileArray[0].buffer;
-
-    const subject = await Subject.findById(subjectId);
+    const subject = await Subject.findById(subjectId).populate('branch');
     if (!subject) {
       return res.status(404).json({ success: false, message: 'Subject not found' });
     }
 
     console.log('--- Step 1: Loading Workbooks ---');
-    const iaWorkbook = new ExcelJS.Workbook();
-    await iaWorkbook.xlsx.load(iaFileBuffer);
-    const uploadedIaSheet = iaWorkbook.getWorksheet('IA Marks');
-
-    const seeWorkbook = new ExcelJS.Workbook();
-    await seeWorkbook.xlsx.load(seeFileBuffer);
-    const uploadedSeeSheet = seeWorkbook.getWorksheet('SEE Marks');
-
-    if (!uploadedIaSheet || !uploadedSeeSheet) {
-      return res.status(400).json({ success: false, message: 'Invalid template structure. Missing IA Marks or SEE Marks sheet.' });
-    }
-
+    
     // Load base template to run formulas properly
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(TEMPLATE_PATH);
@@ -362,9 +421,127 @@ exports.uploadAndCalculate = async (req, res) => {
     const iaSheet = workbook.getWorksheet('IA Marks');
     const seeSheet = workbook.getWorksheet('SEE Marks');
 
-    // Copy data to base template
-    copySheetData(uploadedIaSheet, iaSheet, 59);
-    copySheetData(uploadedSeeSheet, seeSheet, 34);
+    if (iaSheet) {
+      try {
+        iaSheet.unMergeCells('AK6:AZ6');
+      } catch (err) {}
+      try {
+        iaSheet.unMergeCells('AK7:AZ135');
+      } catch (err) {}
+    }
+
+    // Pre-populate student list in both sheets first from database
+    const branchName = subject.branch?.name || "";
+    const students = await StudentDetails.find({ branch: branchName, semester: subject.semester })
+      .sort({ enrollmentNo: 1 });
+
+    const START_ROW = 13;
+    const branchNameFormatted = formatBranchName(branchName);
+
+    const sheetsToPrepopulate = [iaSheet, seeSheet];
+    for (const sheet of sheetsToPrepopulate) {
+      if (!sheet) continue;
+      sheet.getCell('D3').value = branchNameFormatted;
+      let currentRow = START_ROW;
+      let index = 1;
+      const maxCol = sheet.name === 'IA Marks' ? 59 : 34;
+      for (const student of students) {
+        const studentName = `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.trim();
+        sheet.getCell(`A${currentRow}`).value = index++;
+        sheet.getCell(`B${currentRow}`).value = student.enrollmentNo;
+        sheet.getCell(`C${currentRow}`).value = studentName;
+        // Clear student marks columns to purge template dummy data
+        for (let c = 4; c <= maxCol; c++) {
+          sheet.getCell(currentRow, c).value = null;
+        }
+        currentRow++;
+      }
+    }
+
+    if (iaFileArray && iaFileArray.length > 0) {
+      const iaFileBuffer = iaFileArray[0].buffer;
+      const iaWorkbook = new ExcelJS.Workbook();
+      await iaWorkbook.xlsx.load(iaFileBuffer);
+      const uploadedIaSheet = iaWorkbook.getWorksheet('IA Marks');
+      if (uploadedIaSheet) {
+        copySheetData(uploadedIaSheet, iaSheet, 59);
+      }
+    } else {
+      // Clear question headers in iaSheet if not uploaded
+      for (let c = 4; c <= 59; c++) {
+        iaSheet.getCell(7, c).value = null;
+        iaSheet.getCell(8, c).value = null;
+        iaSheet.getCell(9, c).value = null;
+      }
+    }
+
+    // Always inject custom columns headers in iaSheet
+    // IA-1:
+    // AK (37): IA-1 DES
+    iaSheet.getCell(6, 37).value = "IA-1";
+    iaSheet.getCell(7, 37).value = "";
+    iaSheet.getCell(8, 37).value = "DES (20)";
+    iaSheet.getCell(9, 37).value = 20;
+
+    // AL (38): IA-1 OBJ
+    iaSheet.getCell(6, 38).value = "IA-1";
+    iaSheet.getCell(7, 38).value = "";
+    iaSheet.getCell(8, 38).value = "OBJ (10)";
+    iaSheet.getCell(9, 38).value = 10;
+
+    // AM (39): IA-1 ASSIGN
+    iaSheet.getCell(6, 39).value = "IA-1";
+    iaSheet.getCell(7, 39).value = "";
+    iaSheet.getCell(8, 39).value = "ASSIGN/SPA (05)";
+    iaSheet.getCell(9, 39).value = 5;
+
+    // AN (40): IA-1 TOTAL
+    iaSheet.getCell(6, 40).value = "IA-1";
+    iaSheet.getCell(7, 40).value = "";
+    iaSheet.getCell(8, 40).value = "TOTAL MARKS (35)";
+    iaSheet.getCell(9, 40).value = 35;
+
+    // IA-2:
+    // AO (41): IA-2 DES
+    iaSheet.getCell(6, 41).value = "IA-2";
+    iaSheet.getCell(7, 41).value = "";
+    iaSheet.getCell(8, 41).value = "DES (20)";
+    iaSheet.getCell(9, 41).value = 20;
+
+    // AP (42): IA-2 OBJ
+    iaSheet.getCell(6, 42).value = "IA-2";
+    iaSheet.getCell(7, 42).value = "";
+    iaSheet.getCell(8, 42).value = "OBJ (10)";
+    iaSheet.getCell(9, 42).value = 10;
+
+    // AQ (43): IA-2 ASSIGN
+    iaSheet.getCell(6, 43).value = "IA-2";
+    iaSheet.getCell(7, 43).value = "";
+    iaSheet.getCell(8, 43).value = "ASSIGN/SPA (05)";
+    iaSheet.getCell(9, 43).value = 5;
+
+    // AR (44): IA-2 TOTAL
+    iaSheet.getCell(6, 44).value = "IA-2";
+    iaSheet.getCell(7, 44).value = "";
+    iaSheet.getCell(8, 44).value = "TOTAL MARKS (35)";
+    iaSheet.getCell(9, 44).value = 35;
+
+    if (seeFileArray && seeFileArray.length > 0) {
+      const seeFileBuffer = seeFileArray[0].buffer;
+      const seeWorkbook = new ExcelJS.Workbook();
+      await seeWorkbook.xlsx.load(seeFileBuffer);
+      const uploadedSeeSheet = seeWorkbook.getWorksheet('SEE Marks');
+      if (uploadedSeeSheet) {
+        copySheetData(uploadedSeeSheet, seeSheet, 34);
+      }
+    } else {
+      // Clear question headers in seeSheet if not uploaded
+      for (let c = 4; c <= 34; c++) {
+        seeSheet.getCell(7, c).value = null;
+        seeSheet.getCell(8, c).value = null;
+        seeSheet.getCell(9, c).value = null;
+      }
+    }
 
     // Inject formulas into base sheets
     const validCOs = subject?.courseOutcomes?.map(co => parseInt(co.coNumber.replace(/co/i, ''))).filter(n => !isNaN(n)) || [1,2,3,4,5,6];
@@ -388,6 +565,19 @@ exports.uploadAndCalculate = async (req, res) => {
             sheet.getCell(currentRow, startCol + 1).value = { formula: `SUMIFS($D$9:$${maxQCol}$9,$D$7:$${maxQCol}$7,"CO${i}",$D${currentRow}:$${maxQCol}${currentRow},">"&-1)` };
             sheet.getCell(currentRow, startCol + 2).value = { formula: `ROUNDUP(IF(${countColLetter}${currentRow},${sumColLetter}${currentRow}/${countColLetter}${currentRow}%,0),2)` };
           }
+        }
+
+        // Dynamically inject custom IA formulas for DES, OBJ, ASSIGN, and TOTAL
+        if (sheet.name === 'IA Marks') {
+          // IA-1 DES (AK)
+          sheet.getCell(`AK${currentRow}`).value = { formula: `SUM(D${currentRow}:S${currentRow})` };
+          // IA-1 TOTAL (AN)
+          sheet.getCell(`AN${currentRow}`).value = { formula: `AK${currentRow}+AL${currentRow}+AM${currentRow}` };
+          
+          // IA-2 DES (AO)
+          sheet.getCell(`AO${currentRow}`).value = { formula: `SUM(U${currentRow}:AJ${currentRow})` };
+          // IA-2 TOTAL (AR)
+          sheet.getCell(`AR${currentRow}`).value = { formula: `AO${currentRow}+AP${currentRow}+AQ${currentRow}` };
         }
         currentRow++;
       }
@@ -452,7 +642,6 @@ exports.uploadAndCalculate = async (req, res) => {
     console.log('SEE Thresholds:', { seeLevel1, seeLevel2, seeLevel3, seeTargetPerc });
 
     const MAX_ROWS = 200;
-    const START_ROW = 13;
 
     console.log('--- Step 2: Processing IA Marks ---');
     const iaCols = [];
@@ -682,31 +871,16 @@ exports.uploadAndCalculate = async (req, res) => {
 exports.exportWithResults = async (req, res) => {
   try {
     const { subjectId, academicYear, facultyName, branch, semester } = req.body;
-    const iaFileArray = req.files ? req.files['iaFile'] : null;
-    const seeFileArray = req.files ? req.files['seeFile'] : null;
+    const iaFileArray = req.files && req.files['iaFile'] ? req.files['iaFile'] : null;
+    const seeFileArray = req.files && req.files['seeFile'] ? req.files['seeFile'] : null;
 
-    if (!iaFileArray || !seeFileArray || iaFileArray.length === 0 || seeFileArray.length === 0) {
-      return res.status(400).json({ success: false, message: 'Both IA Marks and SEE Marks files are required' });
+    if (!iaFileArray && !seeFileArray) {
+      return res.status(400).json({ success: false, message: 'At least one of IA Marks or SEE Marks files is required' });
     }
-
-    const iaFileBuffer = iaFileArray[0].buffer;
-    const seeFileBuffer = seeFileArray[0].buffer;
 
     const subject = await Subject.findById(subjectId).populate('branch');
     if (!subject) {
       return res.status(404).json({ success: false, message: 'Subject not found' });
-    }
-
-    const iaWorkbook = new ExcelJS.Workbook();
-    await iaWorkbook.xlsx.load(iaFileBuffer);
-    const uploadedIaSheet = iaWorkbook.getWorksheet('IA Marks');
-
-    const seeWorkbook = new ExcelJS.Workbook();
-    await seeWorkbook.xlsx.load(seeFileBuffer);
-    const uploadedSeeSheet = seeWorkbook.getWorksheet('SEE Marks');
-
-    if (!uploadedIaSheet || !uploadedSeeSheet) {
-      return res.status(400).json({ success: false, message: 'Invalid template structure. Missing IA Marks or SEE Marks sheet.' });
     }
 
     // Load base template to compile everything
@@ -716,9 +890,127 @@ exports.exportWithResults = async (req, res) => {
     const iaSheet = workbook.getWorksheet('IA Marks');
     const seeSheet = workbook.getWorksheet('SEE Marks');
 
-    // Copy data to base template
-    copySheetData(uploadedIaSheet, iaSheet, 59);
-    copySheetData(uploadedSeeSheet, seeSheet, 34);
+    if (iaSheet) {
+      try {
+        iaSheet.unMergeCells('AK6:AZ6');
+      } catch (err) {}
+      try {
+        iaSheet.unMergeCells('AK7:AZ135');
+      } catch (err) {}
+    }
+
+    // Pre-populate student list in both sheets first from database
+    const branchName = branch || subject.branch?.name || "";
+    const students = await StudentDetails.find({ branch: branchName, semester: semester || subject.semester })
+      .sort({ enrollmentNo: 1 });
+
+    const START_ROW = 13;
+    const branchNameFormatted = formatBranchName(branchName);
+
+    const sheetsToPrepopulate = [iaSheet, seeSheet];
+    for (const sheet of sheetsToPrepopulate) {
+      if (!sheet) continue;
+      sheet.getCell('D3').value = branchNameFormatted;
+      let currentRow = START_ROW;
+      let index = 1;
+      const maxCol = sheet.name === 'IA Marks' ? 59 : 34;
+      for (const student of students) {
+        const studentName = `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.trim();
+        sheet.getCell(`A${currentRow}`).value = index++;
+        sheet.getCell(`B${currentRow}`).value = student.enrollmentNo;
+        sheet.getCell(`C${currentRow}`).value = studentName;
+        // Clear student marks columns to purge template dummy data
+        for (let c = 4; c <= maxCol; c++) {
+          sheet.getCell(currentRow, c).value = null;
+        }
+        currentRow++;
+      }
+    }
+
+    if (iaFileArray && iaFileArray.length > 0) {
+      const iaFileBuffer = iaFileArray[0].buffer;
+      const iaWorkbook = new ExcelJS.Workbook();
+      await iaWorkbook.xlsx.load(iaFileBuffer);
+      const uploadedIaSheet = iaWorkbook.getWorksheet('IA Marks');
+      if (uploadedIaSheet) {
+        copySheetData(uploadedIaSheet, iaSheet, 59);
+      }
+    } else {
+      // Clear question headers in iaSheet if not uploaded
+      for (let c = 4; c <= 59; c++) {
+        iaSheet.getCell(7, c).value = null;
+        iaSheet.getCell(8, c).value = null;
+        iaSheet.getCell(9, c).value = null;
+      }
+    }
+
+    // Always inject custom columns headers in iaSheet
+    // IA-1:
+    // AK (37): IA-1 DES
+    iaSheet.getCell(6, 37).value = "IA-1";
+    iaSheet.getCell(7, 37).value = "";
+    iaSheet.getCell(8, 37).value = "DES (20)";
+    iaSheet.getCell(9, 37).value = 20;
+
+    // AL (38): IA-1 OBJ
+    iaSheet.getCell(6, 38).value = "IA-1";
+    iaSheet.getCell(7, 38).value = "";
+    iaSheet.getCell(8, 38).value = "OBJ (10)";
+    iaSheet.getCell(9, 38).value = 10;
+
+    // AM (39): IA-1 ASSIGN
+    iaSheet.getCell(6, 39).value = "IA-1";
+    iaSheet.getCell(7, 39).value = "";
+    iaSheet.getCell(8, 39).value = "ASSIGN/SPA (05)";
+    iaSheet.getCell(9, 39).value = 5;
+
+    // AN (40): IA-1 TOTAL
+    iaSheet.getCell(6, 40).value = "IA-1";
+    iaSheet.getCell(7, 40).value = "";
+    iaSheet.getCell(8, 40).value = "TOTAL MARKS (35)";
+    iaSheet.getCell(9, 40).value = 35;
+
+    // IA-2:
+    // AO (41): IA-2 DES
+    iaSheet.getCell(6, 41).value = "IA-2";
+    iaSheet.getCell(7, 41).value = "";
+    iaSheet.getCell(8, 41).value = "DES (20)";
+    iaSheet.getCell(9, 41).value = 20;
+
+    // AP (42): IA-2 OBJ
+    iaSheet.getCell(6, 42).value = "IA-2";
+    iaSheet.getCell(7, 42).value = "";
+    iaSheet.getCell(8, 42).value = "OBJ (10)";
+    iaSheet.getCell(9, 42).value = 10;
+
+    // AQ (43): IA-2 ASSIGN
+    iaSheet.getCell(6, 43).value = "IA-2";
+    iaSheet.getCell(7, 43).value = "";
+    iaSheet.getCell(8, 43).value = "ASSIGN/SPA (05)";
+    iaSheet.getCell(9, 43).value = 5;
+
+    // AR (44): IA-2 TOTAL
+    iaSheet.getCell(6, 44).value = "IA-2";
+    iaSheet.getCell(7, 44).value = "";
+    iaSheet.getCell(8, 44).value = "TOTAL MARKS (35)";
+    iaSheet.getCell(9, 44).value = 35;
+
+    if (seeFileArray && seeFileArray.length > 0) {
+      const seeFileBuffer = seeFileArray[0].buffer;
+      const seeWorkbook = new ExcelJS.Workbook();
+      await seeWorkbook.xlsx.load(seeFileBuffer);
+      const uploadedSeeSheet = seeWorkbook.getWorksheet('SEE Marks');
+      if (uploadedSeeSheet) {
+        copySheetData(uploadedSeeSheet, seeSheet, 34);
+      }
+    } else {
+      // Clear question headers in seeSheet if not uploaded
+      for (let c = 4; c <= 34; c++) {
+        seeSheet.getCell(7, c).value = null;
+        seeSheet.getCell(8, c).value = null;
+        seeSheet.getCell(9, c).value = null;
+      }
+    }
 
     // Calculate studentCount dynamically from copied data
     let studentCount = 0;
@@ -728,8 +1020,7 @@ exports.exportWithResults = async (req, res) => {
       scanRow++;
     }
 
-    // Write correct dynamic headers to the base template
-    const branchName = branch || subject.branch?.name || "";
+    // branchName is already declared above
     const semVal = semester || subject.semester;
     const formattedBranch = formatBranchName(branchName);
 
@@ -771,6 +1062,19 @@ exports.exportWithResults = async (req, res) => {
             sheet.getCell(currentRow, startCol + 1).value = { formula: `SUMIFS($D$9:$${maxQCol}$9,$D$7:$${maxQCol}$7,"CO${i}",$D${currentRow}:$${maxQCol}${currentRow},">"&-1)` };
             sheet.getCell(currentRow, startCol + 2).value = { formula: `ROUNDUP(IF(${countColLetter}${currentRow},${sumColLetter}${currentRow}/${countColLetter}${currentRow}%,0),2)` };
           }
+        }
+
+        // Dynamically inject custom IA formulas for DES, OBJ, ASSIGN, and TOTAL
+        if (sheet.name === 'IA Marks') {
+          // IA-1 DES (AK)
+          sheet.getCell(`AK${currentRow}`).value = { formula: `SUM(D${currentRow}:S${currentRow})` };
+          // IA-1 TOTAL (AN)
+          sheet.getCell(`AN${currentRow}`).value = { formula: `AK${currentRow}+AL${currentRow}+AM${currentRow}` };
+          
+          // IA-2 DES (AO)
+          sheet.getCell(`AO${currentRow}`).value = { formula: `SUM(U${currentRow}:AJ${currentRow})` };
+          // IA-2 TOTAL (AR)
+          sheet.getCell(`AR${currentRow}`).value = { formula: `AO${currentRow}+AP${currentRow}+AQ${currentRow}` };
         }
         currentRow++;
       }

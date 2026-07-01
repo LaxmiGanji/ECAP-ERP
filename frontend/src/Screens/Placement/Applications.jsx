@@ -106,6 +106,7 @@ const Applications = () => {
                                     <th className="py-3 px-4 text-left">Branch</th>
                                     <th className="py-3 px-4 text-left">Semester</th>
                                     <th className="py-3 px-4 text-left">Applied On</th>
+                                    <th className="py-3 px-4 text-left">Resume</th>
                                     <th className="py-3 px-4 text-left">Status</th>
                                     <th className="py-3 px-4 text-left">Actions</th>
                                 </tr>
@@ -113,7 +114,7 @@ const Applications = () => {
                             <tbody>
                                 {applications.length === 0 ? (
                                     <tr>
-                                        <td colSpan="8" className="py-8 text-center text-gray-500">
+                                        <td colSpan="9" className="py-8 text-center text-gray-500">
                                             No applications found for this drive.
                                         </td>
                                     </tr>
@@ -137,6 +138,23 @@ const Applications = () => {
                                             </td>
                                             <td className="py-3 px-4">
                                                 {new Date(app.createdAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                {app.student?.resumeLink ? (
+                                                    <a 
+                                                        href={app.student.resumeLink} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-semibold hover:bg-blue-100 hover:text-blue-800 border border-blue-200 transition-colors shadow-sm"
+                                                    >
+                                                        <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
+                                                        </svg>
+                                                        View Resume
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-gray-400 text-xs italic">Not Uploaded</span>
+                                                )}
                                             </td>
                                             <td className="py-3 px-4">
                                                 <span className={`px-2 py-1 rounded text-xs font-semibold

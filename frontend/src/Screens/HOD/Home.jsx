@@ -19,6 +19,7 @@ import Material from "../Faculty/Material";
 import ViewMarks from "../Faculty/ViewMarks";
 import FacultyAttendance from "./FacultyAttendance";
 import FacultySubstitution from "./FacultySubstitution";
+import DailyFacultyAttendance from "../Admin/DailyFacultyAttendance";
 import Profile from "../Admin/Profile";
 
 const HODHome = () => {
@@ -201,6 +202,8 @@ const HODHome = () => {
         return <FacultyAttendance branch={branch} />;
       case "FacultySubstitution":
         return <FacultySubstitution />;
+      case "DailyFacultyAttendance":
+        return <DailyFacultyAttendance branch={branch} />;
       case "Profile":
         return <Profile />;
       default:

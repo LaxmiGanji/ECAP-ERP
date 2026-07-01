@@ -16,7 +16,9 @@ import {
   FiTruck,
   FiEye, // Add this import for the eye icon
   FiBriefcase,
-  FiBarChart2
+  FiBarChart2,
+  FiMapPin,
+  FiClock
 } from "react-icons/fi";
 import { MdOutlineSchool, MdOutlineSubject } from "react-icons/md";
 
@@ -54,7 +56,9 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Attendance", label: "Attendance", icon: FiGrid, color: "from-yellow-500 to-yellow-600" },
           { id: "Section", label: "Section", icon: FiGrid, color: "from-cyan-500 to-cyan-600" },
           { id: "Reports", label: "Reports", icon: FiFileText, color: "from-emerald-500 to-emerald-600" },
-          { id: "OBE Config", label: "OBE Config", icon: FiFileText, color: "from-indigo-500 to-indigo-600" }
+          { id: "OBE Config", label: "OBE Config", icon: FiFileText, color: "from-indigo-500 to-indigo-600" },
+          { id: "GeofenceSetup", label: "Geofence Setup", icon: FiMapPin, color: "from-blue-600 to-cyan-500" },
+          { id: "DailyFacultyAttendance", label: "Daily Faculty Attendance", icon: FiUserCheck, color: "from-teal-500 to-emerald-600" }
         ];
       case "Faculty":
         return [
@@ -69,7 +73,8 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Edit Faculty", label: "Edit Faculty", icon: FiGrid, color: "from-red-500 to-red-600" },
           { id: "CO Attainment", label: "CO Attainment", icon: MdOutlineSubject, color: "from-indigo-500 to-indigo-600" },
           { id: "Final CO/PO Attainment", label: "Final CO/PO Attainment", icon: MdOutlineSubject, color: "from-purple-500 to-purple-600" },
-          { id: "Leave Management", label: "Leave Management", icon: FiCalendar, color: "from-indigo-500 to-indigo-600" }
+          { id: "Leave Management", label: "Leave Management", icon: FiCalendar, color: "from-indigo-500 to-indigo-600" },
+          { id: "DailyAttendance", label: "Daily Attendance", icon: FiClock, color: "from-orange-500 to-amber-600" }
         ];
       case "Examination":
         return [
@@ -116,7 +121,8 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Marks", label: "View Marks", icon: FiFileText, color: "from-orange-500 to-orange-600" },
           { id: "FacultyAttendance", label: "Faculty Tracking", icon: FiBarChart2, color: "from-blue-500 to-emerald-500" },
           { id: "FacultySubstitution", label: "Faculty Substitution", icon: FiCalendar, color: "from-orange-500 to-red-500" },
-          { id: "Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" },
+          { id: "DailyFacultyAttendance", label: "Daily Faculty Attendance", icon: FiUserCheck, color: "from-teal-500 to-emerald-600" },
+          { id: "Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" }
         ];
       case "Principal":
         return [

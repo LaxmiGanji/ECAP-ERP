@@ -1,4 +1,4 @@
-# ECAP_SPHN - Educational Campus Administration Portal
+ # ECAP_SPHN - Educational Campus Administration Portal
 
 A premium, comprehensive, and responsive campus management system designed to streamline academic and administrative workflows. The portal is equipped with role-based access control, interactive visualization dashboards, and native report generation for Students, Faculty, HODs, Admins, Accounts, Library, and Transport teams.
 

@@ -34,7 +34,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.get("/", (req, res) => {
   res.send("Hello 👋 ECAP SPHN Backend is Working Fine 🚀")
@@ -83,7 +84,9 @@ app.use('/api/transport', require("./routes/Other Api/transport.route"));
 app.use('/api/po', require("./routes/Other Api/po.route"));
 app.use('/api/download', require("./routes/Other Api/download.route"));
 app.use('/api/obe/template/final-copo', require("./routes/Other Api/finalAttainment.route"));
+app.use('/api/coattainment', require("./routes/Other Api/coattainment.routes"));
 app.use("/api/accounts/attendance", require("./routes/Accounts Api/attendance.route"));
+app.use("/api/biometric-attendance", require("./routes/Other Api/biometricAttendance.route"));
 app.use("/api/faculty/leave", require("./routes/Faculty Api/leave.route"));
 app.use("/api/placement/companies", require("./routes/Placement Api/company.route"));
 app.use("/api/placement/drives", require("./routes/Placement Api/drive.route"));

@@ -8,6 +8,8 @@ const OnlineCompiler = () => {
   const [output, setOutput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [customInput, setCustomInput] = useState('');
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,9 +18,15 @@ const OnlineCompiler = () => {
     setOutput('');
 
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(`${baseApiURL()}/compiler/execute`, {
         language,
-        code
+        code,
+        input: customInput
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       
       if (response.data.error) {
@@ -105,6 +113,21 @@ int main() {
               className="w-full bg-gray-900 text-gray-100 p-4 font-mono text-sm rounded-b-md focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"
             />
           </div>
+
+          {/* Custom Input Section */}
+          <div className="mb-6">
+            <label htmlFor="custom-input" className="block text-sm font-semibold text-gray-300 mb-2">
+              Input (stdin) - Optional
+            </label>
+            <textarea
+              id="custom-input"
+              value={customInput}
+              onChange={(e) => setCustomInput(e.target.value)}
+              placeholder="Enter input values here (separate multiple inputs with new lines)..."
+              rows={4}
+              className="w-full bg-gray-900 text-gray-100 p-3 font-mono text-sm rounded-md border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"
+            />
+          </div>
           
           <button 
             onClick={handleSubmit} 
@@ -152,6 +175,16 @@ int main() {
             <div className="bg-gray-900 rounded-md p-4">
               <pre className="whitespace-pre-wrap text-red-300 font-mono text-sm">{error}</pre>
             </div>
+            {(error.includes('EOFError') || error.includes('NoSuchElementException') || error.includes('EOF when reading a line')) && (
+              <div className="mt-4 p-3 bg-blue-900/30 border border-blue-800 rounded-md text-sm text-blue-300">
+                <strong>Tip:</strong> Your code tried to read standard input (stdin), but none was provided or the input was exhausted. Please write your program inputs in the <strong>Input (stdin)</strong> field above.
+              </div>
+            )}
+            {(error.toLowerCase().includes('timeout') || error.toLowerCase().includes('killed') || error.toLowerCase().includes('sigterm')) && (
+              <div className="mt-4 p-3 bg-blue-900/30 border border-blue-800 rounded-md text-sm text-blue-300">
+                <strong>Tip:</strong> The execution timed out. This usually happens if your program has an infinite loop or is waiting for input that was not provided in the <strong>Input (stdin)</strong> field.
+              </div>
+            )}
           </div>
         )}
         

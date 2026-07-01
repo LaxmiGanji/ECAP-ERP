@@ -19,6 +19,7 @@ import COAttainment from "./COAttainment";
 import FinalCOPOAttainment from "./FinalCOPOAttainment";
 import MyFacultyTimeTable from "./MyFacultyTimeTable";
 import FacultyLeaveManagement from "./FacultyLeaveManagement";
+import DailyAttendance from "./DailyAttendance";
 
 const Home = () => {
   const router = useLocation();
@@ -82,6 +83,8 @@ const Home = () => {
         return <FinalCOPOAttainment />;
       case "Leave Management":
         return <FacultyLeaveManagement setSelectedMenu={setSelectedMenu} />;
+      case "DailyAttendance":
+        return <DailyAttendance />;
       default:
         return <Profile />;
     }

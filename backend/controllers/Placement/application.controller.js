@@ -1,6 +1,7 @@
 const applicationModel = require("../../models/Placement/application.model");
 const StudentDetail = require("../../models/Students/details.model");
 const StudentCredential = require("../../models/Students/credential.model");
+const studentProfileModel = require("../../models/Placement/studentProfile.model");
 
 const addApplication = async (req, res) => {
     try {
@@ -81,14 +82,36 @@ const getApplicationsForDrive = async (req, res) => {
         
         console.log("Found applications:", applications.length);
         
+        // Fetch placement profiles to get resume links
+        const enrollmentNos = applications
+            .map(app => app.student?.enrollmentNo)
+            .filter(Boolean);
+            
+        const profiles = await studentProfileModel.find({ enrollmentNo: { $in: enrollmentNos } });
+        
+        // Map profiles by enrollmentNo for fast lookup
+        const profileMap = {};
+        profiles.forEach(p => {
+            profileMap[p.enrollmentNo] = p.resumeLink;
+        });
+        
+        // Attach resumeLink to each student object
+        const applicationsWithResume = applications.map(app => {
+            const appObj = app.toObject();
+            if (appObj.student && appObj.student.enrollmentNo) {
+                appObj.student.resumeLink = profileMap[appObj.student.enrollmentNo] || null;
+            }
+            return appObj;
+        });
+        
         // Log first application to debug
-        if (applications.length > 0) {
-            console.log("Sample application student data:", applications[0].student);
+        if (applicationsWithResume.length > 0) {
+            console.log("Sample application student data (with resume):", applicationsWithResume[0].student);
         }
             
         res.json({
             success: true,
-            applications
+            applications: applicationsWithResume
         });
     } catch (error) {
         console.error("Error in getApplicationsForDrive:", error);
@@ -120,10 +143,16 @@ const updateApplicationStatus = async (req, res) => {
             });
         }
         
+        const appObj = application.toObject();
+        if (appObj.student && appObj.student.enrollmentNo) {
+            const profile = await studentProfileModel.findOne({ enrollmentNo: appObj.student.enrollmentNo });
+            appObj.student.resumeLink = profile ? profile.resumeLink : null;
+        }
+        
         res.json({
             success: true,
             message: "Application updated successfully",
-            application
+            application: appObj
         });
     } catch (error) {
         console.log(error);
@@ -200,9 +229,15 @@ const getApplicationById = async (req, res) => {
             });
         }
         
+        const appObj = application.toObject();
+        if (appObj.student && appObj.student.enrollmentNo) {
+            const profile = await studentProfileModel.findOne({ enrollmentNo: appObj.student.enrollmentNo });
+            appObj.student.resumeLink = profile ? profile.resumeLink : null;
+        }
+        
         res.json({
             success: true,
-            application
+            application: appObj
         });
     } catch (error) {
         console.log(error);

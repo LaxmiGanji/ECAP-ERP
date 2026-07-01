@@ -167,8 +167,8 @@ const FinalCOPOAttainment = () => {
 
   // Upload IA and SEE sheets to calculate Direct CO Attainment
   const handleFileUpload = async () => {
-    if (!iaFile || !seeFile) {
-      toast.error("Please select both IA Marks and SEE Marks files");
+    if (!iaFile && !seeFile) {
+      toast.error("Please select at least one of IA Marks or SEE Marks files");
       return;
     }
     if (!selectedSubject) {
@@ -177,8 +177,8 @@ const FinalCOPOAttainment = () => {
     }
 
     const formData = new FormData();
-    formData.append("iaFile", iaFile);
-    formData.append("seeFile", seeFile);
+    if (iaFile) formData.append("iaFile", iaFile);
+    if (seeFile) formData.append("seeFile", seeFile);
     formData.append("subjectId", selectedSubject);
 
     try {
@@ -341,7 +341,7 @@ const FinalCOPOAttainment = () => {
 
   // Export fully compiled Excel Report
   const handleExport = async () => {
-    if (!iaFile || !seeFile || !results || !selectedSubject) {
+    if ((!iaFile && !seeFile) || !results || !selectedSubject) {
       toast.error("Required data missing for export");
       return;
     }
@@ -351,8 +351,8 @@ const FinalCOPOAttainment = () => {
       toast.loading("Generating Final Excel Report...");
 
       const formData = new FormData();
-      formData.append("iaFile", iaFile);
-      formData.append("seeFile", seeFile);
+      if (iaFile) formData.append("iaFile", iaFile);
+      if (seeFile) formData.append("seeFile", seeFile);
       formData.append("subjectId", selectedSubject);
       formData.append("academicYear", academicYear);
       formData.append("facultyName", facultyName);
@@ -725,7 +725,7 @@ const FinalCOPOAttainment = () => {
           <div className="flex justify-end">
             <button
               onClick={handleFileUpload}
-              disabled={loading || !iaFile || !seeFile}
+              disabled={loading || (!iaFile && !seeFile)}
               className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 transition-colors shadow-md flex items-center gap-2"
             >
               <FiCheckCircle /> Calculate Direct Attainment
