@@ -13,6 +13,7 @@ import PlacementHome from "./Screens/Placement/Home";
 import HODHome from "./Screens/HOD/Home";
 import PrincipalHome from "./Screens/Principal/Home";
 import AccountsHome from "./Screens/Accounts/Home";
+import ParentPortal from "./Screens/Common/ParentPortal";
 
 const App = () => {
   return (
@@ -32,6 +33,7 @@ const App = () => {
             <Route path="hod/*" element={<HODHome />} />
             <Route path="principal/*" element={<PrincipalHome />} />
             <Route path="accounts/*" element={<AccountsHome />} />
+            <Route path="parent/dashboard/:token" element={<ParentPortal />} />
           </Routes>
         </Router>
       </Provider>

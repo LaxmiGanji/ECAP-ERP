@@ -1,5 +1,8 @@
 //attendence.controller.js
 const Attendance = require("../../models/Other/attedence.model");
+const StudentDetails = require("../../models/Students/details.model");
+const NotificationService = require("../../services/notification.service");
+const NotificationLog = require("../../models/Other/notificationLogs.model");
 
 const addAttendance = async (req, res) => {
   try {
@@ -69,6 +72,62 @@ const addBulkAttendance = async (req, res) => {
     }
 
     await Attendance.insertMany(attendanceRecords);
+
+    // Trigger automated absent notifications asynchronously
+    if (attendanceRecords.length > 0) {
+      (async () => {
+        try {
+          const { branch, semester, section, subject, period, date } = attendanceRecords[0];
+          const settings = await NotificationService.getSettings();
+
+          if (settings.autoAbsentAlert && settings.absentAlertMode === "INSTANT") {
+            const allStudents = await StudentDetails.find({ 
+              branch, 
+              semester: Number(semester), 
+              section 
+            });
+
+            const presentNos = attendanceRecords.map(r => r.enrollmentNo);
+            const absentees = allStudents.filter(s => !presentNos.includes(s.enrollmentNo));
+
+            for (const student of absentees) {
+              const parentLink = NotificationService.generateParentLink(student.enrollmentNo);
+              const formattedDate = new Date(date).toLocaleDateString();
+              
+              const text = settings.absentInstantTemplate
+                .replace(/{student_name}/g, `${student.firstName || ''} ${student.lastName || ''}`.trim())
+                .replace(/{period}/g, period)
+                .replace(/{subject}/g, subject)
+                .replace(/{date}/g, formattedDate)
+                .replace(/{portal_link}/g, parentLink);
+
+              const referenceId = `${new Date(date).toISOString().split('T')[0]}_P${period}_${subject}`;
+              
+              const alreadySent = await NotificationLog.findOne({
+                enrollmentNo: student.enrollmentNo,
+                referenceId,
+                status: "SENT"
+              });
+
+              if (!alreadySent) {
+                if (settings.smsEnabled) {
+                  NotificationService.sendAlert({ student, type: "ABSENT_INSTANT", content: text, channel: "SMS", referenceId });
+                }
+                if (settings.whatsappEnabled) {
+                  NotificationService.sendAlert({ student, type: "ABSENT_INSTANT", content: text, channel: "WHATSAPP", referenceId });
+                }
+                if (settings.emailEnabled) {
+                  NotificationService.sendAlert({ student, type: "ABSENT_INSTANT", content: text, channel: "EMAIL", referenceId });
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error triggering auto absent notifications:", err);
+        }
+      })();
+    }
+
     res.status(200).json({ success: true, message: "Bulk attendance added successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to add bulk attendance", error });

@@ -19,6 +19,9 @@ import FinalCOPOAttainment from "./FinalCOPOAttainment";
 import MyFacultyTimeTable from "./MyFacultyTimeTable";
 import FacultyLeaveManagement from "./FacultyLeaveManagement";
 import DailyAttendance from "./DailyAttendance";
+import AIAssistant from "../Student/AIAssistant";
+import AIAnalytics from "./AIAnalytics";
+import MessageParent from "../../components/MessageParent";
 
 const Home = () => {
   const router = useLocation();
@@ -26,6 +29,7 @@ const Home = () => {
   const [selectedMenu, setSelectedMenu] = useState("My Profile");
   const [load, setLoad] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [targetRollNo, setTargetRollNo] = useState("");
 
   const [analyticsData, setAnalyticsData] = useState({ stats: [], optionalLeave: { used: 0, available: 0 } });
 
@@ -61,9 +65,11 @@ const Home = () => {
       case "My Profile":
         return <Profile />;
       case "Student Info":
-        return <Student />;
+        return <Student onMessageParent={(roll) => { setTargetRollNo(roll); setSelectedMenu("Message Parent"); }} />;
       case "Upload Marks":
         return <Marks />;
+      case "Message Parent":
+        return <MessageParent userType="Faculty" currentUser={router.state} initialEnrollmentNo={targetRollNo} />;
       case "Timetable":
         return <Timetable />;
       case "MyFacultyTimeTable":
@@ -82,6 +88,10 @@ const Home = () => {
         return <FacultyLeaveManagement setSelectedMenu={setSelectedMenu} />;
       case "DailyAttendance":
         return <DailyAttendance />;
+      case "AI Assistant":
+        return <AIAssistant />;
+      case "AI Student Analytics":
+        return <AIAnalytics />;
       default:
         return <Profile />;
     }

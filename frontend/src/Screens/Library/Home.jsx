@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import NewsPaper from "./NewsPaper";
 import StudentData from "./StudentData";
 import FacultyData from "./FacultyData";
+import LibraryRAGAssistant from "../Student/LibraryRAGAssistant";
 
 const Home = () => {
   const [selectedMenu, setSelectedMenu] = useState("My Profile");
@@ -35,6 +36,16 @@ const Home = () => {
                 onClick={() => setSelectedMenu("My Profile")}
               >
                 My Profile
+              </li>
+              <li
+                className={`text-center rounded-lg px-4 py-3 min-w-[150px] cursor-pointer transition-all duration-300 shadow-sm ${
+                  selectedMenu === "AI RAG Assistant"
+                    ? "bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-indigo-200"
+                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                }`}
+                onClick={() => setSelectedMenu("AI RAG Assistant")}
+              >
+                🤖 AI RAG & Web Assistant
               </li>
               <li
                 className={`text-center rounded-lg px-4 py-3 min-w-[150px] cursor-pointer transition-all duration-300 shadow-sm ${
@@ -79,6 +90,7 @@ const Home = () => {
             </ul>
             {selectedMenu === "AddBook" && < AddBook />}
             {selectedMenu === "My Profile" && <Profile />}
+            {selectedMenu === "AI RAG Assistant" && <LibraryRAGAssistant />}
             {selectedMenu === "NewsPaper" && <NewsPaper />}
             {selectedMenu === "StudentData" && <StudentData />}
             {selectedMenu === "FacultyData" && <FacultyData />}

@@ -1,0 +1,3150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECAP SPHN - A4 Print-Ready Educational Brochure</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap"
+    rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- App Wrapper (A4 Booklet Viewport) -->
+  <div class="brochure-container">
+
+    <!-- Top Fixed Controller (Hidden in Print) -->
+    <header class="brochure-header">
+      <div class="logo-area">
+        <img src="brochure/sphn.jpg" alt="ECAP SPHN Logo"
+          style="height: 36px; width: auto; object-fit: contain; display: block;">
+      </div>
+
+      <div class="navigation-controls">
+        <button id="prevBtn" class="nav-btn" title="Previous Page">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M15.41 16.59L10.83 12l4.59-4.59L14 6l-6 6 6 6 1.41-1.41z" />
+          </svg>
+        </button>
+        <span id="pageIndicator" class="page-indicator">Page 1 of 14</span>
+        <button id="nextBtn" class="nav-btn" title="Next Page">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+          </svg>
+        </button>
+        <button id="playBtn" class="nav-btn accent-btn" title="Auto Play Presentation">
+          <svg viewBox="0 0 24 24" width="20" height="20" id="playIcon">
+            <path fill="currentColor" d="M8 5v14l11-7z" />
+          </svg>
+        </button>
+        <button onclick="window.print()" class="nav-btn print-trigger-btn" title="Print to A4 PDF">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor"
+              d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sidebar Slide Indicators (Hidden in Print) -->
+    <aside class="slide-navigator">
+      <div class="nav-dot active" data-slide="0" title="Cover Page"><span>01</span></div>
+      <div class="nav-dot" data-slide="1" title="Unified Modules Directory"><span>02</span></div>
+      <div class="nav-dot" data-slide="2" title="System Admin Workspace"><span>03</span></div>
+      <div class="nav-dot" data-slide="3" title="Principal Dashboard"><span>04</span></div>
+      <div class="nav-dot" data-slide="4" title="HOD Workspace"><span>05</span></div>
+      <div class="nav-dot" data-slide="5" title="Faculty Workspace"><span>06</span></div>
+      <div class="nav-dot" data-slide="6" title="Student Portal"><span>07</span></div>
+      <div class="nav-dot" data-slide="7" title="Accounts Manager"><span>08</span></div>
+      <div class="nav-dot" data-slide="8" title="Transport Manager"><span>09</span></div>
+      <div class="nav-dot" data-slide="9" title="Library Desk"><span>10</span></div>
+      <div class="nav-dot" data-slide="10" title="OBE Calculations Engine"><span>11</span></div>
+      <div class="nav-dot" data-slide="11" title="ExcelJS Exporter"><span>12</span></div>
+      <div class="nav-dot" data-slide="12" title="Campus Integrations"><span>13</span></div>
+      <div class="nav-dot" data-slide="13" title="Platform Features"><span>14</span></div>
+      <div class="nav-dot" data-slide="14" title="Deployment & Support"><span>15</span></div>
+      <div class="nav-dot" data-slide="15" title="Back Cover"><span>16</span></div>
+    </aside>
+
+    <!-- Main Brochure A4 Slider Content -->
+    <main class="brochure-slider" id="slider">
+
+      <!-- ============================================== -->
+      <!-- PAGE 1: COVER PAGE — REFERENCE STYLE           -->
+      <!-- ============================================== -->
+      <section class="slide active-slide" id="slide-0">
+
+        <!-- ══ SHAPE LAYERS (absolute, behind content) ══ -->
+
+        <!-- Top Wave section: Navy curved header -->
+        <div class="cv-top-navy-section"></div>
+
+        <!-- Middle Teardrop Image Panel with White Border -->
+        <div class="cv-middle-teardrop">
+          <div class="cv-teardrop-image-wrap">
+            <img src="campus_student_cover.png" alt="Campus" class="cv-teardrop-img">
+            <div class="cv-teardrop-overlay"></div>
+          </div>
+          <!-- Hero Title and Subtitle inside the Orange Teardrop Shape -->
+          <div class="cv-teardrop-content">
+            <div class="cv-eyebrow">
+              <span class="cv-eyebrow-bar"></span>
+              Engineering College Automation Package
+            </div>
+            <h1 class="cv-big-title">
+              ECAP
+              <em>SPHN</em>
+            </h1>
+            <p class="cv-hero-sub">MERN Stack &nbsp;·&nbsp; Cloud Native &nbsp;·&nbsp; NBA/NAAC Ready</p>
+          </div>
+        </div>
+
+        <!-- ══ CONTENT LAYER (above all shapes) ══ -->
+        <div class="cv-page-content">
+          <!-- Top bar: logo + heading left, edition tag right (overlayed on navy background) -->
+          <div class="cv-top-bar">
+            <div class="cv-top-left-group">
+              <div class="cv-logo-pill">
+                <img src="sphn.jpg" alt="ECAP SPHN Logo" class="cv-logo-img">
+              </div>
+              <div class="cv-top-heading">
+                SPHOORTHY ENGINEERING COLLEGE
+              </div>
+            </div>
+            <div class="cv-edition-tag">
+              <span class="cv-edition-dot"></span>
+              PREMIUM ERP &nbsp;·&nbsp; 2026
+            </div>
+          </div>
+
+          <!-- Bottom Section: White background containing features & contacts -->
+          <div class="cv-bottom-section">
+
+            <!-- 6 Module Icons in same theme (Clean outline SVGs) -->
+            <div class="cv-feat-row">
+              <!-- CO-PO Attainment -->
+              <div class="cv-feat-item">
+                <div class="cv-feat-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 2a10 10 0 0 1 10 10" />
+                    <path d="M22 2l-7.5 7.5" />
+                    <path d="M16 2h6v6" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </div>
+                <span class="cv-feat-label">CO-PO<br>Attainment</span>
+              </div>
+
+              <!-- Geofencing -->
+              <div class="cv-feat-item">
+                <div class="cv-feat-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M12 22a10 10 0 0 1-10-10" stroke-dasharray="3 3" />
+                    <path d="M12 22a10 10 0 0 0 10-10" stroke-dasharray="3 3" />
+                  </svg>
+                </div>
+                <span class="cv-feat-label">Geofencing</span>
+              </div>
+
+              <!-- Facial Recognition -->
+              <div class="cv-feat-item">
+                <div class="cv-feat-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                      d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3" />
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                    <path d="M9 9h.01M15 9h.01" />
+                    <path d="M12 11v2" />
+                  </svg>
+                </div>
+                <span class="cv-feat-label">Facial<br>Recognition</span>
+              </div>
+
+              <!-- Digital Passes -->
+              <div class="cv-feat-item">
+                <div class="cv-feat-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <line x1="12" y1="2" x2="12" y2="4" />
+                    <rect x="6" y="8" width="4" height="5" rx="1" />
+                    <line x1="13" y1="9" x2="18" y2="9" />
+                    <line x1="13" y1="12" x2="17" y2="12" />
+                    <line x1="13" y1="15" x2="16" y2="15" />
+                  </svg>
+                </div>
+                <span class="cv-feat-label">Digital<br>Passes</span>
+              </div>
+
+              <!-- Attendance Tracking -->
+              <div class="cv-feat-item">
+                <div class="cv-feat-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <path d="M9 16l2 2 4-4" />
+                  </svg>
+                </div>
+                <span class="cv-feat-label">Attendance<br>Tracking</span>
+              </div>
+
+              <!-- Leave Management -->
+              <div class="cv-feat-item">
+                <div class="cv-feat-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <path d="M10 14h6m0 0l-3-3m3 3l-3 3" />
+                  </svg>
+                </div>
+                <span class="cv-feat-label">Leave<br>Management</span>
+              </div>
+            </div>
+
+            <!-- Bottom Split Row: Left (Year), Right (Tagline & Contacts) -->
+            <div class="cv-bottom-split-row">
+              <!-- Giant Vertical Year: Matches "2050" styling -->
+              <div class="cv-year-block">
+                <span class="cv-year-orange">20</span>
+                <span class="cv-year-navy">26</span>
+              </div>
+
+              <div class="cv-bottom-right-col">
+                <!-- Tagline quote -->
+                <div class="cv-tagline-block">
+                  <span class="cv-quote-mark">❝</span>
+                  <p class="cv-tagline-text">Empowering Institutions, Streamlining Campuses, Securing Data!</p>
+                </div>
+
+                <!-- Contact bar under the quote -->
+                <div class="cv-bottom-bar">
+                  <span class="cv-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#F58220" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round" class="cv-contact-icon">
+                      <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                    +91 9398018154
+                  </span>
+                  <span class="cv-bar-sep">|</span>
+                  <span class="cv-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#0B2C4A" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round" class="cv-contact-icon">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    support@ecapsphn.com
+                  </span>
+                  <span class="cv-bar-sep">|</span>
+                  <span class="cv-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#00A9B0" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round" class="cv-contact-icon">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="2" y1="12" x2="22" y2="12" />
+                      <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </svg>
+                    www.ecapsphn.com
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- NEW PAGE 2: UNIFIED CAMPUS MODULES DIRECTORY   -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-modules-directory">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content" style="justify-content: space-between; margin: 5px 0;">
+          <div class="slide-header-area" style="margin-bottom: 10px;">
+            <h2 class="slide-title" style="font-size: 1.65rem;">Unified Campus Modules Matrix</h2>
+            <p class="slide-subtitle" style="font-size: 0.75rem; line-height: 1.3;">A synchronized ecosystem of 8 core functional divisions connected to a central real-time database cluster.</p>
+          </div>
+
+          <!-- Creative 3x3 Central Hub Grid -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; flex-grow: 1; align-items: stretch; margin-bottom: 10px;">
+            
+            <!-- 1. Academics -->
+            <div class="bordered-card border-top-navy" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(11,44,74,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-navy); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                  <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase;">Academics & OBE</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">CO-PO Matrix</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Exams & CIA</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Direct Attain</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">ExcelJS Reports</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(11,44,74,0.1); color: var(--color-navy);">OBE COMPLIANT</div>
+            </div>
+
+            <!-- 2. Student Portal -->
+            <div class="bordered-card border-top-orange" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(245,130,32,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-orange); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-orange); margin-bottom: 4px; text-transform: uppercase;">Student Portal</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Academic Profile</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Attendance Tracker</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Marks View</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Placement Panel</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(245,130,32,0.1); color: var(--color-orange);">360° PORTAL</div>
+            </div>
+
+            <!-- 3. Accounts -->
+            <div class="bordered-card border-top-teal" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(0,169,176,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-teal); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-teal); margin-bottom: 4px; text-transform: uppercase;">Admin & RBAC Controls</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Multi-Role Logins</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Access Control (RBAC)</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Credential Vaults</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Tokenized Sessions</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(0,169,176,0.1); color: var(--color-teal);">SECURE AUTH</div>
+            </div>
+
+            <!-- 4. Transport -->
+            <div class="bordered-card border-top-navy" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(11,44,74,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-navy); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                  <line x1="8" y1="21" x2="8" y2="17" />
+                  <line x1="16" y1="21" x2="16" y2="17" />
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase;">Transport Mobility</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Route Configs</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Stop-wise Fares</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Seat Allocations</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Digital Bus Pass</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(11,44,74,0.1); color: var(--color-navy);">PASS & SEAT LOGS</div>
+            </div>
+
+            <!-- 5. Central Hub Database Card (Slot 5) -->
+            <div style="background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-dark) 100%); border: 2.5px solid var(--color-orange); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center; color: white; box-shadow: 0 4px 18px rgba(11,44,74,0.3); position: relative; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+              <div style="position: absolute; top: -10px; right: -10px; width: 40px; height: 40px; background: radial-gradient(circle, rgba(245,130,32,0.2) 0%, transparent 70%); pointer-events: none;"></div>
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(245,130,32,0.15); border: 1.5px dashed var(--color-orange); display: flex; align-items: center; justify-content: center; color: var(--color-orange); margin-bottom: 6px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
+                  <ellipse cx="12" cy="5" rx="9" ry="3" />
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                  <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+                </svg>
+              </div>
+              <h3 style="font-size: 0.85rem; font-weight: 800; color: white; margin-bottom: 2px; font-family: var(--font-headings); letter-spacing: 0.5px;">MONGODB CLUSTER</h3>
+              <p style="font-size: 0.52rem; color: rgba(255,255,255,0.78); line-height: 1.25; margin: 2px 0;">Central Synchronization Engine</p>
+              <div style="font-size: 0.48rem; padding: 2px 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; border-radius: 30px; color: #10B981; font-weight: bold; margin-top: 4px;">ACTIVE REALTIME</div>
+            </div>
+
+            <!-- 6. Digital Library -->
+            <div class="bordered-card border-top-orange" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(245,130,32,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-orange); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z" />
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-orange); margin-bottom: 4px; text-transform: uppercase;">Library System</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">ISBN Book Catalog</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Newspapers Register</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Issue & Return Logs</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Availability Track</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(245,130,32,0.1); color: var(--color-orange);">CATALOG & LOGS</div>
+            </div>
+
+            <!-- 7. Placement Cell -->
+            <div class="bordered-card border-top-teal" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(0,169,176,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-teal); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-teal); margin-bottom: 4px; text-transform: uppercase;">Placement Cell</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Drive Management</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Student Applications</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Eligibility Checker</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Interview Rounds</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(0,169,176,0.1); color: var(--color-teal);">CAREER DRIVES</div>
+            </div>
+
+            <!-- 8. Biometric Attendance -->
+            <div class="bordered-card border-top-navy" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(11,44,74,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-navy); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase;">Biometric Attendance</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Face Registration</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Descriptor Sync</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">GPS Geofence</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Check-in Photo</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(11,44,74,0.1); color: var(--color-navy);">GPS & FACE BIOMETRIC</div>
+            </div>
+
+            <!-- 9. Accounts & Academic Config -->
+            <div class="bordered-card border-top-orange" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; border-radius: 8px;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(245,130,32,0.06); display: flex; align-items: center; justify-content: center; color: var(--color-orange); margin-bottom: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </div>
+              <h4 style="font-size: 0.72rem; font-weight: 700; color: var(--color-orange); margin-bottom: 4px; text-transform: uppercase;">Accounts & Academic Config</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 4px;">
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Academic Setup</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Regulations</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Notice Board</span>
+                <span style="font-size: 0.48rem; padding: 1px 4px; background: #F1F5F9; border-radius: 3px; color: var(--color-text-muted);">Student Registry</span>
+              </div>
+              <div class="badge" style="font-size: 0.45rem; padding: 1px 4px; background-color: rgba(245,130,32,0.1); color: var(--color-orange);">CAMPUS SETUP</div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Pipeline to Fill Space (Eliminate White Space) -->
+          <div class="accreditation-pipeline"
+            style="margin-top: 5px; padding: 8px 12px; background: rgba(11, 44, 74, 0.03); border: 1.5px solid var(--color-gray-border); border-radius: 6px;">
+            <h5
+              style="font-family: var(--font-headings); font-size: 0.62rem; font-weight: bold; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase; text-align: center; letter-spacing: 0.5px;">
+              🔄 Unified Institutional Operations Workflow</h5>
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; gap: 4px; text-align: center; font-family: var(--font-body); font-size: 0.5rem;">
+              <div
+                style="flex: 1; background: var(--color-white); padding: 5px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.55rem; margin-bottom: 1px;">1. Parameter Rules</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.48rem; line-height: 1.1; display: block;">Setup branches, regulations, fees</span>
+              </div>
+              <div style="color: var(--color-teal); font-weight: bold; font-size: 0.65rem;">➔</div>
+              <div
+                style="flex: 1; background: var(--color-white); padding: 5px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.55rem; margin-bottom: 1px;">2. User Onboarding</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.48rem; line-height: 1.1; display: block;">Bulk CSV uploads & profile setups</span>
+              </div>
+              <div style="color: var(--color-teal); font-weight: bold; font-size: 0.65rem;">➔</div>
+              <div
+                style="flex: 1; background: var(--color-white); padding: 5px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.55rem; margin-bottom: 1px;">3. Daily Execution</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.48rem; line-height: 1.1; display: block;">GPS check-in, classes, returns</span>
+              </div>
+              <div style="color: var(--color-teal); font-weight: bold; font-size: 0.65rem;">➔</div>
+              <div
+                style="flex: 1; background: var(--color-navy); color: var(--color-white); padding: 5px; border-radius: 4px; border: 1px solid var(--color-navy);">
+                <strong style="color: white; display: block; font-size: 0.55rem; margin-bottom: 1px;">4. Compilations</strong>
+                <span style="color: rgba(255,255,255,0.9); font-size: 0.48rem; line-height: 1.1; display: block;">Generate ExcelJS & CO-PO audits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 3: SYSTEM ADMIN & DYNAMIC SETUP           -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-1">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">System Admin Workflow & Global Setups</h2>
+            <p class="slide-subtitle">Establish institution parameters, manage bulk user registrations, and enforce
+              geolocation radius restrictions.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-navy">
+                <span class="card-emoji">👥</span>
+                <h3>Bulk CSV User Onboarding</h3>
+              </div>
+              <p class="card-text">Upload entire cohorts of students or department faculties via standardized
+                spreadsheets. Automated parses create accounts, setup permissions, and assign academic sections
+                instantly.</p>
+              <div class="badge">CSV / XLSX Import</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-orange">
+                <span class="card-emoji">⚙️</span>
+                <h3>Dynamic Regulation Schemes</h3>
+              </div>
+              <p class="card-text">Establish multiple concurrent academic schemas (e.g., R18, R22) with distinct credit
+                structures, branch specifications, semester counts, and subject-wise criteria mapping.</p>
+              <div class="badge">R18 / R22 Regulation</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-teal">
+                <span class="card-emoji">🗺️</span>
+                <h3>Geofence Configuration Panel</h3>
+              </div>
+              <p class="card-text">Define precise Lat/Lng coordinates for your campus boundaries. Configure an active
+                zone radius in meters. Controls biometric attendance check-in validity dynamically.</p>
+              <div class="badge">GPS Geofencing</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-navy">
+                <span class="card-emoji">📢</span>
+                <h3>Global Notice Board</h3>
+              </div>
+              <p class="card-text">Broadcast institution notifications, exam schedules, and holiday circulars directly
+                onto HOD, faculty, student, parent, and accounts dashboards in real-time.</p>
+              <div class="badge">Notice Board Controller</div>
+            </div>
+          </div>
+
+          <!-- Geofence Admin Panel Mockup -->
+          <div class="mockup-panel-full border-left-teal">
+            <h4 class="mockup-panel-title">🌐 Geofence Boundary Configurator Dashboard</h4>
+            <div class="geofence-mockup-body">
+              <div class="mock-input-row">
+                <div class="mock-input"><strong>Latitude:</strong> <span>17.2023</span></div>
+                <div class="mock-input"><strong>Longitude:</strong> <span>78.5831</span></div>
+                <div class="mock-input"><strong>Allowed Radius:</strong> <span>200 meters</span></div>
+                <div class="mock-input"><strong>Enforced Zone:</strong> <span class="active-tag">CAMPUS ENFORCED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin workflow pipeline -->
+          <div class="security-pipeline">
+            <h4 class="pipeline-title">🛠️ System Setup & Onboarding Workflow</h4>
+            <div class="pipeline-steps">
+              <div class="pipe-step"><span class="pipe-icon">📄</span><span class="pipe-txt">1. Bulk User Upload</span>
+              </div>
+              <div class="pipe-arrow">➔</div>
+              <div class="pipe-step"><span class="pipe-icon">🎓</span><span class="pipe-txt">2. Map Regulations</span>
+              </div>
+              <div class="pipe-arrow">➔</div>
+              <div class="pipe-step"><span class="pipe-icon">🌐</span><span class="pipe-txt">3. Configure
+                  Geofence</span></div>
+              <div class="pipe-arrow">➔</div>
+              <div class="pipe-step"><span class="pipe-icon">🚀</span><span class="pipe-txt">4. Platform Live</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 3: PRINCIPAL DASHBOARD & AUDIT CONTROL    -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-2">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">Principal Dashboard & Monitoring Console</h2>
+            <p class="slide-subtitle">Overarching supervision dashboard tracking department workloads, student
+              performance registers, and campus operations.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-navy">
+                <span class="card-emoji">📊</span>
+                <h3>Academic Performance Audit</h3>
+              </div>
+              <p class="card-text">Monitor branch-wise class pass percentages, examine grade distribution charts, and
+                review semester statistics dynamically across civil, CSE, IT, mech, and ECE branches.</p>
+              <div class="badge">Pass Rate Analytics</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-orange">
+                <span class="card-emoji">📈</span>
+                <h3>Real-Time Attendance Audit</h3>
+              </div>
+              <p class="card-text">Trace cumulative faculty check-ins and check student attendance percentages across
+                the institution. View graphs detailing daily attendance counts and absent flags.</p>
+              <div class="badge">Attendance Audit</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-teal">
+                <span class="card-emoji">🔏</span>
+                <h3>Global Notice Broadcasting</h3>
+              </div>
+              <p class="card-text">Publish high-priority notices, academic schedules, exam protocols, and guidelines.
+                Broadcast is instantly visible to all roles across student and parent web consoles.</p>
+              <div class="badge">Broadcaster Control</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-navy">
+                <span class="card-emoji">⚖️</span>
+                <h3>Overriding Leaves Approval</h3>
+              </div>
+              <p class="card-text">Review escalation logs and departmental staff leave. Provide final consent overrides
+                for faculty leave substitutions when timetable conflicts require Principal resolution.</p>
+              <div class="badge">Escalation Resolver</div>
+            </div>
+          </div>
+
+          <!-- Principal Analytics Cockpit Mockup -->
+          <div class="student-dashboard-mockup">
+            <div class="mockup-header">
+              <span class="mockup-title">Principal Supervision Console Mockup</span>
+              <span class="mockup-status">Campus Status: ACTIVE</span>
+            </div>
+            <div class="mockup-body">
+              <div class="timetable-preview-card">
+                <h5>Branch Pass % Ratings</h5>
+                <div class="slot-row"><span class="slot-time">CSE Branch</span><span
+                    class="slot-subj active-slot-subj">94.2%</span></div>
+                <div class="slot-row"><span class="slot-time">ECE Branch</span><span class="slot-subj">89.8%</span>
+                </div>
+              </div>
+              <div class="attendance-preview-card">
+                <h5>Faculty Clock-in Rate</h5>
+                <div class="attendance-circle">
+                  <div class="attendance-pct">98.4%</div>
+                  <div class="attendance-lbl">EXCELLENT</div>
+                </div>
+              </div>
+              <div class="capacity-preview-card">
+                <h5>Total Enrolled Students</h5>
+                <div class="seat-bar">
+                  <span class="route-lbl">Live Campus Roll</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: 100%;"></div>
+                  </div>
+                  <span class="seat-count">4,280 Registered Students</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 4: HOD WORKSPACE & COORDINATION           -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-3">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">HOD Workspace & Academic Coordination</h2>
+            <p class="slide-subtitle">Optimize departmental operations, allocate timetable slots, review faculty
+              workloads, and approve conflict-free substitutions.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <!-- HOD Timetable Card -->
+            <div class="bordered-card border-top-navy">
+              <div class="card-role-title">
+                <span class="card-emoji">📅</span>
+                <h3>Timetable Slot Allocator</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Configure subject timetables for all semesters</li>
+                <li>Assign faculty to specific branch sections & rooms</li>
+                <li>Verify weekly workload distributions (hours/faculty)</li>
+                <li>Audit live timetables logs for scheduling conflicts</li>
+              </ul>
+            </div>
+
+            <!-- HOD Approvals Card -->
+            <div class="bordered-card border-top-orange">
+              <div class="card-role-title">
+                <span class="card-emoji">📝</span>
+                <h3>Leave & Substitution Manager</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Verify staff leave requests and dates</li>
+                <li>Audit system suggested substitution faculty lists</li>
+                <li>Approve workload assignments to substitute faculty</li>
+                <li>Auto-sync substitutions with active timetables</li>
+              </ul>
+            </div>
+
+            <!-- HOD Notice Board Card -->
+            <div class="bordered-card border-top-teal">
+              <div class="card-role-title">
+                <span class="card-emoji">📢</span>
+                <h3>Departmental Broadcaster</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Publish exam alerts & session timetables</li>
+                <li>Distribute curriculum handouts & resources</li>
+                <li>Target notices to specific classes/semesters</li>
+                <li>Monitor student & staff read-receipt status</li>
+              </ul>
+            </div>
+
+            <!-- HOD Workload Auditor Card -->
+            <div class="bordered-card border-top-navy">
+              <div class="card-role-title">
+                <span class="card-emoji">📈</span>
+                <h3>Workload & Progress Auditor</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Track syllabus coverage & lecture diaries</li>
+                <li>Audit faculty weekly teaching hour quotas</li>
+                <li>Identify lag points in course schedules</li>
+                <li>Approve departmental course-end reports</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Leave Approval & Peer Substitution Flowchart -->
+          <div class="visual-flow-diagram">
+            <h4 class="flow-title">🔄 Leave Request & Peer Substitution Workflow</h4>
+            <div class="flow-timeline" style="margin-bottom: 8px;">
+              <div class="flow-node">
+                <div class="node-badge">1</div>
+                <div class="node-desc"><strong>Leave Request</strong>Faculty submits leave details</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">2</div>
+                <div class="node-desc"><strong>Peers Audit</strong>System checks conflict-free peers</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">3</div>
+                <div class="node-desc"><strong>Peer Assigned</strong>Substitute scheduled & notified</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">4</div>
+                <div class="node-desc"><strong>HOD Consent</strong>HOD signs off & updates active slots</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- HOD Timetable & Substitution Matrix Mockup -->
+          <div class="timetable-mockup-panel" style="margin-top: 10px;">
+            <div class="mockup-header-bar"
+              style="background: var(--color-bg-light); border-bottom: 1px solid var(--color-gray-border); padding: 4px 10px; display: flex; align-items: center;">
+              <span class="dot-btn"
+                style="background: #EF4444; width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px;"></span>
+              <span class="dot-btn"
+                style="background: #F59E0B; width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px;"></span>
+              <span class="dot-btn"
+                style="background: #10B981; width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px;"></span>
+              <span class="mockup-bar-title"
+                style="font-size: 0.58rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">HOD
+                Academic Planner - Section Substitution Live Logs</span>
+            </div>
+            <div class="timetable-grid-container">
+              <table class="timetable-table"
+                style="width: 100%; border-collapse: collapse; font-size: 0.52rem; text-align: left;">
+                <thead>
+                  <tr
+                    style="background: rgba(11, 44, 74, 0.04); color: var(--color-navy); font-weight: 700; border-bottom: 1px solid var(--color-gray-border);">
+                    <th style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Section</th>
+                    <th style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Absent Staff</th>
+                    <th style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Substitute Staff
+                    </th>
+                    <th style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Period Slot</th>
+                    <th style="padding: 4px 8px;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid var(--color-gray-border);">
+                    <td style="padding: 4px 8px; font-weight: bold; border-right: 1px solid var(--color-gray-border);">
+                      CSE - III Sem A</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Dr. A. Srinivas</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Mrs. K. Jhansi</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Period 2 (10:30 AM)
+                    </td>
+                    <td style="padding: 4px 8px; color: #10B981; font-weight: bold;">APPROVED Consented</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid var(--color-gray-border);">
+                    <td style="padding: 4px 8px; font-weight: bold; border-right: 1px solid var(--color-gray-border);">
+                      ECE - V Sem B</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Mr. P. Rakesh</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Mr. V. Anand</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Period 4 (01:30 PM)
+                    </td>
+                    <td style="padding: 4px 8px; color: #10B981; font-weight: bold;">APPROVED Consented</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 8px; font-weight: bold; border-right: 1px solid var(--color-gray-border);">
+                      IT - VII Sem A</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Mrs. Swapna G.</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Dr. Suresh M.</td>
+                    <td style="padding: 4px 8px; border-right: 1px solid var(--color-gray-border);">Period 5 (02:30 PM)
+                    </td>
+                    <td style="padding: 4px 8px; color: var(--color-orange); font-weight: bold;">PENDING PEER CONSENT
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 5: FACULTY WORKSPACE & GEOFENCED ATTENDANCE-->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-4">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">Faculty Workspace & Geofenced Attendance</h2>
+            <p class="slide-subtitle">Track teaching timetables, upload grades in bulk, share study guides, and clock-in
+              using location coordinates.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <!-- Geofenced Attendance Card -->
+            <div class="bordered-card border-top-navy">
+              <div class="card-role-title">
+                <span class="card-emoji">🛰️</span>
+                <h3>Geofenced Facial Attendance</h3>
+              </div>
+              <p class="card-text">Faculties verify identity via real-time facial recognition alongside device GPS. The
+                system computes coordinates using the **Haversine formula** to prevent spoofing checks.</p>
+              <div class="badge">Facial Biometrics & GPS Enforced</div>
+            </div>
+
+            <!-- Marks & Gradebook Card -->
+            <div class="bordered-card border-top-orange">
+              <div class="card-role-title">
+                <span class="card-emoji">📊</span>
+                <h3>Gradebook Marks Manager</h3>
+              </div>
+              <p class="card-text">Upload mid-term and SEE exam marks using dynamic templates. Calculations compute
+                student averages, section passes, and outcome mappings automatically.</p>
+              <div class="badge">Bulk Upload Tool</div>
+            </div>
+          </div>
+
+          <!-- Geofence Check-in Verification Mockup -->
+          <div class="timetable-mockup-panel">
+            <div class="mockup-header-bar">
+              <span class="dot-btn"></span><span class="dot-btn"></span><span class="dot-btn"></span>
+              <span class="mockup-bar-title">Faculty Daily Biometric Clock-In Check</span>
+            </div>
+            <div class="timetable-grid-container" style="padding: 15px;">
+              <div class="geofence-status-mockup">
+                <div class="status-entry"><strong>Device Coordinates:</strong> <span>Lat: 17.20231, Lng: 78.58312</span>
+                </div>
+                <div class="status-entry"><strong>Facial Verification:</strong> <span class="active-tag"
+                    style="background-color: rgba(16, 185, 129, 0.15); color: #10B981; border: none;">VERIFIED (99.2%
+                    Match)</span></div>
+                <div class="status-entry"><strong>Campus Center:</strong> <span>Lat: 17.20230, Lng: 78.58310</span>
+                </div>
+                <div class="status-entry"><strong>Calculated Distance:</strong> <span class="active-tag"
+                    style="background-color: rgba(16, 185, 129, 0.15); color: #10B981; border: none;">12.4 Meters
+                    (WITHIN ZONE)</span></div>
+                <div class="status-entry"><strong>Status:</strong> <span class="active-tag"
+                    style="background-color: var(--color-orange); color: var(--color-white); border: none;">CLOCKED-IN
+                    SUCCESS</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Faculty Daily Workflow -->
+          <div class="visual-flow-diagram">
+            <h4 class="flow-title">🛰️ Geofence Check-In & Classroom Workflow</h4>
+            <div class="flow-timeline">
+              <div class="flow-node">
+                <div class="node-badge">1</div>
+                <div class="node-desc"><strong>GPS Lock</strong>Faculty requests clock-in via device</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">2</div>
+                <div class="node-desc"><strong>Haversine</strong>Calculates distance from campus center</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">3</div>
+                <div class="node-desc"><strong>Clock-in</strong>Logs attendance if within radius</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">4</div>
+                <div class="node-desc"><strong>Classroom</strong>Unlocks study materials uploads</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 6: STUDENT & PARENT PORTALS               -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-5">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">Student & Parent Workspace</h2>
+            <p class="slide-subtitle">Trace active class schedules, track subject attendance percentages, download
+              lecture slides, and complete surveys.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <!-- Student Workspace Card -->
+            <div class="bordered-card border-top-navy">
+              <div class="card-role-title">
+                <span class="card-emoji">🎓</span>
+                <h3>Student Web Portal</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Check personalized weekly schedules</li>
+                <li>Download PDF guides and slides from Study Hub</li>
+                <li>Review cumulative class attendance logs</li>
+                <li>Track mid-term and internal grades records</li>
+                <li>Submit student Course End Surveys (CES)</li>
+              </ul>
+            </div>
+
+            <!-- Parent Monitor Card -->
+            <div class="bordered-card border-top-orange">
+              <div class="card-role-title">
+                <span class="card-emoji">👪</span>
+                <h3>Parent Tracking Access</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Review child's daily class attendance histories</li>
+                <li>Monitor tuition dues, fees, and payments status</li>
+                <li>Verify exam mark sheets and grade reports</li>
+                <li>Review outstanding due balances</li>
+              </ul>
+            </div>
+
+            <!-- Student Placement Cell Card -->
+            <div class="bordered-card border-top-teal">
+              <div class="card-role-title">
+                <span class="card-emoji">💼</span>
+                <h3>Placement Cell Dashboard</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Register for campus recruitment drives</li>
+                <li>Upload resume drafts & credentials vaults</li>
+                <li>Receive eligibility alerts & interview dates</li>
+                <li>Track selection rounds & job offer letters</li>
+              </ul>
+            </div>
+
+            <!-- Student Survey Card -->
+            <div class="bordered-card border-top-navy">
+              <div class="card-role-title">
+                <span class="card-emoji">📝</span>
+                <h3>OBE Feedback Surveys (CES)</h3>
+              </div>
+              <ul class="checkmark-list font-normal">
+                <li>Submit course end feedback surveys (CES)</li>
+                <li>Rate syllabus coverage & teaching efficiency</li>
+                <li>Provide feedback comments on curriculum</li>
+                <li>Auto-sync inputs with NAAC OBE engine</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- MERN Student Portal Mockup -->
+          <div class="student-dashboard-mockup">
+            <div class="mockup-header">
+              <span class="mockup-title">Student Portal Dashboard (MERN UI)</span>
+              <span class="mockup-status">Student Roll: CS24001</span>
+            </div>
+            <div class="mockup-body"
+              style="grid-template-columns: 1.2fr 0.8fr 1fr; border-bottom: 1px solid var(--color-gray-border); padding-bottom: 10px; margin-bottom: 5px;">
+              <div class="timetable-preview-card">
+                <h5>Active Timetable</h5>
+                <div class="slot-row"><span class="slot-time">09:30 AM</span><span
+                    class="slot-subj active-slot-subj">CS102 Data Structures</span></div>
+                <div class="slot-row"><span class="slot-time">10:30 AM</span><span class="slot-subj">CS104 Theory of
+                    Computation</span></div>
+              </div>
+              <div class="attendance-preview-card">
+                <h5>Subject Attendance</h5>
+                <div class="attendance-circle">
+                  <div class="attendance-pct">88.5%</div>
+                  <div class="attendance-lbl">NORMAL</div>
+                </div>
+              </div>
+              <div class="capacity-preview-card">
+                <h5>Notice Alerts</h5>
+                <div class="seat-bar">
+                  <span class="route-lbl">OBE Surveys Open</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: 100%;"></div>
+                  </div>
+                  <span class="seat-count">Complete surveys before 25th June</span>
+                </div>
+              </div>
+            </div>
+            <!-- Placement Drives & Career Registry -->
+            <div
+              style="padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--color-white);">
+              <div
+                style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 10px; font-size: 0.52rem;">
+                <strong style="color: var(--color-navy); display: block; margin-bottom: 2px;">💼 Active Placement
+                  Recruitment Drives</strong>
+                <div
+                  style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--color-gray-border); padding: 2px 0;">
+                  <span>Infosys Campus Drive</span><span style="color: #10B981; font-weight: bold;">REGISTERED</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 2px 0;"><span>Wipro Elite
+                    NTH</span><span style="color: var(--color-orange); font-weight: bold;">TEST ON 22 JUN</span></div>
+              </div>
+              <div
+                style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 10px; font-size: 0.52rem;">
+                <strong style="color: var(--color-navy); display: block; margin-bottom: 2px;">📈 Academic Performance
+                  Index</strong>
+                <div
+                  style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--color-gray-border); padding: 2px 0;">
+                  <span>Cumulative CGPA</span><span style="font-weight: bold;">8.92 CGPA</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 2px 0;"><span>Backlogs
+                    Count</span><span style="color: #10B981; font-weight: bold;">0 ACTIVE</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 7: ACCOUNTS MANAGER WORKSPACE             -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-6">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">Accounts & Academic Workspace</h2>
+            <p class="slide-subtitle">Configure regulation schemes, manage monthly attendance configs, register student profiles, and coordinate notices.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <!-- Academic Setup Card -->
+            <div class="bordered-card border-top-navy">
+              <div class="card-role-title">
+                <span class="card-emoji">🎓</span>
+                <h3>Academic & Branch Configs</h3>
+              </div>
+              <p class="card-text" style="margin-bottom: 8px;">Configure regulations (R18/R22), branch codes, semester periods, and subject mappings to construct the college master curriculum database.
+              </p>
+              <div class="badge">Curriculum Setup</div>
+            </div>
+
+            <!-- Reference Verification Card -->
+            <div class="bordered-card border-top-orange">
+              <div class="card-role-title">
+                <span class="card-emoji">📅</span>
+                <h3>Attendance Configurations</h3>
+              </div>
+              <p class="card-text" style="margin-bottom: 8px;">Set month-wise academic calendar rules, total working days, global holidays, and attendance percentage thresholds for system audits.</p>
+              <div class="badge">Calendar Settings</div>
+            </div>
+
+            <!-- Student & Faculty Registry Card -->
+            <div class="bordered-card border-top-teal">
+              <div class="card-role-title">
+                <span class="card-emoji">👥</span>
+                <h3>Onboarding Registries</h3>
+              </div>
+              <p class="card-text" style="margin-bottom: 8px;">Administer global databases for onboarding faculty and student profile folders. Maintain demographic, contact, and enrollment records.</p>
+              <div class="badge">Bulk CSV Registries</div>
+            </div>
+
+            <!-- Balance Ledger Exporter Card -->
+            <div class="bordered-card border-top-navy">
+              <div class="card-role-title">
+                <span class="card-emoji">📢</span>
+                <h3>Global Notice Board</h3>
+              </div>
+              <p class="card-text" style="margin-bottom: 8px;">Post and broadcast high-priority notices, academic notifications, and holiday circulars directly onto student, faculty, and HOD dashboards in real-time.
+              </p>
+              <div class="badge">Notice Board Controller</div>
+            </div>
+          </div>
+
+          <!-- Student & Faculty Registry Mockup -->
+          <div class="timetable-mockup-panel">
+            <div class="mockup-header-bar">
+              <span class="dot-btn"></span><span class="dot-btn"></span><span class="dot-btn"></span>
+              <span class="mockup-bar-title">Institutional Student & Faculty Registry Console</span>
+            </div>
+            <div class="timetable-grid-container">
+              <table class="timetable-table">
+                <thead>
+                  <tr>
+                    <th>Enrollment/Employee ID</th>
+                    <th>Full Name</th>
+                    <th>Branch / Department</th>
+                    <th>Semester / Post</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="day-cell">CS24001</td>
+                    <td class="class-cell">Laxmi Ganji</td>
+                    <td class="class-cell">Computer Science (CSE)</td>
+                    <td class="class-cell">Semester V</td>
+                    <td class="class-cell highlight-substituted"
+                      style="background-color: rgba(16, 185, 129, 0.1); color: #10B981; border-left-color: #10B981;">
+                      ACTIVE</td>
+                  </tr>
+                  <tr>
+                    <td class="day-cell">F24089</td>
+                    <td class="class-cell">Dr. A. Srinivas</td>
+                    <td class="class-cell">Electronics & Comm (ECE)</td>
+                    <td class="class-cell">Professor</td>
+                    <td class="class-cell highlight-substituted"
+                      style="background-color: rgba(16, 185, 129, 0.1); color: #10B981; border-left-color: #10B981;">
+                      ACTIVE</td>
+                  </tr>
+                  <tr>
+                    <td class="day-cell">CS24003</td>
+                    <td class="class-cell">K. Rahul Raju</td>
+                    <td class="class-cell">Information Tech (IT)</td>
+                    <td class="class-cell">Semester V</td>
+                    <td class="class-cell highlight-substituted"
+                      style="background-color: rgba(16, 185, 129, 0.1); color: #10B981; border-left-color: #10B981;">
+                      ACTIVE</td>
+                  </tr>
+                  <tr>
+                    <td class="day-cell">F24112</td>
+                    <td class="class-cell">P. Sandhya Rani</td>
+                    <td class="class-cell">Mechanical Eng (MECH)</td>
+                    <td class="class-cell">Assistant Professor</td>
+                    <td class="class-cell highlight-substituted"
+                      style="background-color: rgba(245, 130, 32, 0.1); color: var(--color-orange); border-left-color: var(--color-orange);">
+                      ON LEAVE</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Onboarding workflow -->
+          <div class="visual-flow-diagram">
+            <h4 class="flow-title">⚙️ Academic Parameter & Onboarding Lifecycle</h4>
+            <div class="flow-timeline">
+              <div class="flow-node">
+                <div class="node-badge">1</div>
+                <div class="node-desc"><strong>Curriculum Setup</strong>Configure regulations & branches</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">2</div>
+                <div class="node-desc"><strong>Onboarding</strong>CSV registration files upload</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">3</div>
+                <div class="node-desc"><strong>Calendar Config</strong>Set working days & holidays</div>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-node">
+                <div class="node-badge">4</div>
+                <div class="node-desc"><strong>Announcements</strong>Notice board postings live</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 8: TRANSPORT SEAT & ROUTE MANAGER         -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-7">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">Transport Seat & Route Manager</h2>
+            <p class="slide-subtitle">Manage bus route mappings, track dynamic stop-wise fares, monitor seat
+              availability capacities, and issue print-ready passes.</p>
+          </div>
+
+          <div class="grid-2x2" style="margin-bottom: 10px;">
+            <div class="info-card"
+              style="padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-icon-header icon-bg-navy" style="margin-bottom: 4px;">
+                  <span class="card-emoji">🚌</span>
+                  <h3 style="font-size: 0.9rem;">Route & Stop Configs</h3>
+                </div>
+                <!-- Route Details Mockup -->
+                <div
+                  style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 10px; margin: 6px 0; font-size: 0.62rem; display: flex; flex-direction: column; gap: 2px;">
+                  <div style="font-weight: bold; color: var(--color-navy); margin-bottom: 4px; font-size: 0.65rem;">📍
+                    Route #04 Stops & Fares Config</div>
+                  <div
+                    style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--color-gray-border);">
+                    <span>1. Uppal Depot (0.0 km)</span><span
+                      style="color: var(--color-teal); font-weight: bold;">₹15,000</span>
+                  </div>
+                  <div
+                    style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--color-gray-border);">
+                    <span>2. Ramanthapur (4.2 km)</span><span
+                      style="color: var(--color-teal); font-weight: bold;">₹18,000</span>
+                  </div>
+                  <div
+                    style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--color-gray-border);">
+                    <span>3. Habsiguda (7.5 km)</span><span
+                      style="color: var(--color-teal); font-weight: bold;">₹20,000</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 2px 0;"><span>4. SPHN Campus (12.0
+                      km)</span><span style="color: var(--color-orange); font-weight: bold;">ARRIVED</span></div>
+                </div>
+                <div
+                  style="font-size: 0.52rem; color: var(--color-navy); background: rgba(11, 44, 74, 0.06); padding: 4px 8px; border-radius: 4px; display: block; font-weight: 600; text-align: center;">
+                  👤 Driver: R. Kumar | Phone: +91 98480 22338 | GPS: ACTIVE
+                </div>
+              </div>
+              <p class="card-text" style="font-size: 0.68rem; margin-top: 6px; margin-bottom: 0;">Map bus license
+                numbers, driver contacts, and stop-wise ticketing fares. Auto-calculates fees based on stop selection.
+              </p>
+            </div>
+            <div class="info-card"
+              style="padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-icon-header icon-bg-teal" style="margin-bottom: 4px;">
+                  <span class="card-emoji">🎫</span>
+                  <h3 style="font-size: 0.9rem;">Seat Capacity registers</h3>
+                </div>
+                <!-- Capacity Progress Mockup -->
+                <div
+                  style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 10px; margin: 6px 0; font-size: 0.62rem;">
+                  <div
+                    style="display: flex; justify-content: space-between; font-weight: bold; color: var(--color-navy); margin-bottom: 2px; font-size: 0.65rem;">
+                    <span>Bus TS08-UA-1024</span>
+                    <span style="color: var(--color-orange);">42 / 50 Filled</span>
+                  </div>
+                  <div class="progress-bar-container" style="height: 5px; margin-bottom: 4px;">
+                    <div class="progress-bar-fill" style="width: 84%; background-color: var(--color-orange);"></div>
+                  </div>
+
+                  <!-- Visual Seating Grid Layout -->
+                  <div
+                    style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; padding: 4px; background: var(--color-white); border: 1px solid var(--color-gray-border); border-radius: 4px; margin-top: 4px; width: 100%; justify-items: center;">
+                    <div style="background: var(--color-teal); width: 8px; height: 8px; border-radius: 2px;"></div>
+                    <div style="background: var(--color-teal); width: 8px; height: 8px; border-radius: 2px;"></div>
+                    <div style="width: 8px; height: 8px;"></div>
+                    <div style="background: var(--color-teal); width: 8px; height: 8px; border-radius: 2px;"></div>
+                    <div style="background: var(--color-orange); width: 8px; height: 8px; border-radius: 2px;"></div>
+                    <div style="background: var(--color-teal); width: 8px; height: 8px; border-radius: 2px;"></div>
+                    <div style="background: var(--color-teal); width: 8px; height: 8px; border-radius: 2px;"></div>
+                    <div style="width: 8px; height: 8px;"></div>
+                    <div style="background: var(--color-teal); width: 8px; height: 8px; border-radius: 2px;"></div>
+                    <div style="background: var(--color-teal); width: 8px; height: 8px; border-radius: 2px;"></div>
+                  </div>
+                  <span
+                    style="font-size: 0.48rem; color: var(--color-text-muted); display: block; margin-top: 4px; font-weight: 600; text-align: center;">Remaining:
+                    8 Vacant Seats | GPS: Online</span>
+                </div>
+              </div>
+              <p class="card-text" style="font-size: 0.68rem; margin-top: 6px; margin-bottom: 0;">Check seat capacities
+                prior to ticket issuance. Prevents bus overbookings. Auto-approves digital passes upon validation.</p>
+            </div>
+
+            <!-- Card 3: Maintenance & Fuel Logs -->
+            <div class="info-card"
+              style="padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-icon-header icon-bg-navy" style="margin-bottom: 4px;">
+                  <span class="card-emoji">🔧</span>
+                  <h3 style="font-size: 0.9rem;">Maintenance & Fuel Logs</h3>
+                </div>
+                <!-- Maintenance details Mockup -->
+                <div
+                  style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 10px; margin: 6px 0; font-size: 0.62rem; display: flex; flex-direction: column; gap: 2px;">
+                  <div style="font-weight: bold; color: var(--color-navy); margin-bottom: 2px; font-size: 0.65rem;">⛽
+                    Fuel & Servicing Registry</div>
+                  <div
+                    style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--color-gray-border);">
+                    <span>Fuel: 45 Liters (Diesel)</span><span
+                      style="color: var(--color-teal); font-weight: bold;">₹4,250</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 2px 0;"><span>Next Service due:
+                      15,000 km</span><span style="color: var(--color-orange); font-weight: bold;">ALERT ON</span></div>
+                </div>
+              </div>
+              <p class="card-text" style="font-size: 0.68rem; margin-top: 6px; margin-bottom: 0;">Log fuel receipts,
+                track scheduled services, monitor inspections, and receive automated insurance alerts.</p>
+            </div>
+
+            <!-- Card 4: GPS Live Tracking -->
+            <div class="info-card"
+              style="padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-icon-header icon-bg-teal" style="margin-bottom: 4px;">
+                  <span class="card-emoji">🛰️</span>
+                  <h3 style="font-size: 0.9rem;">GPS Live Tracking (VTS)</h3>
+                </div>
+                <!-- GPS Tracking Mockup -->
+                <div
+                  style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 10px; margin: 6px 0; font-size: 0.62rem;">
+                  <div
+                    style="display: flex; justify-content: space-between; font-weight: bold; color: var(--color-navy); margin-bottom: 2px; font-size: 0.65rem;">
+                    <span>Active Route Mappings</span>
+                    <span style="color: #10B981; font-weight: bold;">● Active</span>
+                  </div>
+                  <div
+                    style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.52rem; color: var(--color-text-dark);">
+                    <span>Current Stop: Ramanthapur</span>
+                    <span>ETA: 10 mins</span>
+                  </div>
+                  <div class="progress-bar-container" style="height: 5px; margin-top: 4px;">
+                    <div class="progress-bar-fill" style="width: 70%; background-color: var(--color-teal);"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="card-text" style="font-size: 0.68rem; margin-top: 6px; margin-bottom: 0;">Integrate hardware GPS
+                trackers. Feeds real-time coordinates to student portals to show live bus position and ETA.</p>
+            </div>
+          </div>
+
+          <!-- Premium Holographic Ticket Stub Pass -->
+          <div class="bus-pass-preview-box">
+            <div class="premium-bus-pass">
+              <!-- Left Stub -->
+              <div class="pass-stub">
+                <div class="stub-header">ECAP SPHN</div>
+                <div class="stub-details">
+                  <h4>Laxmi Ganji</h4>
+                  <p><strong>Route:</strong> Uppal to SPHN</p>
+                  <p><strong>Seat:</strong> No. 22</p>
+                  <p><strong>Stop:</strong> Ramanthapur</p>
+                </div>
+                <div class="stub-footer">STUB ONLY</div>
+              </div>
+
+              <!-- Perforation Line -->
+              <div class="pass-perforation">
+                <div class="perf-dot"></div>
+                <div class="perf-dot"></div>
+                <div class="perf-dot"></div>
+                <div class="perf-dot"></div>
+                <div class="perf-dot"></div>
+                <div class="perf-dot"></div>
+                <div class="perf-dot"></div>
+              </div>
+
+              <!-- Main Ticket -->
+              <div class="pass-ticket">
+                <div class="ticket-header">
+                  <span class="t-title">DIGITAL TRANSPORT PASS</span>
+                  <span class="t-year">2025-26</span>
+                </div>
+                <div class="ticket-body">
+                  <div class="ticket-info">
+                    <h3>Laxmi Ganji</h3>
+                    <p class="t-route">Uppal Route #04 (Bus TS08-UA-1024)</p>
+                    <div class="ticket-barcode">
+                      <div class="bar bar-1"></div>
+                      <div class="bar bar-2"></div>
+                      <div class="bar bar-3"></div>
+                      <div class="bar bar-4"></div>
+                      <div class="bar bar-1"></div>
+                      <div class="bar bar-3"></div>
+                      <div class="bar bar-2"></div>
+                      <span class="barcode-num">CS24001-VTS</span>
+                    </div>
+                  </div>
+                  <div class="ticket-qr-area">
+                    <div class="ticket-qr-area">
+                      <div class="t-qr-box">
+                        <svg viewBox="0 0 100 100" width="48" height="48" style="color: var(--color-navy)">
+                          <rect x="5" y="5" width="30" height="30" fill="none" stroke="currentColor" stroke-width="4" />
+                          <rect x="65" y="5" width="30" height="30" fill="none" stroke="currentColor"
+                            stroke-width="4" />
+                          <rect x="5" y="65" width="30" height="30" fill="none" stroke="currentColor"
+                            stroke-width="4" />
+                          <rect x="15" y="15" width="10" height="10" fill="currentColor" />
+                          <rect x="75" y="15" width="10" height="10" fill="currentColor" />
+                          <rect x="15" y="75" width="10" height="10" fill="currentColor" />
+                          <rect x="65" y="65" width="10" height="10" fill="currentColor" />
+                          <rect x="75" y="75" width="15" height="15" fill="currentColor" />
+                        </svg>
+                      </div>
+                      <div class="t-status">ACTIVE</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transport Workflow Staggered Steps -->
+          <div class="transport-flow-container" style="margin-top: 15px; grid-template-columns: repeat(2, 1fr);">
+            <div class="flow-step" style="padding: 6px 10px;">
+              <div class="flow-badge">1</div>
+              <p style="font-size: 0.65rem;"><strong>Config:</strong> Map Bus, route, stop-fares</p>
+            </div>
+            <div class="flow-step" style="padding: 6px 10px;">
+              <div class="flow-badge">2</div>
+              <p style="font-size: 0.65rem;"><strong>Seat Check:</strong> Auto checks vacancy stats</p>
+            </div>
+            <div class="flow-step" style="padding: 6px 10px;">
+              <div class="flow-badge">3</div>
+              <p style="font-size: 0.65rem;"><strong>Receipt upload:</strong> Student logs payment ref</p>
+            </div>
+            <div class="flow-step" style="padding: 6px 10px;">
+              <div class="flow-badge">4</div>
+              <p style="font-size: 0.65rem;"><strong>Verify:</strong> Admin approves & issues pass PDF</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 9: LIBRARY DESK & NEWS CATALOGING         -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-8">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">Library Desk & News Cataloging</h2>
+            <p class="slide-subtitle">Catalog dynamic ISBN books databases, organize daily newspaper registers, issue
+              cards, and track student return dues.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-navy">
+                <span class="card-emoji">📖</span>
+                <h3>ISBN Books Cataloging</h3>
+              </div>
+              <p class="card-text">Define books by titles, authors, publishers, classifications, and unique ISBN
+                barcodes. Stock monitors record available copies, checkout flags, and storage rack positions.</p>
+              <div class="badge">Books Inventory</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-orange">
+                <span class="card-emoji">📰</span>
+                <h3>Newspaper Registers</h3>
+              </div>
+              <p class="card-text">Audit daily newspaper deliveries, record language versions, organize archive bundles,
+                and maintain logs of in-library newspaper checkout registries.</p>
+              <div class="badge">Newspaper Catalog</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-teal">
+                <span class="card-emoji">💳</span>
+                <h3>Library Issue Card</h3>
+              </div>
+              <p class="card-text">Check student borrowing limits prior to book issuance. Scan barcodes, link student
+                cards, and log due return dates dynamically.</p>
+              <div class="badge">Issue / Return checkout</div>
+            </div>
+
+            <div class="info-card">
+              <div class="card-icon-header icon-bg-navy">
+                <span class="card-emoji">⏱️</span>
+                <h3>Due Alerts Scheduler</h3>
+              </div>
+              <p class="card-text">Track overdue books, calculate daily fines, send notices, and block student gradebook
+                access when dues cross defined thresholds.</p>
+              <div class="badge">Library Dues tracking</div>
+            </div>
+          </div>
+
+          <!-- Library Checkout Table Mockup -->
+          <div class="timetable-mockup-panel" style="margin-top: 15px;">
+            <div class="mockup-header-bar">
+              <span class="dot-btn"></span><span class="dot-btn"></span><span class="dot-btn"></span>
+              <span class="mockup-bar-title">Active Library Book Checkouts</span>
+            </div>
+            <div class="timetable-grid-container">
+              <table class="timetable-table">
+                <thead>
+                  <tr>
+                    <th>Barcode</th>
+                    <th>Book Title</th>
+                    <th>Student ID</th>
+                    <th>Issued Date</th>
+                    <th>Due Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="day-cell">B-817264</td>
+                    <td class="class-cell">Introduction to Algorithms</td>
+                    <td class="class-cell">CS24001</td>
+                    <td class="class-cell">01 Jun 2026</td>
+                    <td class="class-cell">15 Jun 2026</td>
+                  </tr>
+                  <tr>
+                    <td class="day-cell">B-928371</td>
+                    <td class="class-cell">Database System Concepts</td>
+                    <td class="class-cell">CS24003</td>
+                    <td class="class-cell">12 Jun 2026</td>
+                    <td class="class-cell">26 Jun 2026</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 10: NBA & NAAC OBE CALCULATIONS ENGINE    -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-9">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content" style="margin: 5px 0;">
+          <div class="slide-header-area" style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h2 class="slide-title">NBA & NAAC OBE Calculations Engine</h2>
+              <span class="badge"
+                style="background-color: var(--color-navy); color: var(--color-white); font-size: 0.55rem; padding: 2px 6px;">ACCREDITED
+                COMPLIANT</span>
+            </div>
+            <p class="slide-subtitle" style="font-size: 0.72rem; line-height: 1.3;">Measure educational quality with our
+              automated calculations mapping Course Outcomes (CO) to Program Outcomes (PO) and specific compliance
+              indicators.</p>
+          </div>
+
+          <div class="grid-layout-obe" style="gap: 15px; margin-bottom: 10px;">
+            <!-- Left Info Panel -->
+            <div class="obe-info-panel"
+              style="display: flex; flex-direction: column; gap: 6px; padding: 10px; height: 100%;">
+              <div class="accent-title-box">
+                <span class="badge-accent" style="font-size: 0.55rem; padding: 2px 4px;">OBE Attainment Model</span>
+                <h3 style="font-size: 0.95rem; margin-top: 2px;">Attainment Model & Integration Matrix</h3>
+              </div>
+              <p style="margin: 0; font-size: 0.65rem; line-height: 1.25;">ECAP SPHN operates a dual-stream Direct and
+                Indirect attainment recalculation engine. Calculations are aggregated automatically for audit
+                dashboards.</p>
+
+              <!-- OBE Key Features List (Replaces math formulas) -->
+              <div style="display: flex; flex-direction: column; gap: 6px; margin: 8px 0; padding: 4px 0;">
+                <div style="display: flex; align-items: flex-start; gap: 8px; font-family: var(--font-body); font-size: 0.62rem; line-height: 1.3;">
+                  <span style="color: var(--color-teal); font-weight: 800; font-size: 0.68rem; margin-top: -2px;">✔</span>
+                  <div>
+                    <strong style="color: var(--color-navy); font-size: 0.64rem;">Direct Attainment Calculations</strong>
+                    Aggregates Internal Assessments (IA) and Semester End Exams (SEE) marks with automated course outcomes weighting.
+                  </div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 8px; font-family: var(--font-body); font-size: 0.62rem; line-height: 1.3;">
+                  <span style="color: var(--color-teal); font-weight: 800; font-size: 0.68rem; margin-top: -2px;">✔</span>
+                  <div>
+                    <strong style="color: var(--color-orange); font-size: 0.64rem;">Indirect Attainment Analyzer</strong>
+                    Processes survey metrics including Course End Surveys (CES), Graduate Exit feedback, and employer criteria.
+                  </div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 8px; font-family: var(--font-body); font-size: 0.62rem; line-height: 1.3;">
+                  <span style="color: var(--color-teal); font-weight: 800; font-size: 0.68rem; margin-top: -2px;">✔</span>
+                  <div>
+                    <strong style="color: var(--color-navy); font-size: 0.64rem;">CO-PO Strength Auto-Mapping</strong>
+                    Performs matrix multiplication to map marks criteria directly into NBA/NAAC compliant outcome registers.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Added visual donut chart -->
+              <div
+                style="border: 1px solid var(--color-gray-border); border-radius: 8px; padding: 6px 8px; background: var(--color-bg-light); display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm);">
+                <svg viewBox="0 0 100 100" width="45" height="45" style="flex-shrink: 0;">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" stroke-width="12" />
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--color-teal)" stroke-width="12"
+                    stroke-dasharray="251.2" stroke-dashoffset="50.24" transform="rotate(-90 50 50)" />
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--color-orange)" stroke-width="12"
+                    stroke-dasharray="251.2" stroke-dashoffset="200.96" transform="rotate(198 50 50)" />
+                  <text x="50" y="54" font-family="var(--font-headings)" font-size="11" font-weight="800"
+                    fill="var(--color-navy)" text-anchor="middle">80/20</text>
+                </svg>
+                <div style="font-family: var(--font-body); font-size: 0.5rem; line-height: 1.2;">
+                  <strong style="color: var(--color-navy); font-size: 0.55rem; display: block;">OBE Attainment
+                    Mix</strong>
+                  <span style="color: var(--color-teal); font-weight: 700;">■ Direct (80%)</span>: IA & SEE marks.<br />
+                  <span style="color: var(--color-orange); font-weight: 700;">■ Indirect (20%)</span>: CES surveys.
+                </div>
+              </div>
+
+              <!-- Compliance Note -->
+              <div
+                style="border-left: 3px solid var(--color-orange); background: var(--color-bg-light); border-radius: 4px; padding: 6px; font-family: var(--font-body); font-size: 0.5rem; line-height: 1.2; margin-top: auto;">
+                <strong style="color: var(--color-navy); font-size: 0.55rem; display: block; margin-bottom: 1px;">⚡
+                  Accreditation Audit Ready</strong>
+                Maps Course Outcomes (COs) to Program Outcomes (POs) and Specific Outcomes (PSOs) instantly.
+              </div>
+            </div>
+
+            <!-- Right Interactive Map & Matrix -->
+            <div class="obe-visual-panel" style="display: flex; flex-direction: column; gap: 6px; height: 100%;">
+              <h4 class="section-micro-title"
+                style="margin-bottom: 1px; font-size: 0.62rem; font-weight: bold; color: var(--color-navy);">Direct
+                Mapping Steps</h4>
+              <div class="attainment-workflow"
+                style="margin-bottom: 2px; display: flex; flex-direction: column; gap: 2px;">
+                <div class="workflow-box active-box"
+                  style="padding: 4px 6px; display: grid; grid-template-columns: 14px 1fr; gap: 6px; align-items: center; border-radius: 4px; border: 1px solid var(--color-orange); box-shadow: none;">
+                  <span class="step-num"
+                    style="width: 12px; height: 12px; font-size: 0.45rem; line-height: 12px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; background: var(--color-orange); color: #FFF;">1</span>
+                  <div class="workflow-text" style="font-size: 0.48rem; line-height: 1.1;">
+                    <strong style="font-size: 0.5rem; color: var(--color-navy);">CO-PO Strength Matrix</strong> Setup.
+                  </div>
+                </div>
+                <div class="workflow-box"
+                  style="padding: 4px 6px; display: grid; grid-template-columns: 14px 1fr; gap: 6px; align-items: center; border-radius: 4px; border: 1px solid var(--color-gray-border); box-shadow: none;">
+                  <span class="step-num"
+                    style="width: 12px; height: 12px; font-size: 0.45rem; line-height: 12px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; background: var(--color-bg-light); color: var(--color-text-dark); border: 1px solid var(--color-gray-border);">2</span>
+                  <div class="workflow-text" style="font-size: 0.48rem; line-height: 1.1;">
+                    <strong style="font-size: 0.55rem; color: var(--color-navy);">CO Marks Configuration</strong>
+                    templates.
+                  </div>
+                </div>
+                <div class="workflow-box"
+                  style="padding: 4px 6px; display: grid; grid-template-columns: 14px 1fr; gap: 6px; align-items: center; border-radius: 4px; border: 1px solid var(--color-gray-border); box-shadow: none;">
+                  <span class="step-num"
+                    style="width: 12px; height: 12px; font-size: 0.45rem; line-height: 12px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; background: var(--color-bg-light); color: var(--color-text-dark); border: 1px solid var(--color-gray-border);">3</span>
+                  <div class="workflow-text" style="font-size: 0.48rem; line-height: 1.1;">
+                    <strong style="font-size: 0.55rem; color: var(--color-navy);">Attainment Levels</strong> calculated.
+                  </div>
+                </div>
+              </div>
+
+              <!-- CO-PO Mapping Matrix Mockup -->
+              <div class="co-po-matrix-mockup"
+                style="border: 1px solid var(--color-gray-border); border-radius: 8px; padding: 4px 6px; background-color: var(--color-white); box-shadow: var(--shadow-sm);">
+                <h5
+                  style="font-family: var(--font-headings); font-size: 0.55rem; font-weight: 700; color: var(--color-navy); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.2px;">
+                  📊 Course Outcome (CO) to Program Outcome (PO) Matrix</h5>
+                <table class="timetable-table"
+                  style="width: 100%; border-collapse: collapse; font-size: 0.48rem; text-align: center;">
+                  <thead>
+                    <tr style="background: var(--color-bg-light); color: var(--color-navy); font-weight: 700;">
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">CO/PO</th>
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">PO1</th>
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">PO2</th>
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">PO3</th>
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">PO4</th>
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">PO5</th>
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">PSO1</th>
+                      <th style="padding: 2px; border: 1px solid var(--color-gray-border);">PSO2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); font-weight: bold; background: var(--color-bg-light);">
+                        CO1</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-orange); font-weight: bold;">
+                        3</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">2</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">2</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-text-muted);">
+                        -</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-orange); font-weight: bold;">
+                        3</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">1</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-orange); font-weight: bold;">
+                        3</td>
+                    </tr>
+                    <tr>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); font-weight: bold; background: var(--color-bg-light);">
+                        CO2</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">2</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-orange); font-weight: bold;">
+                        3</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">-</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">1</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">2</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-orange); font-weight: bold;">
+                        3</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">2</td>
+                    </tr>
+                    <tr>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); font-weight: bold; background: var(--color-bg-light);">
+                        CO3</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-text-muted);">
+                        -</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">1</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-orange); font-weight: bold;">
+                        3</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">2</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-text-muted);">
+                        -</td>
+                      <td style="padding: 2px; border: 1px solid var(--color-gray-border);">2</td>
+                      <td
+                        style="padding: 2px; border: 1px solid var(--color-gray-border); color: var(--color-orange); font-weight: bold;">
+                        3</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Attainment comparison bar chart mockup -->
+              <div
+                style="border: 1px solid var(--color-gray-border); border-radius: 8px; padding: 6px 8px; background-color: var(--color-white); box-shadow: var(--shadow-sm); margin-top: 4px;">
+                <h5
+                  style="font-family: var(--font-headings); font-size: 0.6rem; font-weight: 700; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
+                  📈 CO Attainment Target vs. Actual Gap Analysis</h5>
+                <div
+                  style="display: flex; flex-direction: column; gap: 4px; font-family: var(--font-body); font-size: 0.52rem;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 25px; font-weight: 700; color: var(--color-navy);">CO1</span>
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+                      <div style="height: 4px; background: var(--color-teal); width: 85%; border-radius: 1px;"></div>
+                      <div style="height: 4px; background: var(--color-orange); width: 80%; border-radius: 1px;"></div>
+                    </div>
+                    <span
+                      style="font-size: 0.48rem; color: var(--color-text-muted); width: 68px; text-align: right;">Tar:
+                      85% / Act: 80%</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 25px; font-weight: 700; color: var(--color-navy);">CO2</span>
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+                      <div style="height: 4px; background: var(--color-teal); width: 75%; border-radius: 1px;"></div>
+                      <div style="height: 4px; background: var(--color-orange); width: 78%; border-radius: 1px;"></div>
+                    </div>
+                    <span
+                      style="font-size: 0.48rem; color: var(--color-text-muted); width: 68px; text-align: right;">Tar:
+                      75% / Act: 78%</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 25px; font-weight: 700; color: var(--color-navy);">CO3</span>
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+                      <div style="height: 4px; background: var(--color-teal); width: 90%; border-radius: 1px;"></div>
+                      <div style="height: 4px; background: var(--color-orange); width: 65%; border-radius: 1px;"></div>
+                    </div>
+                    <span
+                      style="font-size: 0.48rem; color: var(--color-text-muted); width: 68px; text-align: right; color: var(--color-red); font-weight: 700;">GAP:
+                      25% ⚠️</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- NAAC & NBA Accreditation Logos stacked vertically -->
+              <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding-top: 5px;">
+                <img src="naac_logo_cropped.png" alt="NAAC Accreditation" style="height: 100px; width: auto; object-fit: contain; display: block;">
+                <img src="nba_logo_cropped.png" alt="NBA Accreditation" style="height: 100px; width: auto; object-fit: contain; display: block;">
+              </div>
+            </div>
+          </div>
+
+          <!-- NBA / NAAC Accreditation Attainment Pipeline -->
+          <div class="accreditation-pipeline"
+            style="margin-top: 10px; padding: 6px 10px; background: rgba(0, 169, 176, 0.05); border: 1.5px solid var(--color-teal); border-radius: 6px;">
+            <h5
+              style="font-family: var(--font-headings); font-size: 0.6rem; font-weight: bold; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase; text-align: center; letter-spacing: 0.5px;">
+              📋 NBA / NAAC Accreditation OBE Attainment Compliance Flow</h5>
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; gap: 4px; text-align: center; font-family: var(--font-body); font-size: 0.48rem;">
+              <div
+                style="flex: 1; background: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.52rem;">1. Map CO-PO</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.45rem;">Define weights & strengths</span>
+              </div>
+              <div style="color: var(--color-teal); font-weight: bold; font-size: 0.6rem;">➔</div>
+              <div
+                style="flex: 1; background: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.52rem;">2. Capture Grades</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.45rem;">Extract SEE & IA exam marks</span>
+              </div>
+              <div style="color: var(--color-teal); font-weight: bold; font-size: 0.6rem;">➔</div>
+              <div
+                style="flex: 1; background: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.52rem;">3. Feed surveys</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.45rem;">Integrate Student Feedback</span>
+              </div>
+              <div style="color: var(--color-teal); font-weight: bold; font-size: 0.6rem;">➔</div>
+              <div
+                style="flex: 1; background: var(--color-teal); color: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-teal);">
+                <strong style="color: white; display: block; font-size: 0.52rem;">4. Generate SAR</strong>
+                <span style="color: rgba(255,255,255,0.9); font-size: 0.45rem;">Compile SAR/AQAR compliance</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 11: ZERO-EFFORT REPORT EXPORTER (EXCELJS) -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-10">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content" style="margin: 5px 0;">
+          <div class="slide-header-area" style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h2 class="slide-title">Zero-Effort Multi-Sheet Report Exporter</h2>
+              <span class="badge"
+                style="background-color: var(--color-teal); color: var(--color-white); font-size: 0.55rem; padding: 2px 6px;">EXCELJS
+                EXPORTER</span>
+            </div>
+            <p class="slide-subtitle" style="font-size: 0.72rem; line-height: 1.3;">Compile thousands of calculation
+              rows instantly into a professional multi-sheet Excel workbook complete with native Excel formulas and
+              charts.</p>
+          </div>
+
+          <!-- Exporter Compilation Pipeline -->
+          <div class="exporter-pipeline-container"
+            style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px;">
+            <h4 class="pipeline-title"
+              style="font-family: var(--font-headings); font-size: 0.6rem; font-weight: bold; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase; text-align: center;">
+              ⚡ ExcelJS Document Generation & Formatting Pipeline</h4>
+            <div class="export-pipeline-steps"
+              style="display: flex; justify-content: space-between; align-items: center; gap: 4px; font-size: 0.5rem; text-align: center;">
+              <div class="ex-step"
+                style="flex: 1; background: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.52rem;">1. Aggregate Data</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.45rem;">MongoDB Atlas JSON Query</span>
+              </div>
+              <div class="ex-arrow" style="color: var(--color-teal); font-weight: bold;">➔</div>
+              <div class="ex-step"
+                style="flex: 1; background: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.52rem;">2. Style & Map</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.45rem;">Compile cell widths & fonts</span>
+              </div>
+              <div class="ex-arrow" style="color: var(--color-teal); font-weight: bold;">➔</div>
+              <div class="ex-step"
+                style="flex: 1; background: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-gray-border);">
+                <strong style="color: var(--color-navy); display: block; font-size: 0.52rem;">3. Inject
+                  Formulas</strong>
+                <span style="color: var(--color-text-muted); font-size: 0.45rem;">Write active SUM / AVERAGE</span>
+              </div>
+              <div class="ex-arrow" style="color: var(--color-teal); font-weight: bold;">➔</div>
+              <div class="ex-step"
+                style="flex: 1; background: var(--color-navy); color: var(--color-white); padding: 4px; border-radius: 4px; border: 1px solid var(--color-navy);">
+                <strong style="color: white; display: block; font-size: 0.52rem;">4. Stream XLSX</strong>
+                <span style="color: rgba(255,255,255,0.8); font-size: 0.45rem;">Instant client-side download</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="excel-exporter-grid" style="gap: 10px;">
+            <div class="excel-file-visual"
+              style="height: 220px; border: 1px solid #107C41; box-shadow: var(--shadow-sm);">
+              <!-- Excel-styled header bar -->
+              <div class="excel-header-bar" style="background-color: #107C41; padding: 4px 10px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <div class="excel-brand-badge"
+                    style="background: white; color: #107C41; font-weight: bold; padding: 1px 4px; border-radius: 2px; font-size: 0.55rem;">
+                    XLSX</div>
+                  <div class="excel-title-tab" style="color: white; font-size: 0.65rem;">
+                    CS102_Data_Structures_OBE_Report.xlsx</div>
+                </div>
+                <div class="excel-actions"><span class="xls-dot red"
+                    style="background: white; opacity: 0.3;"></span><span class="xls-dot yellow"
+                    style="background: white; opacity: 0.3;"></span><span class="xls-dot green"
+                    style="background: white; opacity: 0.3;"></span></div>
+              </div>
+              <!-- Formula Bar Mockup -->
+              <div
+                style="background: #F3F2F1; border-bottom: 1px solid #D2D0CE; padding: 3px 10px; display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 0.58rem; color: #323130;">
+                <span
+                  style="font-weight: bold; color: #107C41; border-right: 1px solid #D2D0CE; padding-right: 8px;">fx</span>
+                <span>=SUM(C2:C4)*0.8 + E2*0.2</span>
+              </div>
+              <!-- Excel sheet list tabs -->
+              <div class="excel-sheets-list"
+                style="background-color: #F3F2F1; border-bottom: 1px solid #D2D0CE; padding: 2px 6px 0 6px;">
+                <div class="sheet-item active-sheet"
+                  style="background: white; color: #107C41; border: 1px solid #D2D0CE; border-bottom: none; font-size: 0.55rem; padding: 3px 6px;">
+                  Sheet 1: Regulation & CO Map</div>
+                <div class="sheet-item"
+                  style="background: transparent; color: #323130; font-size: 0.55rem; padding: 3px 6px;">Sheet 2: Direct
+                  IA Marks</div>
+                <div class="sheet-item"
+                  style="background: transparent; color: #323130; font-size: 0.55rem; padding: 3px 6px;">Sheet 3: PO-PSO
+                  Attainment Map</div>
+              </div>
+              <div class="excel-grid-preview" style="padding: 4px;">
+                <table style="font-size: 0.55rem;">
+                  <thead>
+                    <tr style="background: #F3F2F1;">
+                      <th style="background: #F3F2F1; border: 1px solid #D2D0CE; width: 20px;"></th>
+                      <th style="background: #F3F2F1; border: 1px solid #D2D0CE;">A</th>
+                      <th style="background: #F3F2F1; border: 1px solid #D2D0CE;">B</th>
+                      <th style="background: #F3F2F1; border: 1px solid #D2D0CE;">C</th>
+                      <th style="background: #F3F2F1; border: 1px solid #D2D0CE;">D</th>
+                      <th style="background: #F3F2F1; border: 1px solid #D2D0CE;">E</th>
+                      <th style="background: #F3F2F1; border: 1px solid #D2D0CE;">F</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td
+                        style="background: #F3F2F1; border: 1px solid #D2D0CE; text-align: center; font-weight: bold; width: 20px;">
+                        1</td>
+                      <td class="bold-cell" style="background: #E1DFDD; font-weight: bold;">Enrollment</td>
+                      <td class="bold-cell" style="background: #E1DFDD; font-weight: bold;">Name</td>
+                      <td class="bold-cell" style="background: #E1DFDD; font-weight: bold;">CO1</td>
+                      <td class="bold-cell" style="background: #E1DFDD; font-weight: bold;">CO2</td>
+                      <td class="bold-cell" style="background: #E1DFDD; font-weight: bold;">CO3</td>
+                      <td class="bold-cell" style="background: #E1DFDD; font-weight: bold;">Attainment</td>
+                    </tr>
+                    <tr>
+                      <td
+                        style="background: #F3F2F1; border: 1px solid #D2D0CE; text-align: center; font-weight: bold;">2
+                      </td>
+                      <td>CS24001</td>
+                      <td>Laxmi Ganji</td>
+                      <td>85%</td>
+                      <td>90%</td>
+                      <td>78%</td>
+                      <td class="attained-cell"
+                        style="background-color: rgba(16, 185, 129, 0.1); color: #10B981; font-weight: bold;">Level 3
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style="background: #F3F2F1; border: 1px solid #D2D0CE; text-align: center; font-weight: bold;">3
+                      </td>
+                      <td>CS24002</td>
+                      <td>John Doe</td>
+                      <td>52%</td>
+                      <td>40%</td>
+                      <td>65%</td>
+                      <td class="partial-cell"
+                        style="background-color: rgba(245, 130, 32, 0.1); color: var(--color-orange); font-weight: bold;">
+                        Level 2</td>
+                    </tr>
+                    <tr>
+                      <td
+                        style="background: #F3F2F1; border: 1px solid #D2D0CE; text-align: center; font-weight: bold;">4
+                      </td>
+                      <td>CS24003</td>
+                      <td>Jane Smith</td>
+                      <td>24%</td>
+                      <td>35%</td>
+                      <td>18%</td>
+                      <td class="failed-cell"
+                        style="background-color: rgba(239, 68, 68, 0.1); color: var(--color-red); font-weight: bold;">
+                        Level 1</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Spreadsheet Info & Metrics Panel -->
+            <div class="excel-metrics-row" style="margin-top: 5px; gap: 8px;">
+              <!-- Card 1: ExcelJS Compiler -->
+              <div class="metric-card"
+                style="padding: 0; border-bottom: 2px solid #107C41; overflow: hidden; display: flex; flex-direction: column;">
+                <div
+                  style="background: linear-gradient(135deg, #f0faf4 0%, #e6f7ef 100%); padding: 6px; text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                  <img src="excel_compiler_card.png" alt="ExcelJS Compiler - 7 Sheets"
+                    style="width: 100%; height: 70px; object-fit: contain; display: block;">
+                </div>
+                <div style="padding: 5px 7px; background: white;">
+                  <strong
+                    style="font-size: 0.6rem; color: var(--color-navy); display: block; font-family: var(--font-headings);">📊
+                    ExcelJS Compiler</strong>
+                  <span style="font-size: 0.52rem; color: #107C41; display: block; font-weight: 700;">7 Sheets Built ·
+                    1.2 MB</span>
+                  <span
+                    style="font-size: 0.45rem; color: var(--color-text-muted); display: block; line-height: 1.1;">Multi-worksheet
+                    workbook generation</span>
+                </div>
+              </div>
+              <!-- Card 2: Execution Speed -->
+              <div class="metric-card"
+                style="padding: 0; border-bottom: 2px solid #107C41; overflow: hidden; display: flex; flex-direction: column;">
+                <div
+                  style="background: linear-gradient(135deg, #f0faf4 0%, #e6f7ef 100%); padding: 6px; text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                  <img src="execution_speed_card.png" alt="Execution Speed 185ms"
+                    style="width: 100%; height: 70px; object-fit: contain; display: block;">
+                </div>
+                <div style="padding: 5px 7px; background: white;">
+                  <strong
+                    style="font-size: 0.6rem; color: var(--color-navy); display: block; font-family: var(--font-headings);">⚡
+                    Execution Speed</strong>
+                  <span style="font-size: 0.52rem; color: #107C41; display: block; font-weight: 700;">185ms
+                    Compiled</span>
+                  <span
+                    style="font-size: 0.45rem; color: var(--color-text-muted); display: block; line-height: 1.1;">Node.js/Express
+                    server-side engine</span>
+                </div>
+              </div>
+              <!-- Card 3: Cell Formulas -->
+              <div class="metric-card"
+                style="padding: 0; border-bottom: 2px solid #107C41; overflow: hidden; display: flex; flex-direction: column;">
+                <div
+                  style="background: linear-gradient(135deg, #f0faf4 0%, #e6f7ef 100%); padding: 6px; text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                  <img src="cell_formulas_card.png" alt="Cell Formulas SUM AVERAGE"
+                    style="width: 100%; height: 70px; object-fit: contain; display: block;">
+                </div>
+                <div style="padding: 5px 7px; background: white;">
+                  <strong
+                    style="font-size: 0.6rem; color: var(--color-navy); display: block; font-family: var(--font-headings);">🔢
+                    Cell Formulas</strong>
+                  <span style="font-size: 0.52rem; color: #107C41; display: block; font-weight: 700;">Active SUM /
+                    AVERAGE</span>
+                  <span
+                    style="font-size: 0.45rem; color: var(--color-text-muted); display: block; line-height: 1.1;">Live
+                    formulas injected into cells</span>
+                </div>
+              </div>
+              <!-- Card 4: Native Charts -->
+              <div class="metric-card"
+                style="padding: 0; border-bottom: 2px solid #107C41; overflow: hidden; display: flex; flex-direction: column;">
+                <div
+                  style="background: linear-gradient(135deg, #f0faf4 0%, #e6f7ef 100%); padding: 6px; text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                  <img src="native_charts_card.png" alt="Native Charts Gap Analysis"
+                    style="width: 100%; height: 70px; object-fit: contain; display: block;">
+                </div>
+                <div style="padding: 5px 7px; background: white;">
+                  <strong
+                    style="font-size: 0.6rem; color: var(--color-navy); display: block; font-family: var(--font-headings);">📈
+                    Native Charts</strong>
+                  <span style="font-size: 0.52rem; color: #107C41; display: block; font-weight: 700;">Charts
+                    Embedded</span>
+                  <span style="font-size: 0.45rem; color: var(--color-text-muted); display: block; line-height: 1.1;">CO
+                    gap bar chart outputs in XLSX</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Download Center Call To Action Card -->
+            <div class="excel-download-cta"
+              style="background: rgba(16, 124, 65, 0.05); border: 1.5px solid #107C41; border-radius: 8px; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+              <div style="text-align: left;">
+                <h5
+                  style="font-family: var(--font-headings); font-size: 0.75rem; font-weight: bold; color: #107C41; margin-bottom: 2px; text-transform: uppercase;">
+                  📥 Download Sample OBE Reports</h5>
+                <ul class="checkmark-list font-normal" style="font-size: 0.58rem; color: var(--color-text-muted);">
+                  <li style="font-size: 0.58rem; margin-bottom: 2px;">Auto-fitted column widths and bold headers</li>
+                  <li style="font-size: 0.58rem; margin-bottom: 2px;">Formulas preserve grid math integrity</li>
+                </ul>
+              </div>
+              <button class="nav-btn accent-btn"
+                style="background-color: #107C41; border-color: #107C41; height: 35px; width: auto; padding: 0 15px; font-size: 0.7rem; font-weight: bold; display: flex; gap: 6px; align-items: center; border-radius: 6px;">
+                <span>Generate Reports (.xlsx)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 12: CAMPUS INTEGRATIONS & TECH STACK      -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-11">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content" style="justify-content: space-between; height: 100%; margin: 5px 0;">
+          <div class="slide-header-area" style="margin-bottom: 5px;">
+            <h2 class="slide-title" style="font-size: 1.55rem;">Enterprise Operational Flowchart & System Features</h2>
+            <p class="slide-subtitle" style="font-size: 0.72rem; line-height: 1.3;">Unified organizational map detailing
+              user access layers and automated academic pipelines.</p>
+          </div>
+          <!-- Unified Tree Flowchart System -->
+          <svg viewBox="0 0 694 715" class="flowchart-svg"
+            style="width: 100%; height: 615px; display: block; overflow: visible;">
+            <defs>
+              <!-- Standard marker arrows -->
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                orient="auto-start-reverse">
+                <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="var(--color-navy)" />
+              </marker>
+              <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                orient="auto-start-reverse">
+                <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#7C3AED" />
+              </marker>
+            </defs>
+
+            <!-- Tree Connection Lines (Admin setup branches) -->
+            <path d="M 347 67 L 347 78" stroke="#94A3B8" stroke-width="1.5" fill="none" />
+            <path d="M 110 78 L 584 78" stroke="#94A3B8" stroke-width="1.5" fill="none" />
+            <path d="M 110 78 L 110 85" stroke="#94A3B8" stroke-width="1.5" fill="none" />
+            <path d="M 347 78 L 347 85" stroke="#94A3B8" stroke-width="1.5" fill="none" />
+            <path d="M 584 78 L 584 85" stroke="#94A3B8" stroke-width="1.5" fill="none" />
+
+            <!-- Row 1 to Row 2 Connectors -->
+            <line x1="110" y1="155" x2="110" y2="170" stroke="#94A3B8" stroke-width="1.5" />
+            <line x1="347" y1="155" x2="347" y2="170" stroke="#94A3B8" stroke-width="1.5" />
+            <line x1="584" y1="155" x2="584" y2="170" stroke="#94A3B8" stroke-width="1.5" />
+
+            <!-- Row 2 to Row 3 Connectors (Branching to two centered cards in Row 3) -->
+            <line x1="110" y1="240" x2="110" y2="252" stroke="#94A3B8" stroke-width="1.5" />
+            <line x1="347" y1="240" x2="347" y2="252" stroke="#94A3B8" stroke-width="1.5" />
+            <line x1="584" y1="240" x2="584" y2="252" stroke="#94A3B8" stroke-width="1.5" />
+            <line x1="110" y1="252" x2="584" y2="252" stroke="#94A3B8" stroke-width="1.5" />
+            <line x1="228" y1="252" x2="228" y2="260" stroke="#94A3B8" stroke-width="1.5" />
+            <line x1="465" y1="252" x2="465" y2="260" stroke="#94A3B8" stroke-width="1.5" />
+
+            <!-- FLOWCHART HEADERS -->
+            <!-- Main Header -->
+            <rect x="147" y="10" width="400" height="24" rx="4" fill="var(--color-navy)" />
+            <text x="347" y="25" fill="#FFFFFF" font-size="9" font-family="var(--font-headings)" font-weight="700"
+              text-anchor="middle" letter-spacing="0.5px">ENGINEERING COLLEGE AUTOMATION PACKAGE</text>
+
+            <!-- ADMIN Banner -->
+            <rect x="247" y="45" width="200" height="22" rx="4" fill="#1E40AF" />
+            <text x="347" y="58" fill="#FFFFFF" font-size="8" font-family="var(--font-headings)" font-weight="700"
+              text-anchor="middle">🛡️ ADMIN (Full Access)</text>
+
+            <!-- ROW 1 ADMIN SETUP CARDS -->
+            <!-- Card 1: User & Academics Setup -->
+            <rect x="15" y="85" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="15" y="85" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>👥 User & Academics Setup</strong>
+                <ul>
+                  <li>Add Faculty & Students registers</li>
+                  <li>Add Sections & assign student cohorts</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Card 2: Branches & HOD -->
+            <rect x="252" y="85" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="252" y="85" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>🏛️ Branches & HODs</strong>
+                <ul>
+                  <li>Configure academic branches</li>
+                  <li>Auto-create HOD coordinators workspaces</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Card 3: Transport Management -->
+            <rect x="489" y="85" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="489" y="85" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>🚌 Transport Management</strong>
+                <ul>
+                  <li>Add transport incharge roles</li>
+                  <li>Allocate routes, stops, fares & driver logs</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- ROW 2 ADMIN SETUP CARDS -->
+            <!-- Card 4: Geofencing Setup -->
+            <rect x="15" y="170" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="15" y="170" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>📍 Geofencing Setup</strong>
+                <ul>
+                  <li>Establish GPS center coordinates</li>
+                  <li>Define active boundary check-in radius</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Card 5: Timetables -->
+            <rect x="252" y="170" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="252" y="170" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>📅 Timetable Management</strong>
+                <ul>
+                  <li>Construct Class/Section student tables</li>
+                  <li>Map Faculty workload period structures</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Card 6: Academic Operations -->
+            <rect x="489" y="170" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="489" y="170" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>📢 Academics Operations</strong>
+                <ul>
+                  <li>Publish notices & circular bulletins</li>
+                  <li>Bulk marks entry & CO-PO outcomes map</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- ROW 3 ADMIN SETUP CARDS -->
+            <!-- Card 7: Placement Cell -->
+            <rect x="133" y="260" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="133" y="260" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>💼 Placement Cell</strong>
+                <ul>
+                  <li>Add Recruiter profiles & schedules</li>
+                  <li>Track student applications & results</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Card 8: Accounts Setup -->
+            <rect x="370" y="260" width="190" height="70" rx="5" fill="#F8FAFC" stroke="var(--color-navy)"
+              stroke-width="1.5" />
+            <foreignObject x="370" y="260" width="190" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-admin-setup">
+                <strong>⚙️ Accounts & Setup</strong>
+                <ul>
+                  <li>Regulation schemas & branches config</li>
+                  <li>Calendar working days & notice board</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- AUTOMATED WORKFLOWS DIVIDER -->
+            <line x1="5" y1="345" x2="689" y2="345" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="3,3" />
+            <rect x="222" y="336" width="250" height="18" rx="4" fill="#F1F5F9" />
+            <text x="347" y="348" fill="var(--color-text-muted)" font-size="7" font-family="var(--font-headings)"
+              font-weight="700" text-anchor="middle" letter-spacing="0.3px">FACULTY AUTOMATED WORKFLOWS & STUDENT
+              ACCESS</text>
+
+            <!-- BOTTOM LEFT: FACULTY & OUTCOMES -->
+            <!-- Header Faculty operations -->
+            <rect x="15" y="365" width="320" height="22" rx="4" fill="#7C3AED" />
+            <text x="175" y="379" fill="#FFFFFF" font-size="8" font-family="var(--font-headings)" font-weight="700"
+              text-anchor="middle">FACULTY DAILY OPERATIONS (AUTOMATED SUPPORT)</text>
+
+            <!-- Faculty Step 1 -->
+            <rect x="35" y="397" width="280" height="32" rx="4" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.2" />
+            <foreignObject x="35" y="397" width="280" height="32">
+              <div xmlns="http://www.w3.org/1999/xhtml"
+                style="padding: 2px 8px; font-family: var(--font-body); font-size: 0.52rem; line-height: 1.1; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <strong
+                  style="color: #7C3AED; font-size: 0.55rem; font-family: var(--font-headings); display: block;">1.
+                  Daily Timetable allocation</strong>
+                <span style="color: var(--color-text-dark);">Admin configures & publishes Faculty timetables</span>
+              </div>
+            </foreignObject>
+
+            <path d="M 175 429 L 175 440" stroke="#7C3AED" stroke-width="1.2" fill="none"
+              marker-end="url(#arrow-purple)" />
+
+            <!-- Faculty Step 2 -->
+            <rect x="35" y="440" width="280" height="32" rx="4" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.2" />
+            <foreignObject x="35" y="440" width="280" height="32">
+              <div xmlns="http://www.w3.org/1999/xhtml"
+                style="padding: 2px 8px; font-family: var(--font-body); font-size: 0.52rem; line-height: 1.1; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <strong
+                  style="color: #7C3AED; font-size: 0.55rem; font-family: var(--font-headings); display: block;">2.
+                  Timetable Auto-fetch</strong>
+                <span style="color: var(--color-text-dark);">System dynamically compiles today's active periods
+                  logs</span>
+              </div>
+            </foreignObject>
+
+            <path d="M 175 472 L 175 483" stroke="#7C3AED" stroke-width="1.2" fill="none"
+              marker-end="url(#arrow-purple)" />
+
+            <!-- Faculty Step 3 -->
+            <rect x="35" y="483" width="280" height="32" rx="4" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.2" />
+            <foreignObject x="35" y="483" width="280" height="32">
+              <div xmlns="http://www.w3.org/1999/xhtml"
+                style="padding: 2px 8px; font-family: var(--font-body); font-size: 0.52rem; line-height: 1.1; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <strong
+                  style="color: #7C3AED; font-size: 0.55rem; font-family: var(--font-headings); display: block;">3.
+                  Leave & Attendance Tools</strong>
+                <span style="color: var(--color-text-dark);">Faculty manages leaves/substitutions & logs student
+                  attendance</span>
+              </div>
+            </foreignObject>
+
+            <path d="M 175 515 L 175 526" stroke="#7C3AED" stroke-width="1.2" fill="none"
+              marker-end="url(#arrow-purple)" />
+
+            <!-- Faculty Step 4 -->
+            <rect x="35" y="526" width="280" height="32" rx="4" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.2" />
+            <foreignObject x="35" y="526" width="280" height="32">
+              <div xmlns="http://www.w3.org/1999/xhtml"
+                style="padding: 2px 8px; font-family: var(--font-body); font-size: 0.52rem; line-height: 1.1; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <strong
+                  style="color: #7C3AED; font-size: 0.55rem; font-family: var(--font-headings); display: block;">4.
+                  Geofence Check-In/Check-Out</strong>
+                <span style="color: var(--color-text-dark);">Biometric facial & GPS lock validation check-in</span>
+              </div>
+            </foreignObject>
+
+            <!-- Header Academic outcomes -->
+            <rect x="15" y="575" width="320" height="22" rx="4" fill="#7C3AED" />
+            <text x="175" y="589" fill="#FFFFFF" font-size="8" font-family="var(--font-headings)" font-weight="700"
+              text-anchor="middle">ACADEMIC OUTCOMES</text>
+
+            <!-- Outcome Step 1 -->
+            <rect x="35" y="607" width="280" height="32" rx="4" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.2" />
+            <foreignObject x="35" y="607" width="280" height="32">
+              <div xmlns="http://www.w3.org/1999/xhtml"
+                style="padding: 2px 8px; font-family: var(--font-body); font-size: 0.52rem; line-height: 1.1; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <strong
+                  style="color: #7C3AED; font-size: 0.55rem; font-family: var(--font-headings); display: block;">🎯
+                  CO-PO Attainment</strong>
+                <span style="color: var(--color-text-dark);">Calculates Direct & Indirect outcomes (Managed by
+                  Admin)</span>
+              </div>
+            </foreignObject>
+
+            <path d="M 175 639 L 175 650" stroke="#7C3AED" stroke-width="1.2" fill="none"
+              marker-end="url(#arrow-purple)" />
+
+            <!-- Outcome Step 2 -->
+            <rect x="35" y="650" width="280" height="32" rx="4" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.2" />
+            <foreignObject x="35" y="650" width="280" height="32">
+              <div xmlns="http://www.w3.org/1999/xhtml"
+                style="padding: 2px 8px; font-family: var(--font-body); font-size: 0.52rem; line-height: 1.1; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <strong
+                  style="color: #7C3AED; font-size: 0.55rem; font-family: var(--font-headings); display: block;">📊
+                  Reports & Analytics</strong>
+                <span style="color: var(--color-text-dark);">Generates NBA targets comparison logs & ExcelJS
+                  exports</span>
+              </div>
+            </foreignObject>
+
+            <!-- BOTTOM RIGHT: STUDENTS VIEW ACCESS -->
+            <!-- Header Students -->
+            <rect x="355" y="365" width="320" height="22" rx="4" fill="var(--color-teal)" />
+            <text x="515" y="379" fill="#FFFFFF" font-size="8.5" font-family="var(--font-headings)" font-weight="700"
+              text-anchor="middle">👨‍🎓 STUDENTS (View Access Only)</text>
+
+            <!-- Students Tree branch lines -->
+            <line x1="515" y1="387" x2="515" y2="400" stroke="#94A3B8" stroke-width="1.2" />
+            <line x1="432" y1="400" x2="597" y2="400" stroke="#94A3B8" stroke-width="1.2" />
+            <line x1="432" y1="400" x2="432" y2="405" stroke="#94A3B8" stroke-width="1.2" />
+            <line x1="597" y1="400" x2="597" y2="405" stroke="#94A3B8" stroke-width="1.2" />
+
+            <!-- Row 1 student cards to Row 2 -->
+            <line x1="432" y1="465" x2="432" y2="475" stroke="#94A3B8" stroke-width="1.2" />
+            <line x1="597" y1="465" x2="597" y2="475" stroke="#94A3B8" stroke-width="1.2" />
+
+            <!-- Row 2 student cards to Row 3 -->
+            <line x1="432" y1="535" x2="432" y2="545" stroke="#94A3B8" stroke-width="1.2" />
+            <line x1="597" y1="535" x2="597" y2="545" stroke="#94A3B8" stroke-width="1.2" />
+
+            <!-- Row 3 student cards to Row 4 -->
+            <line x1="432" y1="605" x2="432" y2="615" stroke="#94A3B8" stroke-width="1.2" />
+            <line x1="597" y1="605" x2="597" y2="615" stroke="#94A3B8" stroke-width="1.2" />
+
+            <!-- Student Card 1: Profile -->
+            <rect x="355" y="405" width="155" height="60" rx="5" fill="#F0FDF4" stroke="var(--color-teal)"
+              stroke-width="1.5" />
+            <foreignObject x="355" y="405" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-student-view">
+                <strong>👤 Profile & Academics</strong>
+                <ul>
+                  <li>Personal details & sections</li>
+                  <li>Notice periods & calendar</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Student Card 2: Attendance -->
+            <rect x="520" y="405" width="155" height="60" rx="5" fill="#F0FDF4" stroke="var(--color-teal)"
+              stroke-width="1.5" />
+            <foreignObject x="520" y="405" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-student-view">
+                <strong>📈 Attendance Monitor</strong>
+                <ul>
+                  <li>View daily attendance status</li>
+                  <li>Check monthly averages</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Student Card 3: Marks -->
+            <rect x="355" y="475" width="155" height="60" rx="5" fill="#F0FDF4" stroke="var(--color-teal)"
+              stroke-width="1.5" />
+            <foreignObject x="355" y="475" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-student-view">
+                <strong>📑 Marks & Results</strong>
+                <ul>
+                  <li>Mid-term test marks</li>
+                  <li>Semester SEE results</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Student Card 4: Timetable -->
+            <rect x="520" y="475" width="155" height="60" rx="5" fill="#F0FDF4" stroke="var(--color-teal)"
+              stroke-width="1.5" />
+            <foreignObject x="520" y="475" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-student-view">
+                <strong>📆 Personal Timetable</strong>
+                <ul>
+                  <li>Check section weekly slots</li>
+                  <li>(Not Faculty timetable)</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Student Card 5: Transport Booking -->
+            <rect x="355" y="545" width="155" height="60" rx="5" fill="#F0FDF4" stroke="var(--color-teal)"
+              stroke-width="1.5" />
+            <foreignObject x="355" y="545" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-student-view">
+                <strong>🚌 Book Transport</strong>
+                <ul>
+                  <li>Book college transport</li>
+                  <li>View routes & bus stops</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Student Card 6: Notice Board -->
+            <rect x="520" y="545" width="155" height="60" rx="5" fill="#F0FDF4" stroke="var(--color-teal)"
+              stroke-width="1.5" />
+            <foreignObject x="520" y="545" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-student-view">
+                <strong>📢 Notices & Alerts</strong>
+                <ul>
+                  <li>Check live campus notices</li>
+                  <li>Download event flyers</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Student Card 7: CO-PO (Blocked) -->
+            <rect x="355" y="615" width="155" height="60" rx="5" fill="#FEF2F2" stroke="var(--color-red)"
+              stroke-width="1.5" />
+            <foreignObject x="355" y="615" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-blocked-view">
+                <strong>🎯 CO-PO Attainment</strong>
+                <ul>
+                  <li>Access restricted for role</li>
+                  <li>Students cannot view</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+            <!-- Student Card 8: Transport Seat Fee -->
+            <rect x="520" y="615" width="155" height="60" rx="5" fill="#F0FDF4" stroke="var(--color-teal)"
+              stroke-width="1.5" />
+            <foreignObject x="520" y="615" width="155" height="60">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="flow-tree-card card-student-view">
+                <strong>💳 Transport Seat Fee</strong>
+                <ul>
+                  <li>View stop fare & seatFee status</li>
+                  <li>Log bank payment references</li>
+                </ul>
+              </div>
+            </foreignObject>
+
+          </svg>
+
+          <!-- Flowchart Bottom Highlights & Legend Grid -->
+          <div style="display: grid; grid-template-columns: 2.3fr 1fr; width: 100%; gap: 15px; margin-top: 10px;">
+            <div class="flow-highlights-box">
+              <h5>⭐ KEY HIGHLIGHTS</h5>
+              <ul>
+                <li>Admin has full access to manage all academic, administrative, and operational modules.</li>
+                <li>System automation simplifies faculty daily tasks using live timetables & GPS geofencing.</li>
+                <li>Students have view access to academic profiles, route bookings, & transport fee logs.</li>
+              </ul>
+            </div>
+            <div class="flow-legend-box">
+              <div class="flow-legend-item">
+                <span class="legend-dot dot-admin"></span>
+                <span>Admin Setup</span>
+              </div>
+              <div class="flow-legend-item">
+                <span class="legend-dot dot-faculty"></span>
+                <span>Automated Ops</span>
+              </div>
+              <div class="flow-legend-item">
+                <span class="legend-dot dot-student"></span>
+                <span>Student Access</span>
+              </div>
+              <div class="flow-legend-item">
+                <span class="legend-dot dot-blocked"></span>
+                <span>Locked/No View</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 13: CORE PLATFORM FEATURES (LIGHTBULB)   -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-12">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">Core Platform Characteristics</h2>
+            <p class="slide-subtitle">Innovative designs optimized for campus coordination and academic reporting.</p>
+          </div>
+
+          <div class="integrations-dual-layout">
+            <div class="lightbulb-svg-container full-bulb-container">
+              <svg class="bulb-graphic" viewBox="0 0 100 120" width="130" height="150">
+                <circle cx="50" cy="50" r="30" fill="rgba(245,130,32,0.15)" class="bulb-glow" />
+                <path d="M50 15 A35 35 0 0 1 80 60 C80 75 68 83 65 90 L35 90 C32 83 20 75 20 60 A35 35 0 0 1 50 15 Z"
+                  fill="none" stroke="#0B2C4A" stroke-width="4" stroke-linejoin="round" />
+                <path d="M35 55 C40 40 45 40 50 55 C55 40 60 40 65 55" fill="none" stroke="#F58220" stroke-width="3"
+                  stroke-linecap="round" />
+                <line x1="50" y1="55" x2="50" y2="90" stroke="#F58220" stroke-width="2" />
+                <rect x="38" y="90" width="24" height="6" rx="2" fill="#0B2C4A" />
+                <rect x="40" y="98" width="20" height="6" rx="2" fill="#0B2C4A" />
+                <rect x="43" y="106" width="14" height="6" rx="2" fill="#00A9B0" />
+              </svg>
+              <div class="bulb-label-center">ECAP ERP</div>
+            </div>
+
+            <!-- Features display statically for print (No hover needed) -->
+            <div class="features-bulb-ring static-ring">
+              <div class="bulb-feature-node">
+                <span class="b-dot"></span>
+                <p><strong>Multi-Campus Connect</strong>: Connect multiple branches with unified cloud dashboards.</p>
+              </div>
+              <div class="bulb-feature-node">
+                <span class="b-dot"></span>
+                <p><strong>User-Friendly UI</strong>: Optimized dashboards for students & parents.</p>
+              </div>
+              <div class="bulb-feature-node">
+                <span class="b-dot"></span>
+                <p><strong>Highly Configurable</strong>: Support regulation changes (R22/R18).</p>
+              </div>
+              <div class="bulb-feature-node">
+                <span class="b-dot"></span>
+                <p><strong>Graphical & Analytical Reports</strong>: Automated graphs mapping OBE targets.</p>
+              </div>
+              <div class="bulb-feature-node">
+                <span class="b-dot"></span>
+                <p><strong>Highly Secured Vaults</strong>: Stateless JWT routes access control & bcrypt encryptions.</p>
+              </div>
+              <div class="bulb-feature-node">
+                <span class="b-dot"></span>
+                <p><strong>Cost-Effective Solutions</strong>: Scalable, modular structure fit for any campus.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- MERN Architecture Blueprint Mockup -->
+          <div class="timetable-mockup-panel" style="margin-top: 15px; width: 100%;">
+            <div class="mockup-header-bar">
+              <span class="dot-btn" style="background: #EF4444;"></span>
+              <span class="dot-btn" style="background: #F59E0B;"></span>
+              <span class="dot-btn" style="background: #10B981;"></span>
+              <span class="mockup-bar-title">MERN Stack Enterprise System Architecture Blueprint & Active Status</span>
+            </div>
+
+            <div style="padding: 10px; background: var(--color-white);">
+              <!-- Top Row: Tiers of Architecture -->
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+                <div
+                  style="border: 1px dashed var(--color-gray-border); padding: 8px; border-radius: 6px; background: var(--color-bg-light); text-align: center;">
+                  <div style="font-size: 1rem; margin-bottom: 2px;">💻</div>
+                  <strong style="font-size: 0.65rem; color: var(--color-navy); display: block;">Client UI
+                    (React/Vite)</strong>
+                  <span
+                    style="font-size: 0.52rem; color: var(--color-text-muted); line-height: 1.1; display: block;">Responsive
+                    Dashboards, Charting engines, Axios API requests.</span>
+                </div>
+                <div
+                  style="border: 1px dashed var(--color-gray-border); padding: 8px; border-radius: 6px; background: var(--color-bg-light); text-align: center;">
+                  <div style="font-size: 1rem; margin-bottom: 2px;">⚙️</div>
+                  <strong style="font-size: 0.65rem; color: var(--color-orange); display: block;">API Layer
+                    (Node.js/Express)</strong>
+                  <span
+                    style="font-size: 0.52rem; color: var(--color-text-muted); line-height: 1.1; display: block;">Stateless
+                    JWT Auth, Haversine coordinates validation, ExcelJS compiling.</span>
+                </div>
+                <div
+                  style="border: 1px dashed var(--color-gray-border); padding: 8px; border-radius: 6px; background: var(--color-bg-light); text-align: center;">
+                  <div style="font-size: 1rem; margin-bottom: 2px;">💾</div>
+                  <strong style="font-size: 0.65rem; color: var(--color-teal); display: block;">Database
+                    (MongoDB)</strong>
+                  <span
+                    style="font-size: 0.52rem; color: var(--color-text-muted); line-height: 1.1; display: block;">Replication
+                    Clusters, Audits collection logs, automatic indexing.</span>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Live Clusters & Security Parameters -->
+              <div
+                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 6px; padding: 6px 8px; font-size: 0.55rem; text-align: left; margin-bottom: 8px;">
+                <div>
+                  <span
+                    style="color: var(--color-text-muted); font-weight: 700; display: block; font-size: 0.5rem; text-transform: uppercase; line-height: 1.1;">DB
+                    Uptime</span>
+                  <strong style="color: #10B981; font-size: 0.62rem;">99.98% Active</strong>
+                </div>
+                <div>
+                  <span
+                    style="color: var(--color-text-muted); font-weight: 700; display: block; font-size: 0.5rem; text-transform: uppercase; line-height: 1.1;">Password
+                    Hash</span>
+                  <strong style="color: var(--color-navy); font-size: 0.62rem;">Bcrypt (Salt 10)</strong>
+                </div>
+                <div>
+                  <span
+                    style="color: var(--color-text-muted); font-weight: 700; display: block; font-size: 0.5rem; text-transform: uppercase; line-height: 1.1;">Session
+                    Key</span>
+                  <strong style="color: var(--color-navy); font-size: 0.62rem;">JWT HS256 Token</strong>
+                </div>
+                <div>
+                  <span
+                    style="color: var(--color-text-muted); font-weight: 700; display: block; font-size: 0.5rem; text-transform: uppercase; line-height: 1.1;">SSL
+                    Security</span>
+                  <strong style="color: #10B981; font-size: 0.62rem;">HTTPS Enforced</strong>
+                </div>
+              </div>
+
+              <!-- Replica Set Nodes Console -->
+              <div style="border-top: 1px solid var(--color-gray-border); padding-top: 8px;">
+                <div
+                  style="font-weight: 800; font-size: 0.65rem; color: var(--color-navy); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
+                  🎛️ MongoDB Replication Cluster Node Status</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+
+                  <div
+                    style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 4px; padding: 4px 6px; font-size: 0.52rem; display: flex; flex-direction: column; gap: 2px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 0.55rem;">
+                      <span style="color: var(--color-navy);">Node 01 (Primary)</span>
+                      <span style="color: #10B981;">● ONLINE</span>
+                    </div>
+                    <span>IP Address: 10.0.1.15</span>
+                    <span>CPU: 12% | RAM: 42%</span>
+                  </div>
+
+                  <div
+                    style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 4px; padding: 4px 6px; font-size: 0.52rem; display: flex; flex-direction: column; gap: 2px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 0.55rem;">
+                      <span style="color: var(--color-navy);">Node 02 (Secondary)</span>
+                      <span style="color: #10B981;">● SYNCED</span>
+                    </div>
+                    <span>IP Address: 10.0.1.16</span>
+                    <span>CPU: 8% | RAM: 38%</span>
+                  </div>
+
+                  <div
+                    style="background: var(--color-bg-light); border: 1px solid var(--color-gray-border); border-radius: 4px; padding: 4px 6px; font-size: 0.52rem; display: flex; flex-direction: column; gap: 2px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 0.55rem;">
+                      <span style="color: var(--color-navy);">Node 03 (Secondary)</span>
+                      <span style="color: #10B981;">● SYNCED</span>
+                    </div>
+                    <span>IP Address: 10.0.1.17</span>
+                    <span>CPU: 9% | RAM: 39%</span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- NEW PAGE 15: INFRASTRUCTURE & SUPPORT LIFECYCLE-->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-project-info">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="a4-portrait-content">
+          <div class="slide-header-area">
+            <h2 class="slide-title">System Infrastructure & Technical Architecture</h2>
+            <p class="slide-subtitle">A deep dive into the secure, resilient cloud architecture and support pipeline powering ECAP SPHN.</p>
+          </div>
+
+          <div class="grid-2x2">
+            <!-- Card 1: Cloud & Database -->
+            <div class="bordered-card border-top-navy" style="padding: 15px; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-role-title" style="margin-bottom: 6px; gap: 8px;">
+                  <span class="card-icon-header icon-bg-navy" style="margin: 0; color: var(--color-navy);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                      <ellipse cx="12" cy="5" rx="9" ry="3" />
+                      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                      <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+                    </svg>
+                  </span>
+                  <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--color-navy);">Distributed Database</h3>
+                </div>
+                <p class="card-text" style="font-size: 0.68rem; margin: 4px 0 0 0; line-height: 1.45;">ECAP SPHN runs MongoDB Atlas clusters with replica set shards. Automatic daily snapshots preserve database checkpoints and prevent data loss.</p>
+              </div>
+              <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0;">
+                <img src="db_icon.png" alt="Database Icon" style="height: 105px; width: auto; object-fit: contain; display: block;">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div class="badge" style="background-color: rgba(11, 44, 74, 0.08); color: var(--color-navy); font-size: 0.5rem; padding: 2px 6px;">REPLICA CLUSTERS</div>
+              </div>
+            </div>
+
+            <!-- Card 2: Cryptographic Security -->
+            <div class="bordered-card border-top-orange" style="padding: 15px; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-role-title" style="margin-bottom: 6px; gap: 8px;">
+                  <span class="card-icon-header icon-bg-orange" style="margin: 0; color: var(--color-orange);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--color-navy);">Cryptographic Vaults</h3>
+                </div>
+                <p class="card-text" style="font-size: 0.68rem; margin: 4px 0 0 0; line-height: 1.45;">All password files are hashed via Bcrypt (Salt factor 10) to secure institutional credentials. Stateless JSON Web Tokens (JWT) manage user login sessions.</p>
+              </div>
+              <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0;">
+                <img src="lock_icon.png" alt="Cryptographic Vaults Icon" style="height: 105px; width: auto; object-fit: contain; display: block;">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div class="badge" style="background-color: rgba(245, 130, 32, 0.08); color: var(--color-orange); font-size: 0.5rem; padding: 2px 6px;">BCRYPT & JWT ENFORCED</div>
+              </div>
+            </div>
+
+            <!-- Card 3: Quality Assurance -->
+            <div class="bordered-card border-top-teal" style="padding: 15px; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-role-title" style="margin-bottom: 6px; gap: 8px;">
+                  <span class="card-icon-header icon-bg-teal" style="margin: 0; color: var(--color-teal);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </span>
+                  <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--color-navy);">Quality Assurance</h3>
+                </div>
+                <p class="card-text" style="font-size: 0.68rem; margin: 4px 0 0 0; line-height: 1.45;">Strict test pipelines check API endpoints using Jest. React Testing Library verifies clean frontend dashboard rendering and correct user action states.</p>
+              </div>
+              <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0;">
+                <img src="qa_icon.png" alt="Quality Assurance Icon" style="height: 115px; width: auto; object-fit: contain; display: block;">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div class="badge" style="background-color: rgba(0, 169, 176, 0.08); color: var(--color-teal); font-size: 0.5rem; padding: 2px 6px;">JEST & REACT TESTING</div>
+              </div>
+            </div>
+
+            <!-- Card 4: Support Lifecycle -->
+            <div class="bordered-card border-top-navy" style="padding: 15px; justify-content: space-between; height: 100%;">
+              <div>
+                <div class="card-role-title" style="margin-bottom: 6px; gap: 8px;">
+                  <span class="card-icon-header icon-bg-navy" style="margin: 0; color: var(--color-navy);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </span>
+                  <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--color-navy);">Support Lifecycle</h3>
+                </div>
+                <p class="card-text" style="font-size: 0.68rem; margin: 4px 0 0 0; line-height: 1.45;">Comprehensive faculty training seminars alongside direct web documentation. A dedicated 24/7 technical helpdesk guarantees swift dispute resolutions.</p>
+              </div>
+              <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0;">
+                <img src="support_icon.png" alt="Support Lifecycle Icon" style="height: 105px; width: auto; object-fit: contain; display: block;">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div class="badge" style="background-color: rgba(11, 44, 74, 0.08); color: var(--color-navy); font-size: 0.5rem; padding: 2px 6px;">24/7 SLA COMPLIANT</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enterprise Deployment Status Dashboard Mockup -->
+          <div class="mockup-panel-full border-left-teal" style="margin-top: 10px;">
+            <h4 class="mockup-panel-title">📡 MERN Backend API Server & Database Cluster Console</h4>
+            <div style="background: #0B2C4A; border-radius: 6px; padding: 10px 14px; font-family: monospace; font-size: 0.55rem; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow-sm);">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; margin-bottom: 4px;">
+                <span><strong>API Server Environment:</strong> Node.js / Express (Port 5000)</span>
+                <span style="color: #10B981; font-weight: bold;">● ACTIVE / ONLINE</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div>
+                  <span style="color: #64748B; display: block; font-size: 0.48rem; text-transform: uppercase;">MongoDB Cluster</span>
+                  <strong style="color: #00A9B0; font-size: 0.58rem;">ATLAS CONNECTED</strong>
+                </div>
+                <div>
+                  <span style="color: #64748B; display: block; font-size: 0.48rem; text-transform: uppercase;">Cloud Media / Files</span>
+                  <strong style="color: #10B981; font-size: 0.58rem;">CLOUDINARY & S3 LINKED</strong>
+                </div>
+                <div>
+                  <span style="color: #64748B; display: block; font-size: 0.48rem; text-transform: uppercase;">Jest Unit Tests</span>
+                  <strong style="color: #10B981; font-size: 0.58rem;">100% PASSED (Jest)</strong>
+                </div>
+              </div>
+              <div style="margin-top: 4px; padding: 4px; background: rgba(0, 169, 176, 0.1); border-radius: 4px; border-left: 3px solid var(--color-teal); display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #E2E8F0; font-size: 0.52rem;">Database Auto-Backup Status: Daily snapshots enabled. Next trigger: 02:00 AM UTC.</span>
+                <span style="background: var(--color-teal); color: white; padding: 1px 4px; border-radius: 2px; font-size: 0.45rem; font-weight: bold;">AUTOMATED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- PAGE 14: BACK COVER                            -->
+      <!-- ============================================== -->
+      <section class="slide" id="slide-13">
+        <div class="page-pattern top-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-navy"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-red"></span>
+          </div>
+        </div>
+
+        <div class="slide-back-cover">
+          <div class="back-logo">
+            <div
+              style="background: white; border-radius: 14px; padding: 12px 24px; display: inline-block; box-shadow: 0 2px 12px rgba(0,0,0,0.18); border-bottom: 3px solid #F58220; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+              <img src="sphn.jpg" alt="ECAP SPHN Logo"
+                style="height: 70px; width: auto; object-fit: contain; display: block;">
+            </div>
+          </div>
+          <h2 class="back-tagline">Transforming Institutions, Streamlining Campuses, Securing Data!</h2>
+          <div class="back-divider"></div>
+
+          <div class="contact-card-grid">
+            <div class="contact-item">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+              </svg>
+              <span>support@ecapsphn.com</span>
+            </div>
+            <div class="contact-item">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                  d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+              </svg>
+              <span>+91 9398018154</span>
+            </div>
+            <div class="contact-item">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              </svg>
+              <span>Hyderabad, TS, India</span>
+            </div>
+            <div class="contact-item">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+              </svg>
+              <span>www.ecapsphn.com</span>
+            </div>
+          </div>
+
+          <div class="back-developer-tag">
+            Designed & Developed by <strong>Laxmi Ganji</strong>
+          </div>
+        </div>
+
+        <div class="page-pattern bottom-pattern">
+          <div class="dotted-divider"></div>
+          <div class="square-blocks">
+            <span class="square block-red"></span>
+            <span class="square block-teal"></span>
+            <span class="square block-orange"></span>
+            <span class="square block-navy"></span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Javascript -->
+  <script src="script.js"></script>
+</body>
+
+</html>

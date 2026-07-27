@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { baseApiURL } from "../../../baseUrl";
 import toast from "react-hot-toast";
-import { FiDownload, FiUsers, FiSearch, FiTrash2 } from "react-icons/fi";
+import { FiDownload, FiUsers, FiSearch, FiTrash2, FiMessageSquare } from "react-icons/fi";
 
-const ViewStudents = ({ branch: lockedBranch }) => {
+const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [semester, setSemester] = useState("-- Select --");
@@ -408,14 +408,26 @@ const ViewStudents = ({ branch: lockedBranch }) => {
                           </span>
                         </td>
                         <td className="py-4 px-6">
-                          <button
-                            onClick={() => handleDeleteStudent(student._id, student.enrollmentNo)}
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors text-sm font-medium"
-                            title="Delete Student"
-                          >
-                            <FiTrash2 className="text-sm" />
-                            Delete
-                          </button>
+                          <div className="flex items-center gap-2">
+                            {onMessageParent && (
+                              <button
+                                onClick={() => onMessageParent(student.enrollmentNo)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors text-sm font-medium shrink-0"
+                                title="Message Parent"
+                              >
+                                <FiMessageSquare className="text-sm" />
+                                Message Parent
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteStudent(student._id, student.enrollmentNo)}
+                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors text-sm font-medium shrink-0"
+                              title="Delete Student"
+                            >
+                              <FiTrash2 className="text-sm" />
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

@@ -23,6 +23,9 @@ import OBEConfig from "./OBE/OBEConfig";
 import OBEReports from "./OBE/OBEReports";
 import GeofenceSetup from "./GeofenceSetup";
 import DailyFacultyAttendance from "./DailyFacultyAttendance";
+import AIAnalytics from "./AIAnalytics";
+import NotificationSettings from "./NotificationSettings";
+import MessageParent from "../../components/MessageParent";
 
 const Home = () => {
   const router = useLocation();
@@ -30,6 +33,7 @@ const Home = () => {
   const [load, setLoad] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState("Profile");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [targetRollNo, setTargetRollNo] = useState("");
   const [dashboardData, setDashboardData] = useState({
     studentCount: "",
     facultyCount: "",
@@ -98,11 +102,13 @@ const Home = () => {
       case "Profile":
         return <Profile />;
       case "Student":
-        return <Student />;
+        return <Student onMessageParent={(roll) => { setTargetRollNo(roll); setSelectedMenu("Message Parent"); }} />;
       case "Faculty":
         return <Faculty />;
       case "Library":
         return <Library />;
+      case "Message Parent":
+        return <MessageParent userType="Admin" currentUser={router.state} initialEnrollmentNo={targetRollNo} />;
       case "Branch":
         return <Branch />;
       case "Notice":
@@ -129,6 +135,10 @@ const Home = () => {
         return <GeofenceSetup />;
       case "DailyFacultyAttendance":
         return <DailyFacultyAttendance />;
+      case "AI Analytics":
+        return <AIAnalytics />;
+      case "Notification Settings":
+        return <NotificationSettings />;
       default:
         return <Profile />;
     }

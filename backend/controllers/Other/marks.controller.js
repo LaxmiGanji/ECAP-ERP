@@ -1,4 +1,6 @@
 const Marks = require("../../models/Other/marks.model.js");
+const StudentDetails = require("../../models/Students/details.model");
+const NotificationService = require("../../services/notification.service");
 
 const getMarks = async (req, res) => {
     try {
@@ -69,20 +71,55 @@ const addMarks = async (req, res) => {
             if (external) {
                 existingMarks.external = { ...existingMarks.external, ...external }
             }
-            await existingMarks.save()
-            const data = {
-                success: true,
-                message: "Marks Added!",
-            };
-            res.json(data);
+            await existingMarks.save();
         } else {
             await Marks.create(req.body);
-            const data = {
-                success: true,
-                message: "Marks Added!",
-            };
-            res.json(data);
         }
+
+        // Trigger automated results notification in background
+        (async () => {
+            try {
+                const settings = await NotificationService.getSettings();
+                if (settings.autoResultAlert) {
+                    const student = await StudentDetails.findOne({ enrollmentNo });
+                    if (student) {
+                        const parentLink = NotificationService.generateParentLink(student.enrollmentNo);
+                        
+                        let marksSummary = "";
+                        if (internal) {
+                            marksSummary = Object.entries(internal).map(([sub, val]) => `${sub}: ${val}`).join(", ");
+                        } else if (external) {
+                            marksSummary = Object.entries(external).map(([sub, val]) => `${sub}: ${val}`).join(", ");
+                        }
+
+                        const text = settings.resultsTemplate
+                            .replace(/{student_name}/g, `${student.firstName || ''} ${student.lastName || ''}`.trim())
+                            .replace(/{exam_type}/g, internal ? "Internal Assessment" : "Semester End Exams")
+                            .replace(/{marks_summary}/g, marksSummary)
+                            .replace(/{portal_link}/g, parentLink);
+
+                        const referenceId = `MARKS_${internal ? "INT" : "EXT"}_${Date.now()}`;
+
+                        if (settings.smsEnabled) {
+                            NotificationService.sendAlert({ student, type: "RESULTS", content: text, channel: "SMS", referenceId });
+                        }
+                        if (settings.whatsappEnabled) {
+                            NotificationService.sendAlert({ student, type: "RESULTS", content: text, channel: "WHATSAPP", referenceId });
+                        }
+                        if (settings.emailEnabled) {
+                            NotificationService.sendAlert({ student, type: "RESULTS", content: text, channel: "EMAIL", referenceId });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Error triggering auto result notification:", err);
+            }
+        })();
+
+        res.json({
+            success: true,
+            message: "Marks Added!",
+        });
     } catch (error) {
         console.error(error.message);
         console.log(error)

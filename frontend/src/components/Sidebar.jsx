@@ -18,7 +18,10 @@ import {
   FiBriefcase,
   FiBarChart2,
   FiMapPin,
-  FiClock
+  FiClock,
+  FiMessageSquare,
+  FiActivity,
+  FiCpu
 } from "react-icons/fi";
 import { MdOutlineSchool, MdOutlineSubject } from "react-icons/md";
 
@@ -58,13 +61,17 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Reports", label: "Reports", icon: FiFileText, color: "from-emerald-500 to-emerald-600" },
           { id: "OBE Config", label: "OBE Config", icon: FiFileText, color: "from-indigo-500 to-indigo-600" },
           { id: "GeofenceSetup", label: "Geofence Setup", icon: FiMapPin, color: "from-blue-600 to-cyan-500" },
-          { id: "DailyFacultyAttendance", label: "Daily Faculty Attendance", icon: FiUserCheck, color: "from-teal-500 to-emerald-600" }
+          { id: "DailyFacultyAttendance", label: "Daily Faculty Attendance", icon: FiUserCheck, color: "from-teal-500 to-emerald-600" },
+          { id: "Message Parent", label: "Message Parent", icon: FiMessageSquare, color: "from-pink-500 to-rose-600" },
+          { id: "AI Analytics", label: "AI Analytics", icon: FiActivity, color: "from-purple-500 to-pink-600" },
+          { id: "Notification Settings", label: "Notification Settings", icon: FiSettings, color: "from-blue-600 to-indigo-600" }
         ];
       case "Faculty":
         return [
           { id: "My Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" },
           { id: "Student Info", label: "Student Info", icon: FiUsers, color: "from-green-500 to-green-600" },
           { id: "Upload Marks", label: "Upload Marks", icon: FiFileText, color: "from-purple-500 to-purple-600" },
+          { id: "Message Parent", label: "Message Parent", icon: FiMessageSquare, color: "from-pink-500 to-rose-600" },
           { id: "Timetable", label: "Timetable", icon: FiCalendar, color: "from-orange-500 to-orange-600" },
           { id: "MyFacultyTimeTable", label: "MyFacultyTimeTable", icon: FiCalendar, color: "from-orange-500 to-orange-600" },
           { id: "Notice", label: "Notice", icon: FiFileText, color: "from-pink-500 to-pink-600" },
@@ -73,13 +80,15 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Edit Faculty", label: "Edit Faculty", icon: FiGrid, color: "from-red-500 to-red-600" },
           { id: "Final CO/PO Attainment", label: "Final CO/PO Attainment", icon: MdOutlineSubject, color: "from-purple-500 to-purple-600" },
           { id: "Leave Management", label: "Leave Management", icon: FiCalendar, color: "from-indigo-500 to-indigo-600" },
-          { id: "DailyAttendance", label: "Daily Attendance", icon: FiClock, color: "from-orange-500 to-amber-600" }
+          { id: "DailyAttendance", label: "Daily Attendance", icon: FiClock, color: "from-orange-500 to-amber-600" },
+          { id: "AI Assistant", label: "AI Assistant", icon: FiMessageSquare, color: "from-blue-500 to-indigo-600" },
+          { id: "AI Student Analytics", label: "AI Student Analytics", icon: FiActivity, color: "from-purple-500 to-pink-600" }
         ];
       case "Examination":
         return [
           { id: "My Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" },
           { id: "Add Faculty", label: "Add Faculty", icon: FiUsers, color: "from-green-500 to-green-600" },
-          { id: "View Faculty", label: "View Faculty", icon: FiEye, color: "from-purple-500 to-purple-600" } // Add this line
+          { id: "View Faculty", label: "View Faculty", icon: FiEye, color: "from-purple-500 to-purple-600" }
         ];
       case "Placement":
         return [
@@ -93,6 +102,7 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
       case "Student":
         return [
           { id: "My Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" },
+          { id: "Library RAG Assistant", label: "Library RAG Assistant", icon: FiCpu, color: "from-cyan-500 to-indigo-600" },
           { id: "Timetable", label: "Timetable", icon: FiCalendar, color: "from-green-500 to-green-600" },
           { id: "Marks", label: "Marks", icon: FiFileText, color: "from-purple-500 to-purple-600" },
           { id: "Material", label: "Material", icon: FiBookOpen, color: "from-orange-500 to-orange-600" },
@@ -103,7 +113,13 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "Transport", label: "Transport", icon: FiTruck, color: "from-lime-500 to-lime-600" },
           { id: "OnlineCompiler", label: "Online Compiler", icon: FiCode, color: "from-indigo-500 to-indigo-600" },
           { id: "Edit Student", label: "Edit Student", icon: FiGrid, color: "from-red-500 to-red-600" },
-          { id: "Placement", label: "Placement", icon: FiBriefcase, color: "from-blue-500 to-blue-600" }
+          { id: "Placement", label: "Placement", icon: FiBriefcase, color: "from-blue-500 to-blue-600" },
+          { id: "AI Assistant", label: "AI Assistant", icon: FiMessageSquare, color: "from-blue-500 to-indigo-600" }
+        ];
+      case "Library":
+        return [
+          { id: "Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" },
+          { id: "AI RAG Assistant", label: "AI RAG & Web Assistant", icon: FiCpu, color: "from-cyan-500 to-indigo-600" }
         ];
       case "HOD":
         return [
@@ -121,7 +137,9 @@ const Sidebar = ({ selectedMenu, setSelectedMenu, userType, isCollapsed, setIsCo
           { id: "FacultyAttendance", label: "Faculty Tracking", icon: FiBarChart2, color: "from-blue-500 to-emerald-500" },
           { id: "FacultySubstitution", label: "Faculty Substitution", icon: FiCalendar, color: "from-orange-500 to-red-500" },
           { id: "DailyFacultyAttendance", label: "Daily Faculty Attendance", icon: FiUserCheck, color: "from-teal-500 to-emerald-600" },
-          { id: "Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" }
+          { id: "Message Parent", label: "Message Parent", icon: FiMessageSquare, color: "from-pink-500 to-rose-600" },
+          { id: "Profile", label: "My Profile", icon: FiHome, color: "from-blue-500 to-blue-600" },
+          { id: "AI Analytics", label: "AI Analytics", icon: FiActivity, color: "from-purple-500 to-pink-600" }
         ];
       case "Principal":
         return [

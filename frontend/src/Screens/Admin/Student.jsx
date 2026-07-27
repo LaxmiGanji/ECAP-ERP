@@ -6,7 +6,7 @@ import ImportStudent from "./Student/ImportStudent";
 import { FiUserPlus, FiEdit, FiEye, FiDownload } from "react-icons/fi";
 import ViewDetainStudents from "./Student/ViewDetainStudents";
 
-const Student = ({ branch }) => {
+const Student = ({ branch, onMessageParent }) => {
   const [selected, setSelected] = useState("add");
   
   return (
@@ -96,7 +96,7 @@ const Student = ({ branch }) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         {selected === "add" && <AddStudent branch={branch} />}
         {selected === "edit" && <EditStudent branch={branch} />}
-        {selected === "view" && <ViewStudents branch={branch} />}
+        {selected === "view" && <ViewStudents branch={branch} onMessageParent={onMessageParent} />}
         {selected === "import" && <ImportStudent branch={branch} />}
         {selected === "detain" && <ViewDetainStudents branch={branch} />}
       </div>

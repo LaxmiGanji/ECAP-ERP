@@ -2,11 +2,11 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { baseApiURL } from "../../baseUrl";
-import { FiSearch, FiUser, FiMail, FiPhone, FiBook, FiCalendar, FiAward } from "react-icons/fi";
+import { FiSearch, FiUser, FiMail, FiPhone, FiBook, FiCalendar, FiAward, FiMessageSquare } from "react-icons/fi";
 import ViewStudents from "../Admin/Student/ViewStudents";
 import { getFileUrl } from "../../utils/fileUrl";
 
-const Student = () => {
+const Student = ({ onMessageParent }) => {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState("view");
   const [data, setData] = useState({
@@ -179,10 +179,18 @@ const Student = () => {
                 {id && (
                   <div className="max-w-4xl mx-auto">
                     <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
+                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 flex items-center justify-between">
                         <h3 className="text-xl font-bold text-white">
                           Student Information
                         </h3>
+                        {onMessageParent && (
+                          <button
+                            onClick={() => onMessageParent(data.enrollmentNo)}
+                            className="bg-white text-green-700 hover:bg-green-50 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs shadow-sm transition-all"
+                          >
+                            <FiMessageSquare /> Message Parent
+                          </button>
+                        )}
                       </div>
                       <div className="p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -297,7 +305,7 @@ const Student = () => {
               </div>
             )}
 
-            {selected === "view" && <ViewStudents />}
+            {selected === "view" && <ViewStudents onMessageParent={onMessageParent} />}
           </div>
         </div>
       </div>

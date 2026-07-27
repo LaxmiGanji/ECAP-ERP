@@ -56,6 +56,7 @@ app.use("/api/principal/auth", require("./routes/Principal Api/credential.route"
 app.use("/api/hod/management", require("./routes/HOD Api/management.route"));
 app.use("/api/accounts/auth", require("./routes/Accounts Api/credential.route"));
 app.use("/api/auth", require("./routes/auth.routes"));
+app.use("/api/parent", require("./routes/Other Api/parentPortal.route"));
 
 app.use(authenticateToken);
 
@@ -77,9 +78,12 @@ app.use("/api/subject", require("./routes/Other Api/subject.route"));
 app.use("/api/marks", require("./routes/Other Api/marks.route"));
 app.use("/api/branch", require("./routes/Other Api/branch.route"));
 app.use("/api/library", require("./routes/Other Api/library.route"));
+app.use("/api/library/rag", require("./routes/Other Api/rag.route"));
+app.use("/api/rag", require("./routes/Other Api/rag.route"));
 app.use("/api/newspaper", require("./routes/Other Api/newspaper.route"));
 app.use("/api/attendence", require("./routes/Other Api/attedence.route"));
 app.use('/api/compiler', require("./routes/Other Api/compiler.route"));
+app.use("/api/ai", require("./routes/Other Api/ai.route"));
 app.use('/api/transport', require("./routes/Other Api/transport.route"));
 app.use('/api/po', require("./routes/Other Api/po.route"));
 app.use('/api/download', require("./routes/Other Api/download.route"));
@@ -93,6 +97,12 @@ app.use("/api/placement/drives", require("./routes/Placement Api/drive.route"));
 app.use("/api/placement/applications", require("./routes/Placement Api/application.route"));
 app.use("/api/placement/training", require("./routes/Placement Api/training.route"));
 app.use("/api/student/placement", require("./routes/Student Api/placement.route"));
+app.use("/api/notification", require("./routes/Other Api/notification.route"));
+app.use("/api/parent-message", require("./routes/Other Api/parentMessage.route"));
+
+// Initialize Automated Cron Jobs
+const { initAbsentCron } = require("./scripts/absentCron.job");
+initAbsentCron();
 
 app.listen(port, () => {
   console.log(`✅ Server is running on port ${port}`);

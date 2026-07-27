@@ -15,6 +15,8 @@ import EditStudent from "./EditStudent";
 import OnlineCompiler from "./OnlineCompiler";
 import Transport from "./Transport";
 import StudentPlacementProfile from "./PlacementProfile";
+import AIAssistant from "./AIAssistant";
+import LibraryRAGAssistant from "./LibraryRAGAssistant";
 
 const Home = () => {
   const [selectedMenu, setSelectedMenu] = useState("My Profile");
@@ -34,6 +36,8 @@ const Home = () => {
     switch (selectedMenu) {
       case "My Profile":
         return <Profile />;
+      case "Library RAG Assistant":
+        return <LibraryRAGAssistant />;
       case "Timetable":
         return <Timetable />;
       case "Marks":
@@ -56,6 +60,8 @@ const Home = () => {
         return <OnlineCompiler />;
       case "Placement":
         return <StudentPlacementProfile />;
+      case "AI Assistant":
+        return <AIAssistant />;
       default:
         return <Profile />;
     }

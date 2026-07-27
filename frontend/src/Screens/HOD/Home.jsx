@@ -21,6 +21,8 @@ import FacultyAttendance from "./FacultyAttendance";
 import FacultySubstitution from "./FacultySubstitution";
 import DailyFacultyAttendance from "../Admin/DailyFacultyAttendance";
 import Profile from "../Admin/Profile";
+import AIAnalytics from "../Faculty/AIAnalytics";
+import MessageParent from "../../components/MessageParent";
 
 const HODHome = () => {
   const router = useLocation();
@@ -36,6 +38,7 @@ const HODHome = () => {
 
   const [selectedMenu, setSelectedMenu] = useState("Leave Approvals");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [targetRollNo, setTargetRollNo] = useState("");
 
   useEffect(() => {
     if (!router.state?.loginid || router.state?.type !== 'HOD') {
@@ -204,8 +207,12 @@ const HODHome = () => {
         return <FacultySubstitution />;
       case "DailyFacultyAttendance":
         return <DailyFacultyAttendance branch={branch} />;
+      case "Message Parent":
+        return <MessageParent userType="HOD" currentUser={router.state} initialEnrollmentNo={targetRollNo} />;
       case "Profile":
         return <Profile />;
+      case "AI Analytics":
+        return <AIAnalytics />;
       default:
         return <div>Select a module</div>;
     }
