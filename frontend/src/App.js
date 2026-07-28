@@ -14,6 +14,7 @@ import HODHome from "./Screens/HOD/Home";
 import PrincipalHome from "./Screens/Principal/Home";
 import AccountsHome from "./Screens/Accounts/Home";
 import ParentPortal from "./Screens/Common/ParentPortal";
+import Portfolio3D from "./Screens/Common/Portfolio3D";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         <Router>
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="portfolio" element={<Portfolio3D />} />
             <Route path="student" element={<StudentHome />} />
             <Route path="faculty" element={<FacultyHome />} />
             <Route path="admin" element={<AdminHome />} />

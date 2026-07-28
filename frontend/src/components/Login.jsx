@@ -131,13 +131,14 @@ const Login = () => {
               Welcome to Sphoorthy Engineering College
             </motion.h1>
             <motion.p
-              className="text-lg md:text-xl text-blue-100 text-center mb-6 md:mb-8"
+              className="text-lg md:text-xl text-blue-100 text-center mb-4 md:mb-6"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
               Please select your role to continue
             </motion.p>
+
 
             <motion.div 
               className="flex justify-center mb-10"

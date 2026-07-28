@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECAP ERP — 3D Dynamic Commercial Sales Portfolio</title>
+  <meta name="description" content="Next-Generation AI & OBE Powered Campus ERP System. Automated 7-Sheet ExcelJS NAAC Accreditation Compiler, AI RAG Vector Assistant & Smart Transport Management.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f3ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Three.js CDN for WebGL 3D Canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container" class="fixed inset-0 pointer-events-none z-0 opacity-70"></div>
+
+  <!-- Header Navigation -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80 px-6 py-4 transition-all">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 p-[2px] shadow-lg">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-extrabold text-white text-lg shadow-lg shadow-indigo-500/30">
+            E
+          </div>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-cyan-300 bg-clip-text text-transparent">
+            ECAP ERP
+          </span>
+          <span class="block text-[10px] font-mono text-indigo-400 tracking-widest uppercase">
+            Commercial Portfolio
+          </span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#overview" class="hover:text-cyan-400 transition-colors">Overview</a>
+        <a href="#modules" class="hover:text-cyan-400 transition-colors">10 Modules</a>
+        <a href="#obe-engine" class="hover:text-cyan-400 transition-colors">OBE Engine</a>
+        <a href="#ai-rag" class="hover:text-cyan-400 transition-colors">AI RAG Bot</a>
+        <a href="#roi" class="hover:text-cyan-400 transition-colors">ROI Calculator</a>
+        <a href="#licensing" class="hover:text-cyan-400 transition-colors">Licensing</a>
+      </nav>
+
+      <button onclick="openModal('demoModal')" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5">
+        Request Commercial Quote
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section id="overview" class="relative z-10 px-6 pt-16 pb-24 md:pt-28 md:pb-32 max-w-7xl mx-auto text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold mb-8 backdrop-blur-md">
+      <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+      Enterprise Campus Automation Package v3.0
+    </div>
+
+    <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight max-w-5xl mx-auto mb-6">
+      The Next-Generation <span class="bg-gradient-to-r from-indigo-400 via-purple-300 to-cyan-400 bg-clip-text text-transparent">AI & OBE Powered</span> Campus ERP
+    </h1>
+
+    <p class="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed font-normal">
+      Transform institutional administration with zero-formula-error 7-sheet ExcelJS NAAC/NBA compilers, AI Pinecone vector library assistants, and real-time executive dashboards.
+    </p>
+
+    <div class="flex flex-wrap items-center justify-center gap-4 mb-16">
+      <button onclick="openModal('demoModal')" class="px-8 py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 shadow-2xl shadow-indigo-500/40 hover:shadow-indigo-500/60 transition-all transform hover:-translate-y-1">
+        Schedule Live Campus Demo
+      </button>
+      <a href="#modules" class="px-8 py-4 rounded-2xl text-sm font-semibold text-slate-200 bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 transition-all backdrop-blur-md">
+        Explore All 10 Modules ↓
+      </a>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md">
+        <div class="text-3xl font-black text-white font-mono">10+</div>
+        <div class="text-xs text-slate-400">Integrated Modules</div>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md">
+        <div class="text-3xl font-black text-cyan-400 font-mono">98%</div>
+        <div class="text-xs text-slate-400">NAAC Prep Speedup</div>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md">
+        <div class="text-3xl font-black text-emerald-400 font-mono">7-Sheet</div>
+        <div class="text-xs text-slate-400">Native Excel Exporter</div>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md">
+        <div class="text-3xl font-black text-amber-400 font-mono">100%</div>
+        <div class="text-xs text-slate-400">RBAC Security</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 MODULES DIRECTORY -->
+  <section id="modules" class="relative z-10 py-20 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Complete 10-Module Institutional Suite</h2>
+      <p class="text-slate-400 text-base max-w-2xl mx-auto">Tailored high-performance workspaces for every stakeholder role across campus.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 1. OBE -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-amber-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('obe')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">FLAGSHIP USP</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">OBE Attainment & Excel Engine</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Automated CO-PO mapping recalculations (80% Direct / 20% Indirect) and 7-sheet ExcelJS native chart compiler.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-amber-400 font-mono font-semibold">
+          <span>98% Audit Time Saved</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 2. AI RAG -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-emerald-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('rag')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">AI POWERED</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">AI RAG Library Assistant</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Natural language query engine powered by Pinecone vectors and Gemini 1.5 Pro across syllabus and reference books.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-emerald-400 font-mono font-semibold">
+          <span>Sub-second Retrieval</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 3. Principal Console -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-indigo-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('principal')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">EXECUTIVE</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">Principal & Executive Console</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Bird's-eye institutional cockpit monitoring real-time campus attendance, marks, accreditation readiness & notices.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-indigo-400 font-mono font-semibold">
+          <span>100% Governance</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 4. HOD Workspace -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-cyan-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('hod')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">DEPARTMENTAL</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">HOD Workspace & Substitution</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Faculty leave application approvals matched with automatic substitute teacher assignment to guarantee period coverage.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-cyan-400 font-mono font-semibold">
+          <span>Zero Lost Classes</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 5. Faculty Hub -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-purple-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('faculty')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">ACADEMIC</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">Faculty Workspace & Marks</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Daily attendance logging, Excel bulk marks importer with range validation, study material repository & exam CO tagging.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-purple-400 font-mono font-semibold">
+          <span>15+ Hours Saved/Mo</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 6. Student & Parent -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-blue-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('student')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">STUDENT & PARENT</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">Student Portal & Parent View</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Real-time attendance warnings, subject gradebook, bus pass center, and tokenized zero-login Parent Portal.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-blue-400 font-mono font-semibold">
+          <span>95% Active Daily Use</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 7. Transport -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-yellow-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('transport')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">LOGISTICS</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">Smart Transport & Pass System</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Bus stop fare configuration, seat capacity counters, payment reference auditing, and digital QR bus pass auto-generation.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-yellow-400 font-mono font-semibold">
+          <span>100% Digital Passes</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 8. Placement -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-rose-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('placement')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">CAREERS</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">Placement Cell Portal</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Recruitment drive creation, student eligibility filtering by CGPA/backlogs, multi-round interview selection pipelines.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-rose-400 font-mono font-semibold">
+          <span>30% Faster Hiring</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 9. Library -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-teal-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('library')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">CATALOG</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">Digital Library Desk</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Book cataloging, issue/return checkout ledger, overdue tracking, and automated document embedding for AI RAG bot.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-teal-400 font-mono font-semibold">
+          <span>Zero Lost Books</span> <span>Details →</span>
+        </div>
+      </div>
+
+      <!-- 10. Accounts -->
+      <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-pink-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer" onclick="showModuleDetails('accounts')">
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-pink-500/20 text-pink-300 border border-pink-500/30">FINANCE</span>
+        <h3 class="text-xl font-bold text-white mt-3 mb-2">Accounts & Fee Governance</h3>
+        <p class="text-xs text-slate-400 line-clamp-3">Tuition and transport fee structures, student reference reconciliation, automated receipt logs & pending alerts.</p>
+        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between text-xs text-pink-400 font-mono font-semibold">
+          <span>Audited Accuracy</span> <span>Details →</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI CALCULATOR -->
+  <section id="roi" class="relative z-10 py-20 px-6 max-w-7xl mx-auto">
+    <div class="p-8 md:p-12 rounded-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-extrabold text-white mb-2">Institutional ROI Calculator</h2>
+        <p class="text-slate-400 text-sm">Estimate campus operational savings per academic year.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div class="space-y-6">
+          <div>
+            <div class="flex justify-between text-xs font-bold mb-2">
+              <span>Student Capacity</span>
+              <span id="studentVal" class="text-indigo-400 font-mono">2,500 Students</span>
+            </div>
+            <input type="range" id="studentRange" min="500" max="10000" step="250" value="2500" oninput="updateRoi()" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-bold mb-2">
+              <span>Faculty Strength</span>
+              <span id="facultyVal" class="text-cyan-400 font-mono">150 Faculty</span>
+            </div>
+            <input type="range" id="facultyRange" min="30" max="500" step="10" value="150" oninput="updateRoi()" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800">
+            <div id="roiHours" class="text-3xl font-extrabold text-indigo-400 font-mono">24,000</div>
+            <div class="text-xs text-slate-400 mt-1">Faculty Hours Saved / Yr</div>
+          </div>
+          <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800">
+            <div id="roiMoney" class="text-3xl font-extrabold text-emerald-400 font-mono">₹800.0k</div>
+            <div class="text-xs text-slate-400 mt-1">Paper & Printing Saved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPECIAL SECTION: WHY COST IS SO LOW USING AWS EC2 -->
+  <section id="aws-architecture" class="relative z-10 py-20 px-6 max-w-7xl mx-auto">
+    <div class="p-8 md:p-12 rounded-3xl bg-gradient-to-b from-slate-900 via-slate-950 to-indigo-950/40 border-2 border-cyan-500/40 backdrop-blur-2xl relative overflow-hidden shadow-2xl">
+      <div class="inline-flex items-center gap-2 mb-4 px-3.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase tracking-widest">
+        <span>☁️ AWS EC2 Cloud Cost Breakdown</span>
+      </div>
+
+      <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4">
+        Why Is ECAP ERP So Affordable? <span class="bg-gradient-to-r from-cyan-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">The AWS EC2 Advantage</span>
+      </h2>
+
+      <p class="text-slate-300 text-base md:text-lg max-w-3xl mb-10 leading-relaxed font-normal">
+        By replacing traditional legacy on-premise physical servers with optimized AWS EC2 Graviton cloud instances, we cut campus infrastructure overhead by over <strong>80%</strong>. We pass every rupee of these server savings straight to your institution.
+      </p>
+
+      <!-- AWS Architectural Pillars Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div class="p-6 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-400 transition-all glow-card-hover">
+          <div class="text-2xl mb-2">⚡</div>
+          <h3 class="text-base font-bold text-white mb-1">1. Graviton3 ARM Compute</h3>
+          <p class="text-xs text-cyan-300/80 font-mono mb-2">40% Price-Performance Boost</p>
+          <p class="text-xs text-slate-400 leading-relaxed">AWS Graviton ARM instances (`t4g.small` / `c6g.xlarge`) use 60% less energy and provide 40% higher throughput per dollar than legacy x86 CPUs.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-indigo-400 transition-all glow-card-hover">
+          <div class="text-2xl mb-2">📈</div>
+          <h3 class="text-base font-bold text-white mb-1">2. Auto-Scaling Clusters</h3>
+          <p class="text-xs text-indigo-300/80 font-mono mb-2">70% Peak Load Savings</p>
+          <p class="text-xs text-slate-400 leading-relaxed">Traffic peaks during 9 AM morning attendance & exam entries. AWS Auto-Scaling adds EC2 nodes only during peak hours and scales down off-hours.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-400 transition-all glow-card-hover">
+          <div class="text-2xl mb-2">💾</div>
+          <h3 class="text-base font-bold text-white mb-1">3. Zero Hardware CapEx</h3>
+          <p class="text-xs text-emerald-300/80 font-mono mb-2">Zero Campus Rack Buying</p>
+          <p class="text-xs text-slate-400 leading-relaxed">Eliminates ₹15L - ₹25L upfront server purchases, UPS battery maintenance, dedicated server rooms, and full-time server sysadmin salaries.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-amber-400 transition-all glow-card-hover">
+          <div class="text-2xl mb-2">☁️</div>
+          <h3 class="text-base font-bold text-white mb-1">4. S3 & CloudFront CDN</h3>
+          <p class="text-xs text-amber-300/80 font-mono mb-2">Zero EC2 RAM Overload</p>
+          <p class="text-xs text-slate-400 leading-relaxed">Study materials, PDFs, student photos, and digital bus passes are served via S3 & CloudFront edge nodes, keeping EC2 RAM footprint near zero.</p>
+        </div>
+      </div>
+
+      <!-- Cost Breakdown Side-by-Side -->
+      <div class="bg-slate-950 p-6 md:p-8 rounded-2xl border border-slate-800">
+        <h3 class="text-lg font-bold text-white mb-6">Cost Breakdown Comparison: Traditional On-Premise vs ECAP on AWS EC2</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="p-6 rounded-2xl bg-red-950/20 border border-red-500/30">
+            <h4 class="text-lg font-bold text-red-300 mb-2">Traditional Legacy ERP</h4>
+            <div class="text-3xl font-black text-red-400 font-mono mb-4">₹3,50,000 / yr</div>
+            <ul className="space-y-2 text-xs text-slate-400">
+              <li>❌ On-premise server hardware depreciation: ₹1,50,000</li>
+              <li>❌ On-site server sysadmin salary share: ₹1,20,000</li>
+              <li>❌ AC server room power & UPS batteries: ₹80,000</li>
+            </ul>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-emerald-950/30 border-2 border-emerald-500 shadow-xl shadow-emerald-500/10">
+            <h4 class="text-lg font-bold text-emerald-300 mb-2">ECAP ERP on AWS EC2</h4>
+            <div class="text-3xl font-black text-white font-mono mb-4">₹24,999 / yr <span class="text-xs text-emerald-400 font-sans font-semibold">(Starting)</span></div>
+            <ul className="space-y-2 text-xs text-slate-200">
+              <li>✅ AWS Graviton EC2 compute node: ₹12,000</li>
+              <li>✅ AWS S3 Automated Backups & CDN: ₹4,999</li>
+              <li>✅ Full ERP Software License & Updates: ₹8,000</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LICENSING TIERS -->
+  <section id="licensing" class="relative z-10 py-20 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-4">
+        🏷️ Transparent & Accurately Reduced Cloud Pricing
+      </div>
+      <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Commercial Licensing Tiers</h2>
+      <p class="text-slate-400 text-base max-w-2xl mx-auto">Thanks to AWS EC2 Graviton efficiency, we offer the most competitive pricing in the market.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Standard -->
+      <div class="p-8 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 backdrop-blur-xl transition-all glow-card-hover flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-xl font-bold text-white">Standard Campus</h3>
+            <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">🔥 83% PRICE CUT</span>
+          </div>
+          <p class="text-xs text-slate-400 mb-6">Single Engineering or Degree College (up to 2,500 students)</p>
+          
+          <div class="mb-6">
+            <div class="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹1,50,000 / yr</div>
+            <div class="text-3xl font-black text-white font-mono">₹24,999 <span class="text-xs text-slate-400 font-sans font-normal">/ year</span></div>
+            <div class="text-[11px] text-emerald-400 font-semibold mt-1">Only ~₹9.99 per student / year</div>
+          </div>
+        </div>
+        <button onclick="openModal('demoModal')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold text-xs border border-slate-700">Inquire Standard Tier</button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="p-8 rounded-3xl bg-gradient-to-b from-indigo-950 to-slate-900 border-2 border-indigo-500 backdrop-blur-xl transition-all glow-card-hover relative shadow-2xl flex flex-col justify-between transform md:-translate-y-4">
+        <span class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-widest">Recommended</span>
+        <div>
+          <div class="flex justify-between items-center mb-3 mt-2">
+            <h3 class="text-xl font-bold text-white">Enterprise University</h3>
+            <span class="px-2.5 py-1 rounded-full bg-indigo-500/30 text-indigo-200 text-[10px] font-bold">⚡ 86% SAVINGS</span>
+          </div>
+          <p class="text-xs text-indigo-200 mb-6">Autonomous & Multi-Campus Institutions (up to 8,000 students)</p>
+          
+          <div class="mb-6">
+            <div class="text-xs text-indigo-300/60 line-through mb-0.5 font-mono">Original: ₹4,50,000 / yr</div>
+            <div class="text-3xl font-black text-white font-mono">₹59,999 <span class="text-xs text-indigo-200 font-sans font-normal">/ year</span></div>
+            <div class="text-[11px] text-cyan-300 font-semibold mt-1">Only ~₹7.50 per student / year</div>
+          </div>
+        </div>
+        <button onclick="openModal('demoModal')" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-bold text-xs shadow-lg">Request Proposal</button>
+      </div>
+
+      <!-- SaaS -->
+      <div class="p-8 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 backdrop-blur-xl transition-all glow-card-hover flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-xl font-bold text-white">SaaS Managed Cloud</h3>
+            <span class="px-2.5 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold">☁️ AWS EC2 HOSTED</span>
+          </div>
+          <p class="text-xs text-slate-400 mb-6">Fully Managed Cloud Hosting with Automated Daily S3 Backups</p>
+          
+          <div class="mb-6">
+            <div class="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹99,999 / yr</div>
+            <div class="text-3xl font-black text-white font-mono">₹39,999 <span class="text-xs text-slate-400 font-sans font-normal">/ year</span></div>
+            <div class="text-[11px] text-cyan-400 font-semibold mt-1">Includes AWS EC2 Server & Storage Costs</div>
+          </div>
+        </div>
+        <button onclick="openModal('demoModal')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold text-xs border border-slate-700">Inquire Cloud SaaS</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer class="relative z-10 border-t border-slate-800 bg-slate-950 py-8 px-6 text-center text-xs text-slate-500">
+    ECAP ERP — Developed & Designed by Laxmi Ganji
+  </footer>
+
+  <!-- DEMO INQUIRY MODAL -->
+  <div id="demoModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-indigo-500/40 rounded-3xl max-w-md w-full p-6 relative shadow-2xl">
+      <button onclick="closeModal('demoModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
+      <h3 class="text-xl font-bold text-white mb-2">Schedule Commercial Demo</h3>
+      <form onsubmit="submitForm(event)" class="space-y-3 text-xs">
+        <input type="text" placeholder="Full Name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-white">
+        <input type="text" placeholder="Institution Name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-white">
+        <input type="email" placeholder="Official Email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-white">
+        <input type="tel" placeholder="Phone Number" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-white">
+        <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 font-bold text-white">Submit Inquiry</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
