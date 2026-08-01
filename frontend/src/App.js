@@ -1,5 +1,6 @@
 import Login from "./components/Login";
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import { Provider } from "react-redux";
 import mystore from "./redux/store";
 import StudentHome from "./Screens/Student/Home";
@@ -16,11 +17,21 @@ import AccountsHome from "./Screens/Accounts/Home";
 import ParentPortal from "./Screens/Common/ParentPortal";
 import Portfolio3D from "./Screens/Common/Portfolio3D";
 
+const HashRedirect = () => {
+  useEffect(() => {
+    if (window.location.hash && window.location.hash.includes("portfolio")) {
+      window.location.href = "/portfolio";
+    }
+  }, []);
+  return null;
+};
+
 const App = () => {
   return (
     <>
       <Provider store={mystore}>
         <Router>
+          <HashRedirect />
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/portfolio" element={<Portfolio3D />} />
