@@ -16,7 +16,6 @@ import {
   FaRocket,
   FaTimes,
   FaArrowRight,
-  FaSearch,
   FaClock,
   FaAward,
   FaServer,
@@ -26,7 +25,6 @@ import {
   FaBolt,
   FaTag,
   FaHdd,
-  FaMagic,
   FaTerminal,
   FaBars
 } from "react-icons/fa";
@@ -1086,13 +1084,13 @@ const Portfolio3D = () => {
                   <h4 className="text-base sm:text-lg font-bold text-emerald-300 mb-1.5">ECAP ERP on AWS EC2</h4>
                   <div className="text-2xl sm:text-3xl font-black text-white font-mono mb-3 flex items-baseline gap-2 flex-wrap">
                     <span>₹2,499 / month</span>
-                    <span className="text-xs text-emerald-400 font-sans font-semibold">(₹29,999 / year)</span>
+                    <span className="text-xs text-emerald-400 font-sans font-semibold">(Starting) to ₹3,930/mo (Max Peak)</span>
                   </div>
                   <ul className="space-y-2 text-xs text-slate-200">
-                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> AWS Graviton EC2 compute node: ₹14,000</li>
-                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> AWS S3 Automated Backups & CDN: ₹5,999</li>
-                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> Full ERP License & Quarterly Updates: ₹10,000</li>
-                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> 99.9% Cloud Uptime SLA & zero IT hassle</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> AWS Graviton EC2 compute node: ₹14,000/yr</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> AWS S3 & 100 GB SSD Media Storage: ₹5,999/yr</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> Custom Domain (.edu.in / .com) + SSL: ₹999/yr</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> Worst-Case High Traffic Cap (5,000+ Students): ~₹3,930/mo ($47.36)</li>
                   </ul>
                 </div>
               </div>
@@ -1100,8 +1098,8 @@ const Portfolio3D = () => {
               {/* Net Savings Bar */}
               <div className="mt-6 sm:mt-8 p-4 rounded-xl bg-gradient-to-r from-emerald-950 via-slate-900 to-cyan-950 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
                 <div>
-                  <span className="text-[10px] sm:text-xs font-mono uppercase text-emerald-400 tracking-widest block">Net Campus Cost Reduction</span>
-                  <span className="text-base sm:text-xl md:text-2xl font-black text-white">Save over ₹3,20,000 / Year per Institution</span>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase text-emerald-400 tracking-widest block">Absolute Worst-Case Infrastructure Cap</span>
+                  <span className="text-base sm:text-xl md:text-2xl font-black text-white">Max ~₹3,930 / Month ($47.36) for 5,000+ Students</span>
                 </div>
                 <button
                   onClick={() => setShowInquiryModal(true)}
@@ -1312,29 +1310,29 @@ const Portfolio3D = () => {
                     ⚡ 86% SAVINGS
                   </span>
                 </div>
-                <p className="text-xs text-indigo-200/80 mb-6">Designed for autonomous colleges & multi-branch universities up to 8,000 students.</p>
+                <p className="text-xs text-indigo-200/80 mb-6">Designed for high-traffic autonomous colleges & 5,000+ student campuses with 100 GB media uploads.</p>
                 
                 {/* Reduced Price Header */}
                 <div className="mb-6">
                   <div className="text-xs text-indigo-300/60 line-through mb-0.5 font-mono">Original: ₹37,500 / mo (₹4,50,000 / yr)</div>
                   <div className="text-3xl sm:text-4xl font-black text-white font-mono flex items-baseline gap-1">
-                    ₹{billingCycle === "multiyear" ? "4,249" : "4,999"}
+                    ₹{billingCycle === "multiyear" ? "3,340" : "3,930"}
                     <span className="text-xs text-indigo-200 font-sans font-normal">/ month</span>
                   </div>
                   <div className="text-xs font-mono text-cyan-300 font-bold mt-1">
-                    {billingCycle === "multiyear" ? "₹50,999 / year total (3-Yr Plan)" : "₹59,999 / year total"}
+                    {billingCycle === "multiyear" ? "₹40,086 / year total (3-Yr Plan)" : "₹47,160 / year total"}
                   </div>
                   <div className="text-[11px] text-indigo-200 mt-1">
-                    Only ~₹7.50 per student / year (~₹0.62 / month)
+                    Includes Custom Domain (.edu.in / .com) + Free SSL + 100 GB SSD
                   </div>
                 </div>
 
                 <ul className="space-y-2.5 text-xs text-slate-200 mb-6 sm:mb-8">
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Everything in Standard Tier</li>
-                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Integrated AI RAG Library Assistant</li>
-                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Custom Regulation Mapping (R22, R18)</li>
-                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Custom Domain Integration & Branding</li>
-                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Dedicated On-Site Faculty Training</li>
+                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Worst-Case Max Bill Protection (~₹3,930/mo)</li>
+                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Custom Domain (.edu.in / .com) & Cloudflare SSL (₹999 value)</li>
+                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Integrated AI RAG Library Assistant & 100 GB Storage</li>
+                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Dedicated On-Site Faculty Training & 24/7 SLA</li>
                 </ul>
               </div>
 
@@ -1606,7 +1604,7 @@ const Portfolio3D = () => {
                   <label className="block text-slate-300 font-semibold mb-1">Student Capacity & Plan</label>
                   <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                     <option>Standard Tier: ₹2,499/mo (₹29,999/yr) - Up to 2,500 Students</option>
-                    <option>Enterprise Tier: ₹4,999/mo (₹59,999/yr) - Autonomous / 8,000 Students</option>
+                    <option>Enterprise High-Load Tier: ₹3,930/mo (₹47,160/yr) - 5,000+ Students & 100 GB Uploads</option>
                     <option>SaaS Managed Cloud Tier: ₹3,299/mo (₹39,999/yr) - Fully Managed AWS EC2</option>
                     <option>3-Year Contract Plan (Save 15% Extra - ₹2,124/mo)</option>
                   </select>
