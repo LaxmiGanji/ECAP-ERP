@@ -812,7 +812,7 @@ const Portfolio3D = () => {
           </h1>
 
           <p className="text-xs sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed font-normal px-2">
-            Automate accreditation with zero-formula 7-sheet ExcelJS compilers, AI RAG vector tutors, digital bus pass systems, and <strong>drastically reduced AWS EC2 cloud pricing</strong> starting at just ₹29,999/yr.
+            Automate accreditation with zero-formula 7-sheet ExcelJS compilers, AI RAG vector tutors, digital bus pass systems, and <strong>drastically reduced AWS EC2 cloud pricing</strong> starting at just <strong>₹2,499/month</strong> (₹29,999/year).
           </p>
 
           {/* Action CTAs */}
@@ -834,7 +834,7 @@ const Portfolio3D = () => {
           {/* Platform Stat Counters */}
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto px-1">
             {[
-              { num: "₹29,999/yr", label: "Starting Reduced Price", icon: <FaTag className="text-emerald-400" /> },
+              { num: "₹2,499/mo", label: "Starting (₹29,999/yr)", icon: <FaTag className="text-emerald-400" /> },
               { num: "80% OFF", label: "Cost Cut via AWS EC2", icon: <FaServer className="text-cyan-400" /> },
               { num: "7-Sheet", label: "Native Excel Compiler", icon: <FaFileExcel className="text-indigo-400" /> },
               { num: "99.9%", label: "AWS Cloud Uptime SLA", icon: <FaCloud className="text-amber-400" /> }
@@ -1085,8 +1085,8 @@ const Portfolio3D = () => {
                   </div>
                   <h4 className="text-base sm:text-lg font-bold text-emerald-300 mb-1.5">ECAP ERP on AWS EC2</h4>
                   <div className="text-2xl sm:text-3xl font-black text-white font-mono mb-3 flex items-baseline gap-2 flex-wrap">
-                    <span>₹29,999 / year</span>
-                    <span className="text-xs text-emerald-400 font-sans font-semibold">(Starting Tier)</span>
+                    <span>₹2,499 / month</span>
+                    <span className="text-xs text-emerald-400 font-sans font-semibold">(₹29,999 / year)</span>
                   </div>
                   <ul className="space-y-2 text-xs text-slate-200">
                     <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> AWS Graviton EC2 compute node: ₹14,000</li>
@@ -1220,21 +1220,31 @@ const Portfolio3D = () => {
               Thanks to AWS EC2 Graviton efficiency, we offer the most competitive pricing in the education tech market. Zero hidden fees.
             </p>
 
-            {/* Billing Toggle (Annual vs 3-Year Institutional Contract) */}
-            <div className="inline-flex items-center p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-full overflow-x-auto">
+            {/* Billing Toggle (Monthly vs Annual vs 3-Year Contract) */}
+            <div className="inline-flex items-center p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-full overflow-x-auto gap-1">
+              <button
+                onClick={() => setBillingCycle("monthly")}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  billingCycle === "monthly"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Monthly Billing
+              </button>
               <button
                 onClick={() => setBillingCycle("annual")}
-                className={`px-3.5 sm:px-5 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   billingCycle === "annual"
                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                Standard Annual
+                Annual Billing (₹29,999/yr)
               </button>
               <button
                 onClick={() => setBillingCycle("multiyear")}
-                className={`px-3.5 sm:px-5 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                   billingCycle === "multiyear"
                     ? "bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg shadow-emerald-600/30"
                     : "text-slate-400 hover:text-white"
@@ -1259,13 +1269,16 @@ const Portfolio3D = () => {
                 
                 {/* Reduced Price Header */}
                 <div className="mb-6">
-                  <div className="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹1,50,000 / yr</div>
+                  <div className="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹12,500 / mo (₹1,50,000 / yr)</div>
                   <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
-                    ₹{isMultiYear ? "25,499" : "29,999"}
-                    <span className="text-xs text-slate-400 font-sans font-normal">/ year</span>
+                    ₹{billingCycle === "multiyear" ? "2,124" : "2,499"}
+                    <span className="text-xs text-slate-400 font-sans font-normal">/ month</span>
                   </div>
-                  <div className="text-[11px] text-emerald-400 font-semibold mt-1">
-                    Only ~₹11.99 per student / year
+                  <div className="text-xs font-mono text-emerald-400 font-bold mt-1">
+                    {billingCycle === "multiyear" ? "₹25,499 / year total (3-Yr Plan)" : "₹29,999 / year total"}
+                  </div>
+                  <div className="text-[11px] text-slate-300 mt-1">
+                    Only ~₹11.99 per student / year (~₹1.00 / month)
                   </div>
                 </div>
 
@@ -1303,13 +1316,16 @@ const Portfolio3D = () => {
                 
                 {/* Reduced Price Header */}
                 <div className="mb-6">
-                  <div className="text-xs text-indigo-300/60 line-through mb-0.5 font-mono">Original: ₹4,50,000 / yr</div>
+                  <div className="text-xs text-indigo-300/60 line-through mb-0.5 font-mono">Original: ₹37,500 / mo (₹4,50,000 / yr)</div>
                   <div className="text-3xl sm:text-4xl font-black text-white font-mono flex items-baseline gap-1">
-                    ₹{isMultiYear ? "50,999" : "59,999"}
-                    <span className="text-xs text-indigo-200 font-sans font-normal">/ year</span>
+                    ₹{billingCycle === "multiyear" ? "4,249" : "4,999"}
+                    <span className="text-xs text-indigo-200 font-sans font-normal">/ month</span>
                   </div>
-                  <div className="text-[11px] text-cyan-300 font-semibold mt-1">
-                    Only ~₹7.50 per student / year
+                  <div className="text-xs font-mono text-cyan-300 font-bold mt-1">
+                    {billingCycle === "multiyear" ? "₹50,999 / year total (3-Yr Plan)" : "₹59,999 / year total"}
+                  </div>
+                  <div className="text-[11px] text-indigo-200 mt-1">
+                    Only ~₹7.50 per student / year (~₹0.62 / month)
                   </div>
                 </div>
 
@@ -1343,13 +1359,16 @@ const Portfolio3D = () => {
                 
                 {/* Reduced Price Header */}
                 <div className="mb-6">
-                  <div className="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹99,999 / yr</div>
+                  <div className="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹8,333 / mo (₹99,999 / yr)</div>
                   <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
-                    ₹{isMultiYear ? "33,999" : "39,999"}
-                    <span className="text-xs text-slate-400 font-sans font-normal">/ year</span>
+                    ₹{billingCycle === "multiyear" ? "2,833" : "3,299"}
+                    <span className="text-xs text-slate-400 font-sans font-normal">/ month</span>
                   </div>
-                  <div className="text-[11px] text-cyan-400 font-semibold mt-1">
-                    Includes AWS EC2 Server & Storage Costs
+                  <div className="text-xs font-mono text-cyan-400 font-bold mt-1">
+                    {billingCycle === "multiyear" ? "₹33,999 / year total (3-Yr Plan)" : "₹39,999 / year total"}
+                  </div>
+                  <div className="text-[11px] text-slate-300 mt-1">
+                    Includes AWS EC2 Server, Storage & Bandwidth
                   </div>
                 </div>
 
@@ -1584,12 +1603,12 @@ const Portfolio3D = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Student Capacity</label>
+                  <label className="block text-slate-300 font-semibold mb-1">Student Capacity & Plan</label>
                   <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500">
-                    <option>Under 1,000 Students (₹29,999/yr)</option>
-                    <option>1,000 - 3,000 Students (Standard Campus)</option>
-                    <option>3,000 - 8,000 Students (Enterprise Tier - ₹59,999/yr)</option>
-                    <option>8,000+ Students (University Tier)</option>
+                    <option>Standard Tier: ₹2,499/mo (₹29,999/yr) - Up to 2,500 Students</option>
+                    <option>Enterprise Tier: ₹4,999/mo (₹59,999/yr) - Autonomous / 8,000 Students</option>
+                    <option>SaaS Managed Cloud Tier: ₹3,299/mo (₹39,999/yr) - Fully Managed AWS EC2</option>
+                    <option>3-Year Contract Plan (Save 15% Extra - ₹2,124/mo)</option>
                   </select>
                 </div>
 
