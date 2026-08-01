@@ -27,7 +27,8 @@ import {
   FaTag,
   FaHdd,
   FaMagic,
-  FaTerminal
+  FaTerminal,
+  FaBars
 } from "react-icons/fa";
 
 const Portfolio3D = () => {
@@ -38,6 +39,7 @@ const Portfolio3D = () => {
   const [selectedModule, setSelectedModule] = useState(null);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Pricing & AWS state
   const [billingCycle, setBillingCycle] = useState("annual"); // "annual" | "multiyear"
@@ -52,6 +54,7 @@ const Portfolio3D = () => {
 
   // Smooth scroll handler helper
   const scrollToSection = (id) => {
+    setMobileMenuOpen(false);
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -74,39 +77,49 @@ const Portfolio3D = () => {
     };
     window.addEventListener("resize", handleResize);
 
-    // Mouse Interaction setup
+    // Mouse & Touch Interaction setup
     let mouseX = 0;
     let mouseY = 0;
     let targetMouseX = 0;
     let targetMouseY = 0;
 
     const handleMouseMove = (e) => {
-      targetMouseX = (e.clientX - width / 2) * 0.45;
-      targetMouseY = (e.clientY - height / 2) * 0.45;
+      targetMouseX = (e.clientX - width / 2) * 0.35;
+      targetMouseY = (e.clientY - height / 2) * 0.35;
     };
+
+    const handleTouchMove = (e) => {
+      if (e.touches && e.touches[0]) {
+        targetMouseX = (e.touches[0].clientX - width / 2) * 0.35;
+        targetMouseY = (e.touches[0].clientY - height / 2) * 0.35;
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", handleTouchMove);
 
     // Define 3D Mesh Items (Books, Buses, Laptops, Graduation Caps, Cubes)
     const types = ["book", "bus", "laptop", "cap", "cube"];
-    const numObjects = 42;
+    const isMobile = width < 640;
+    const numObjects = isMobile ? 24 : 42;
 
     const objects3D = Array.from({ length: numObjects }, (_, i) => {
       const type = types[i % types.length];
       return {
         type,
-        x: (Math.random() - 0.5) * 1700,
-        y: (Math.random() - 0.5) * 1300,
-        z: Math.random() * 1300 - 350,
-        vx: (Math.random() - 0.5) * 0.7,
-        vy: (Math.random() - 0.5) * 0.7,
-        vz: (Math.random() - 0.5) * 0.5,
+        x: (Math.random() - 0.5) * (isMobile ? 1000 : 1700),
+        y: (Math.random() - 0.5) * (isMobile ? 1000 : 1300),
+        z: Math.random() * 1200 - 300,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        vz: (Math.random() - 0.5) * 0.4,
         rotX: Math.random() * Math.PI * 2,
         rotY: Math.random() * Math.PI * 2,
         rotZ: Math.random() * Math.PI * 2,
-        vRotX: (Math.random() - 0.5) * 0.018,
-        vRotY: (Math.random() - 0.5) * 0.018,
-        vRotZ: (Math.random() - 0.5) * 0.018,
-        size: Math.random() * 18 + 24,
+        vRotX: (Math.random() - 0.5) * 0.016,
+        vRotY: (Math.random() - 0.5) * 0.016,
+        vRotZ: (Math.random() - 0.5) * 0.016,
+        size: isMobile ? Math.random() * 12 + 16 : Math.random() * 18 + 24,
         color:
           type === "book"
             ? "#38bdf8"
@@ -159,7 +172,7 @@ const Portfolio3D = () => {
       const width2 = s * cosA;
 
       ctx.fillStyle = obj.color;
-      ctx.shadowBlur = 16 * screenP.scale;
+      ctx.shadowBlur = 12 * screenP.scale;
       ctx.shadowColor = obj.color;
 
       ctx.beginPath();
@@ -190,7 +203,7 @@ const Portfolio3D = () => {
       ctx.fill();
 
       ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 1.5 * screenP.scale;
+      ctx.lineWidth = 1.2 * screenP.scale;
       ctx.beginPath();
       ctx.moveTo(0, -s * 0.6);
       ctx.lineTo(0, s * 0.6);
@@ -206,11 +219,11 @@ const Portfolio3D = () => {
       ctx.translate(screenP.x, screenP.y);
 
       ctx.fillStyle = obj.color;
-      ctx.shadowBlur = 18 * screenP.scale;
+      ctx.shadowBlur = 14 * screenP.scale;
       ctx.shadowColor = obj.color;
 
       ctx.beginPath();
-      ctx.roundRect(-s * 0.8, -s * 0.4, s * 1.6, s * 0.8, 6 * screenP.scale);
+      ctx.roundRect(-s * 0.8, -s * 0.4, s * 1.6, s * 0.8, 5 * screenP.scale);
       ctx.fill();
 
       ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
@@ -241,12 +254,12 @@ const Portfolio3D = () => {
       ctx.save();
       ctx.translate(screenP.x, screenP.y);
 
-      ctx.shadowBlur = 16 * screenP.scale;
+      ctx.shadowBlur = 14 * screenP.scale;
       ctx.shadowColor = obj.color;
 
       ctx.fillStyle = "#1e293b";
       ctx.strokeStyle = obj.color;
-      ctx.lineWidth = 2 * screenP.scale;
+      ctx.lineWidth = 1.8 * screenP.scale;
       ctx.beginPath();
       ctx.roundRect(-s * 0.7, -s * 0.6, s * 1.4, s * 0.9, 4 * screenP.scale);
       ctx.fill();
@@ -279,7 +292,7 @@ const Portfolio3D = () => {
       ctx.save();
       ctx.translate(screenP.x, screenP.y);
 
-      ctx.shadowBlur = 16 * screenP.scale;
+      ctx.shadowBlur = 14 * screenP.scale;
       ctx.shadowColor = obj.color;
 
       ctx.fillStyle = obj.color;
@@ -301,7 +314,7 @@ const Portfolio3D = () => {
       ctx.fill();
 
       ctx.strokeStyle = "#fbbf24";
-      ctx.lineWidth = 2 * screenP.scale;
+      ctx.lineWidth = 1.8 * screenP.scale;
       ctx.beginPath();
       ctx.moveTo(0, -s * 0.1);
       ctx.lineTo(s * 0.7, s * 0.25);
@@ -317,8 +330,8 @@ const Portfolio3D = () => {
       ctx.translate(screenP.x, screenP.y);
 
       ctx.strokeStyle = obj.color;
-      ctx.lineWidth = 1.6 * screenP.scale;
-      ctx.shadowBlur = 14 * screenP.scale;
+      ctx.lineWidth = 1.4 * screenP.scale;
+      ctx.shadowBlur = 12 * screenP.scale;
       ctx.shadowColor = obj.color;
 
       const rot = obj.rotY;
@@ -347,18 +360,18 @@ const Portfolio3D = () => {
 
     // Main Render Loop
     const render = () => {
-      ctx.fillStyle = "rgba(10, 15, 30, 0.36)";
+      ctx.fillStyle = "rgba(10, 15, 30, 0.38)";
       ctx.fillRect(0, 0, width, height);
 
       mouseX += (targetMouseX - mouseX) * 0.05;
       mouseY += (targetMouseY - mouseY) * 0.05;
 
-      cameraRotY = (mouseX / width) * 0.6;
-      cameraRotX = (mouseY / height) * 0.6;
+      cameraRotY = (mouseX / width) * 0.5;
+      cameraRotX = (mouseY / height) * 0.5;
 
       const cx = width / 2;
       const cy = height / 2;
-      const fov = 520;
+      const fov = isMobile ? 420 : 520;
 
       const projected = [];
 
@@ -371,10 +384,13 @@ const Portfolio3D = () => {
         obj.rotY += obj.vRotY;
         obj.rotZ += obj.vRotZ;
 
-        if (obj.x < -1000) obj.x = 1000;
-        if (obj.x > 1000) obj.x = -1000;
-        if (obj.y < -800) obj.y = 800;
-        if (obj.y > 800) obj.y = -800;
+        const boundX = isMobile ? 600 : 1000;
+        const boundY = isMobile ? 500 : 800;
+
+        if (obj.x < -boundX) obj.x = boundX;
+        if (obj.x > boundX) obj.x = -boundX;
+        if (obj.y < -boundY) obj.y = boundY;
+        if (obj.y > boundY) obj.y = -boundY;
         if (obj.z < -350) obj.z = 1050;
         if (obj.z > 1050) obj.z = -350;
 
@@ -395,18 +411,19 @@ const Portfolio3D = () => {
       });
 
       // Ambient connecting constellation beams
-      ctx.lineWidth = 0.85;
+      ctx.lineWidth = 0.75;
+      const beamDist = isMobile ? 100 : 145;
       for (let i = 0; i < projected.length; i++) {
         for (let j = i + 1; j < projected.length; j++) {
           const p1 = projected[i].screenP;
           const p2 = projected[j].screenP;
           const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
 
-          if (dist < 145) {
+          if (dist < beamDist) {
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
-            const alpha = (1 - dist / 145) * 0.28;
+            const alpha = (1 - dist / beamDist) * 0.25;
             ctx.strokeStyle = `rgba(129, 140, 248, ${alpha})`;
             ctx.stroke();
           }
@@ -422,6 +439,7 @@ const Portfolio3D = () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleTouchMove);
     };
   }, []);
 
@@ -433,7 +451,7 @@ const Portfolio3D = () => {
       badge: "Core USP",
       badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
       title: "OBE Attainment & Excel Engine",
-      icon: <FaCalculator className="text-3xl text-amber-400" />,
+      icon: <FaCalculator className="text-2xl sm:text-3xl text-amber-400" />,
       tagline: "Automated NAAC/NBA Accreditation Excel Report Compiler",
       description:
         "Revolutionary Outcome-Based Education (OBE) module that recalculates 80% direct exam attainment and 20% indirect Course End Survey levels in real-time. Features native ExcelJS chart compilation producing 7-sheet formula workbooks.",
@@ -452,7 +470,7 @@ const Portfolio3D = () => {
       badge: "AI Powered",
       badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
       title: "AI RAG Library Assistant",
-      icon: <FaRobot className="text-3xl text-emerald-400" />,
+      icon: <FaRobot className="text-2xl sm:text-3xl text-emerald-400" />,
       tagline: "Natural Language Vector Document Query Engine",
       description:
         "Integrated Retrieval Augmented Generation (RAG) assistant leveraging Pinecone vector embeddings and Google Gemini AI. Students and faculty ask natural language questions about syllabus, past papers, and reference books.",
@@ -471,7 +489,7 @@ const Portfolio3D = () => {
       badge: "Executive",
       badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
       title: "Principal & Executive Console",
-      icon: <FaUserTie className="text-3xl text-indigo-400" />,
+      icon: <FaUserTie className="text-2xl sm:text-3xl text-indigo-400" />,
       tagline: "Institutional Bird's-Eye Dashboard & Compliance Monitor",
       description:
         "High-level executive cockpit giving campus leaders instant visibility into overall attendance percentages, pass rates, accreditation readiness, faculty workloads, and financial metrics across all departments.",
@@ -490,7 +508,7 @@ const Portfolio3D = () => {
       badge: "Departmental",
       badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
       title: "HOD Workspace & Substitution",
-      icon: <FaGraduationCap className="text-3xl text-cyan-400" />,
+      icon: <FaGraduationCap className="text-2xl sm:text-3xl text-cyan-400" />,
       tagline: "Automated Workload & Class Substitution Routing",
       description:
         "Department heads can review and approve faculty leave applications while automatically assigning substitute teachers to prevent lost class hours. Features departmental timetables, subject allocation, and student rosters.",
@@ -509,7 +527,7 @@ const Portfolio3D = () => {
       badge: "Faculty Core",
       badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
       title: "Faculty Workspace & Marks",
-      icon: <FaChalkboardTeacher className="text-3xl text-purple-400" />,
+      icon: <FaChalkboardTeacher className="text-2xl sm:text-3xl text-purple-400" />,
       tagline: "Streamlined Attendance, Excel Marks & Study Material Hub",
       description:
         "Empowers teachers with rapid daily attendance logging, one-click absentee marking, bulk Excel marks import with validation, study material uploads (PDFs, links, notes), and personalized class timetables.",
@@ -528,7 +546,7 @@ const Portfolio3D = () => {
       badge: "Student Hub",
       badgeColor: "bg-blue-500/20 text-blue-300 border-blue-500/30",
       title: "Student Portal & Parent View",
-      icon: <FaUserGraduate className="text-3xl text-blue-400" />,
+      icon: <FaUserGraduate className="text-2xl sm:text-3xl text-blue-400" />,
       tagline: "Interactive Dashboard, Parent Magic-Link & Pass Center",
       description:
         "Centralized portal for students to track subject-wise attendance, view mark sheets, download study materials, apply for placement drives, and generate digital bus passes. Includes secure tokenized parent view.",
@@ -547,7 +565,7 @@ const Portfolio3D = () => {
       badge: "Logistics",
       badgeColor: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
       title: "Smart Transport Management",
-      icon: <FaBus className="text-3xl text-yellow-400" />,
+      icon: <FaBus className="text-2xl sm:text-3xl text-yellow-400" />,
       tagline: "Bus Route Stop Builder, Seat Count & Pass Generator",
       description:
         "Comprehensive campus fleet manager allowing admins to configure routes, stops, and dynamic fares. Students select stops, submit fee payment references, and download verified digital bus passes.",
@@ -566,7 +584,7 @@ const Portfolio3D = () => {
       badge: "Career Hub",
       badgeColor: "bg-rose-500/20 text-rose-300 border-rose-500/30",
       title: "Placement Cell & Drive Tracking",
-      icon: <FaBriefcase className="text-3xl text-rose-400" />,
+      icon: <FaBriefcase className="text-2xl sm:text-3xl text-rose-400" />,
       tagline: "Corporate Recruitment Publisher & Candidate Pipeline",
       description:
         "Streamlines campus placement drives. Placement officers post company profiles, eligibility criteria (min CGPA, backlogs), CTC packages, and manage multi-stage interview selection rounds.",
@@ -585,7 +603,7 @@ const Portfolio3D = () => {
       badge: "Digital Catalog",
       badgeColor: "bg-teal-500/20 text-teal-300 border-teal-500/30",
       title: "Library System & Cataloging",
-      icon: <FaBook className="text-3xl text-teal-400" />,
+      icon: <FaBook className="text-2xl sm:text-3xl text-teal-400" />,
       tagline: "Book Circulation Ledger, Newspaper & Overdue Alerts",
       description:
         "Digital library management tracking book inventory, authors, ISBN numbers, borrow requests, issue dates, and return deadlines. Integrated with the AI RAG Assistant for content searching.",
@@ -604,7 +622,7 @@ const Portfolio3D = () => {
       badge: "Governance",
       badgeColor: "bg-pink-500/20 text-pink-300 border-pink-500/30",
       title: "Accounts & Fee Governance",
-      icon: <FaShieldAlt className="text-3xl text-pink-400" />,
+      icon: <FaShieldAlt className="text-2xl sm:text-3xl text-pink-400" />,
       tagline: "Centralized Academic & Transport Fee Reconciliation",
       description:
         "Complete financial administration workspace for tracking tuition fees, transport fees, payment reference verification, invoice generation, and pending fee reminders.",
@@ -647,35 +665,36 @@ const Portfolio3D = () => {
       {/* Interactive 3D Canvas Background (Books, Buses, Laptops, Caps, Cubes) */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-0 opacity-90"
+        className="fixed inset-0 pointer-events-none z-0 opacity-80 sm:opacity-90"
       />
 
       {/* Dynamic Radial Gradient Glow Overlays */}
-      <div className="fixed top-0 left-1/4 w-[32rem] h-[32rem] bg-indigo-600/15 rounded-full blur-[160px] pointer-events-none z-0 animate-pulse" />
-      <div className="fixed bottom-0 right-1/4 w-[32rem] h-[32rem] bg-cyan-600/15 rounded-full blur-[160px] pointer-events-none z-0 animate-pulse" />
-      <div className="fixed top-1/3 right-10 w-96 h-96 bg-purple-600/15 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="fixed top-0 left-1/4 w-64 sm:w-[32rem] h-64 sm:h-[32rem] bg-indigo-600/15 rounded-full blur-[100px] sm:blur-[160px] pointer-events-none z-0 animate-pulse" />
+      <div className="fixed bottom-0 right-1/4 w-64 sm:w-[32rem] h-64 sm:h-[32rem] bg-cyan-600/15 rounded-full blur-[100px] sm:blur-[160px] pointer-events-none z-0 animate-pulse" />
+      <div className="fixed top-1/3 right-4 w-48 sm:w-96 h-48 sm:h-96 bg-purple-600/15 rounded-full blur-[90px] sm:blur-[140px] pointer-events-none z-0" />
 
       {/* Main Content Container */}
       <div className="relative z-10">
         {/* Header Navigation Bar */}
-        <header className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-6 py-4 transition-all">
+        <header className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/90 border-b border-slate-800/80 px-4 sm:px-6 py-3.5 transition-all">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 p-[2px] shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 p-[2px] shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
                 <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <FaGraduationCap className="text-xl text-indigo-400" />
+                  <FaGraduationCap className="text-lg sm:text-xl text-indigo-400" />
                 </div>
               </div>
               <div>
-                <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-cyan-300 bg-clip-text text-transparent">
+                <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-cyan-300 bg-clip-text text-transparent">
                   ECAP ERP
                 </span>
-                <span className="block text-[10px] font-mono text-cyan-400 tracking-widest uppercase font-bold">
+                <span className="block text-[9px] sm:text-[10px] font-mono text-cyan-400 tracking-widest uppercase font-bold">
                   Campus Administration Portal
                 </span>
               </div>
             </Link>
 
+            {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
               <button
                 onClick={() => scrollToSection("modules")}
@@ -703,7 +722,8 @@ const Portfolio3D = () => {
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Desktop Action Buttons */}
+            <div className="hidden sm:flex items-center gap-3">
               <Link
                 to="/"
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
@@ -712,25 +732,78 @@ const Portfolio3D = () => {
               </Link>
               <button
                 onClick={() => setShowInquiryModal(true)}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                className="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
               >
-                Schedule Commercial Demo
+                Schedule Demo
+              </button>
+            </div>
+
+            {/* Mobile Hamburger Menu Button */}
+            <div className="flex sm:hidden items-center gap-2">
+              <button
+                onClick={() => setShowInquiryModal(true)}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-indigo-600 cursor-pointer shadow-md"
+              >
+                Demo
+              </button>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-base"
+                aria-label="Toggle Navigation Menu"
+              >
+                {mobileMenuOpen ? <FaTimes /> : <FaBars />}
               </button>
             </div>
           </div>
+
+          {/* Mobile Navigation Drawer */}
+          {mobileMenuOpen && (
+            <div className="md:hidden mt-3 pt-3 border-t border-slate-800/80 flex flex-col gap-2 text-xs font-semibold text-slate-300 animate-fade-in">
+              <button
+                onClick={() => scrollToSection("modules")}
+                className="text-left px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-cyan-400 transition-colors"
+              >
+                Campus Modules
+              </button>
+              <button
+                onClick={() => scrollToSection("aws-architecture")}
+                className="text-left px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-cyan-400 transition-colors"
+              >
+                AWS EC2 Advantage
+              </button>
+              <button
+                onClick={() => scrollToSection("roi-calculator")}
+                className="text-left px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-cyan-400 transition-colors"
+              >
+                ROI & Savings Calculator
+              </button>
+              <button
+                onClick={() => scrollToSection("pricing")}
+                className="text-left px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-cyan-400 transition-colors"
+              >
+                Commercial Pricing Tiers
+              </button>
+              <Link
+                to="/"
+                className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-indigo-300 font-bold text-center mt-1"
+              >
+                Sign In Portal
+              </Link>
+            </div>
+          )}
         </header>
 
         {/* HERO SECTION */}
-        <section className="relative px-6 pt-16 pb-20 md:pt-24 md:pb-28 max-w-7xl mx-auto text-center">
+        <section className="relative px-4 sm:px-6 pt-12 pb-16 md:pt-24 md:pb-28 max-w-7xl mx-auto text-center">
           {/* Price Cut Alert Badge */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold mb-8 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <FaBolt className="text-amber-400" />
-            <span>AWS EC2 Powered: <strong>80%+ Ultra-Reduced Commercial Pricing</strong> Now Live</span>
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-[11px] sm:text-xs font-semibold mb-6 sm:mb-8 backdrop-blur-md max-w-full text-center">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+            <FaBolt className="text-amber-400 shrink-0 text-xs" />
+            <span className="truncate sm:whitespace-normal">AWS EC2 Powered: <strong>80%+ Reduced Pricing</strong> Live</span>
           </div>
 
           {/* Main Title */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight max-w-5xl mx-auto mb-6">
+          <h1 className="text-2xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-snug sm:leading-tight max-w-5xl mx-auto mb-4 sm:mb-6 px-1">
             The Next-Generation{" "}
             <span className="bg-gradient-to-r from-indigo-400 via-purple-300 to-cyan-400 bg-clip-text text-transparent">
               AI & OBE Powered
@@ -738,28 +811,28 @@ const Portfolio3D = () => {
             Campus ERP System
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed font-normal">
+          <p className="text-xs sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed font-normal px-2">
             Automate accreditation with zero-formula 7-sheet ExcelJS compilers, AI RAG vector tutors, digital bus pass systems, and <strong>drastically reduced AWS EC2 cloud pricing</strong> starting at just ₹29,999/yr.
           </p>
 
           {/* Action CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 mb-12 sm:mb-16 w-full max-w-md sm:max-w-none mx-auto px-2">
             <button
               onClick={() => setShowInquiryModal(true)}
-              className="px-8 py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all transform hover:-translate-y-1 flex items-center gap-3 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2.5 cursor-pointer"
             >
-              <FaRocket className="text-base" /> Request Commercial Quote & Live Demo
+              <FaRocket className="text-sm" /> Request Quote & Live Demo
             </button>
             <button
               onClick={() => scrollToSection("pricing")}
-              className="px-8 py-4 rounded-2xl text-sm font-semibold text-slate-200 bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/90 transition-all backdrop-blur-md flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-xs sm:text-sm font-semibold text-slate-200 bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/90 transition-all backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer"
             >
-              View Reduced Pricing <FaArrowRight className="text-xs text-indigo-400" />
+              View Pricing Tiers <FaArrowRight className="text-xs text-indigo-400" />
             </button>
           </div>
 
           {/* Platform Stat Counters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto px-1">
             {[
               { num: "₹29,999/yr", label: "Starting Reduced Price", icon: <FaTag className="text-emerald-400" /> },
               { num: "80% OFF", label: "Cost Cut via AWS EC2", icon: <FaServer className="text-cyan-400" /> },
@@ -768,30 +841,30 @@ const Portfolio3D = () => {
             ].map((stat, i) => (
               <div
                 key={i}
-                className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md text-center transform hover:-translate-y-1 transition-all"
+                className="p-3.5 sm:p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md text-center transform hover:-translate-y-1 transition-all"
               >
-                <div className="flex justify-center mb-2 text-xl">{stat.icon}</div>
-                <div className="text-xl md:text-2xl font-extrabold text-white mb-1 font-mono">
+                <div className="flex justify-center mb-1.5 text-base sm:text-xl">{stat.icon}</div>
+                <div className="text-base sm:text-2xl font-extrabold text-white mb-0.5 font-mono">
                   {stat.num}
                 </div>
-                <div className="text-xs text-slate-400 font-medium">{stat.label}</div>
+                <div className="text-[10px] sm:text-xs text-slate-400 font-medium leading-tight">{stat.label}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* 10 MODULES DIRECTORY SECTION */}
-        <section id="modules" className="py-20 px-6 max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
+        <section id="modules" className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 sm:mb-4 px-2">
               Comprehensive Institutional Modules
             </h2>
-            <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
-              Every stakeholder—from the Principal to Students, Faculty, and Transport Admins—gets a tailored, high-performance workspace.
+            <p className="text-xs sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto px-2">
+              Tailored high-performance workspaces for Principal, HODs, Faculty, Students, Accounts, Transport, and Library teams.
             </p>
 
-            {/* Category Filter Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+            {/* Category Filter Tabs (Swipeable on mobile) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-6 sm:mt-8 overflow-x-auto no-scrollbar pb-2 px-1 justify-start sm:justify-center">
               {[
                 { id: "all", label: "All 10 Modules" },
                 { id: "academic", label: "Academic & OBE" },
@@ -803,7 +876,7 @@ const Portfolio3D = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                     activeTab === tab.id
                       ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
                       : "bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800"
@@ -816,30 +889,30 @@ const Portfolio3D = () => {
           </div>
 
           {/* Module Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredModules.map((mod) => (
               <div
                 key={mod.id}
                 onClick={() => setSelectedModule(mod)}
-                className="group relative p-6 rounded-3xl bg-slate-900/80 border border-slate-800/90 hover:border-indigo-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer shadow-xl hover:shadow-indigo-500/10 flex flex-col justify-between"
+                className="group relative p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-900/80 border border-slate-800/90 hover:border-indigo-500/50 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-xl hover:shadow-indigo-500/10 flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3.5 rounded-2xl bg-slate-800/80 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="p-3 rounded-xl bg-slate-800/80 group-hover:scale-105 transition-transform">
                       {mod.icon}
                     </div>
                     <span
-                      className={`text-[11px] font-bold px-3 py-1 rounded-full border ${mod.badgeColor}`}
+                      className={`text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 sm:py-1 rounded-full border ${mod.badgeColor}`}
                     >
                       {mod.badge}
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 group-hover:text-indigo-300 transition-colors">
                     {mod.title}
                   </h3>
 
-                  <p className="text-xs font-medium text-indigo-400/90 mb-3">
+                  <p className="text-[11px] sm:text-xs font-medium text-indigo-400/90 mb-2.5">
                     {mod.tagline}
                   </p>
 
@@ -848,12 +921,12 @@ const Portfolio3D = () => {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-mono text-[11px]">
+                <div className="pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-mono text-[10px] sm:text-[11px] truncate max-w-[70%]">
                     {mod.kpi}
                   </span>
-                  <span className="text-indigo-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                    Explore Details <FaArrowRight className="text-[10px]" />
+                  <span className="text-indigo-400 font-semibold flex items-center gap-1 shrink-0 group-hover:translate-x-1 transition-transform">
+                    Details <FaArrowRight className="text-[10px]" />
                   </span>
                 </div>
               </div>
@@ -862,39 +935,39 @@ const Portfolio3D = () => {
         </section>
 
         {/* SECTION: WHY COST IS SO LOW USING AWS EC2 */}
-        <section id="aws-architecture" className="py-20 px-6 max-w-7xl mx-auto">
-          <div className="p-8 md:p-12 rounded-3xl bg-gradient-to-b from-slate-900 via-slate-950 to-indigo-950/40 border-2 border-cyan-500/40 backdrop-blur-2xl relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <section id="aws-architecture" className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+          <div className="p-5 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-slate-900 via-slate-950 to-indigo-950/40 border border-cyan-500/40 backdrop-blur-2xl relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 left-0 w-64 sm:w-96 h-64 sm:h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="flex items-center gap-2 mb-4">
-              <span className="px-3.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+              <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
                 <FaServer className="text-cyan-400 animate-pulse" /> AWS EC2 Cloud Cost Breakdown
               </span>
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 sm:mb-4">
               Why Is ECAP ERP So Affordable? <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">The AWS EC2 Advantage</span>
             </h2>
 
-            <p className="text-slate-300 text-base md:text-lg max-w-3xl mb-10 leading-relaxed font-normal">
+            <p className="text-xs sm:text-base md:text-lg text-slate-300 max-w-3xl mb-8 sm:mb-10 leading-relaxed font-normal">
               By replacing traditional legacy on-premise physical servers with optimized AWS EC2 Graviton cloud instances, we cut campus infrastructure overhead by over <strong>80%</strong>. We pass every rupee of these server savings straight to your institution.
             </p>
 
             {/* AWS Architectural Pillars Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <div
                 onClick={() => setAwsDetailTab("graviton")}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer ${
+                className={`p-4 sm:p-6 rounded-2xl border transition-all cursor-pointer ${
                   awsDetailTab === "graviton"
-                    ? "bg-slate-900 border-cyan-400 shadow-xl shadow-cyan-500/20 scale-105"
+                    ? "bg-slate-900 border-cyan-400 shadow-xl shadow-cyan-500/20"
                     : "bg-slate-950/80 border-slate-800 hover:border-slate-700 opacity-80"
                 }`}
               >
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-2xl mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xl sm:text-2xl mb-3">
                   <FaMicrochip />
                 </div>
-                <h3 className="text-base font-bold text-white mb-1">1. Graviton3 ARM Compute</h3>
-                <p className="text-xs text-cyan-300/80 font-mono mb-2">40% Price-Performance Boost</p>
+                <h3 className="text-sm sm:text-base font-bold text-white mb-1">1. Graviton3 ARM Compute</h3>
+                <p className="text-[11px] sm:text-xs text-cyan-300/80 font-mono mb-2">40% Price-Performance Boost</p>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   AWS Graviton ARM-based EC2 instances (`t4g.small` / `c6g.xlarge`) use 60% less energy and provide 40% higher throughput per dollar than legacy x86 CPUs.
                 </p>
@@ -902,17 +975,17 @@ const Portfolio3D = () => {
 
               <div
                 onClick={() => setAwsDetailTab("autoscale")}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer ${
+                className={`p-4 sm:p-6 rounded-2xl border transition-all cursor-pointer ${
                   awsDetailTab === "autoscale"
-                    ? "bg-slate-900 border-indigo-400 shadow-xl shadow-indigo-500/20 scale-105"
+                    ? "bg-slate-900 border-indigo-400 shadow-xl shadow-indigo-500/20"
                     : "bg-slate-950/80 border-slate-800 hover:border-slate-700 opacity-80"
                 }`}
               >
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-2xl mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl sm:text-2xl mb-3">
                   <FaChartLine />
                 </div>
-                <h3 className="text-base font-bold text-white mb-1">2. Auto-Scaling Clusters</h3>
-                <p className="text-xs text-indigo-300/80 font-mono mb-2">70% Peak Load Savings</p>
+                <h3 className="text-sm sm:text-base font-bold text-white mb-1">2. Auto-Scaling Clusters</h3>
+                <p className="text-[11px] sm:text-xs text-indigo-300/80 font-mono mb-2">70% Peak Load Savings</p>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Traffic peaks during 9 AM morning attendance & exam entries. AWS Auto-Scaling adds EC2 nodes only during peak hours and scales down off-hours.
                 </p>
@@ -920,17 +993,17 @@ const Portfolio3D = () => {
 
               <div
                 onClick={() => setAwsDetailTab("capex")}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer ${
+                className={`p-4 sm:p-6 rounded-2xl border transition-all cursor-pointer ${
                   awsDetailTab === "capex"
-                    ? "bg-slate-900 border-emerald-400 shadow-xl shadow-emerald-500/20 scale-105"
+                    ? "bg-slate-900 border-emerald-400 shadow-xl shadow-emerald-500/20"
                     : "bg-slate-950/80 border-slate-800 hover:border-slate-700 opacity-80"
                 }`}
               >
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl sm:text-2xl mb-3">
                   <FaHdd />
                 </div>
-                <h3 className="text-base font-bold text-white mb-1">3. Zero Hardware CapEx</h3>
-                <p className="text-xs text-emerald-300/80 font-mono mb-2">Zero Campus Rack Buying</p>
+                <h3 className="text-sm sm:text-base font-bold text-white mb-1">3. Zero Hardware CapEx</h3>
+                <p className="text-[11px] sm:text-xs text-emerald-300/80 font-mono mb-2">Zero Campus Rack Buying</p>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Eliminates ₹15L - ₹25L upfront server purchases, UPS battery maintenance, dedicated server rooms, and full-time on-site server sysadmin salaries.
                 </p>
@@ -938,17 +1011,17 @@ const Portfolio3D = () => {
 
               <div
                 onClick={() => setAwsDetailTab("cdn")}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer ${
+                className={`p-4 sm:p-6 rounded-2xl border transition-all cursor-pointer ${
                   awsDetailTab === "cdn"
-                    ? "bg-slate-900 border-amber-400 shadow-xl shadow-amber-500/20 scale-105"
+                    ? "bg-slate-900 border-amber-400 shadow-xl shadow-amber-500/20"
                     : "bg-slate-950/80 border-slate-800 hover:border-slate-700 opacity-80"
                 }`}
               >
-                <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-2xl mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl sm:text-2xl mb-3">
                   <FaCloud />
                 </div>
-                <h3 className="text-base font-bold text-white mb-1">4. S3 & CloudFront CDN</h3>
-                <p className="text-xs text-amber-300/80 font-mono mb-2">Zero EC2 RAM Overload</p>
+                <h3 className="text-sm sm:text-base font-bold text-white mb-1">4. S3 & CloudFront CDN</h3>
+                <p className="text-[11px] sm:text-xs text-amber-300/80 font-mono mb-2">Zero EC2 RAM Overload</p>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Study materials, PDFs, student photos, and digital bus passes are served via S3 & CloudFront edge nodes, keeping EC2 server RAM footprint near zero.
                 </p>
@@ -956,85 +1029,85 @@ const Portfolio3D = () => {
             </div>
 
             {/* Dynamic AWS Detail Drawer */}
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 mb-8 text-xs text-slate-300">
+            <div className="p-4 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 mb-6 sm:mb-8 text-xs text-slate-300">
               {awsDetailTab === "graviton" && (
-                <div className="space-y-2">
-                  <span className="font-bold text-cyan-400 block text-sm">💡 Graviton3 Architecture Breakdown:</span>
+                <div className="space-y-1.5">
+                  <span className="font-bold text-cyan-400 block text-xs sm:text-sm">💡 Graviton3 Architecture Breakdown:</span>
                   <p>AWS Graviton processors utilize custom 64-bit Arm Neoverse cores designed specifically for cloud workloads. By running ECAP microservices on `t4g.small` EC2 instances, we achieve 40% higher request throughput per dollar compared to 5th-generation x86 servers.</p>
                 </div>
               )}
               {awsDetailTab === "autoscale" && (
-                <div className="space-y-2">
-                  <span className="font-bold text-indigo-400 block text-sm">📈 Auto-Scaling Dynamic Capacity:</span>
+                <div className="space-y-1.5">
+                  <span className="font-bold text-indigo-400 block text-xs sm:text-sm">📈 Auto-Scaling Dynamic Capacity:</span>
                   <p>Campus traffic follows a 10-hour daily operational cycle. During 8:30 AM – 10:30 AM attendance spikes, AWS Auto-Scaling automatically spins up worker containers across Target Tracking Policies, and scales down to minimal baseline off-hours, reducing idle runtime bills by 70%.</p>
                 </div>
               )}
               {awsDetailTab === "capex" && (
-                <div className="space-y-2">
-                  <span className="font-bold text-emerald-400 block text-sm">💾 CapEx vs OpEx Financial Model:</span>
+                <div className="space-y-1.5">
+                  <span className="font-bold text-emerald-400 block text-xs sm:text-sm">💾 CapEx vs OpEx Financial Model:</span>
                   <p>Legacy ERP software requires high upfront Capital Expenditure (CapEx) for physical server racks, diesel power backups, air-conditioned server rooms, and dedicated hardware sysadmins. ECAP ERP shifts this entirely to a pay-as-you-go cloud model with zero initial hardware investment.</p>
                 </div>
               )}
               {awsDetailTab === "cdn" && (
-                <div className="space-y-2">
-                  <span className="font-bold text-amber-400 block text-sm">☁️ Edge CDN & S3 Asset Offloading:</span>
+                <div className="space-y-1.5">
+                  <span className="font-bold text-amber-400 block text-xs sm:text-sm">☁️ Edge CDN & S3 Asset Offloading:</span>
                   <p>All student study notes, PDF question papers, profile photos, and QR bus passes are stored directly on Amazon S3 and served via CloudFront global edge locations. This keeps EC2 server CPU & RAM usage focused 100% on fast API processing.</p>
                 </div>
               )}
             </div>
 
             {/* Visual Side-by-Side Cost Comparison Graphic */}
-            <div className="bg-slate-950 p-6 md:p-8 rounded-2xl border border-slate-800">
-              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                <FaBolt className="text-amber-400" /> Cost Breakdown Comparison: Traditional On-Premise vs ECAP on AWS EC2
+            <div className="bg-slate-950 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-white mb-4 sm:mb-6 flex items-center gap-2">
+                <FaBolt className="text-amber-400 shrink-0" /> Cost Breakdown Comparison
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center">
                 {/* Traditional On-Premise Box */}
-                <div className="p-6 rounded-2xl bg-red-950/20 border border-red-500/30 relative">
-                  <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-red-500/20 text-red-300 text-[10px] font-bold uppercase tracking-wider">
+                <div className="p-5 sm:p-6 rounded-2xl bg-red-950/20 border border-red-500/30 relative">
+                  <div className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 w-max mb-3">
                     Legacy Hardware Model
                   </div>
-                  <h4 className="text-lg font-bold text-red-300 mb-2">Traditional Legacy ERP</h4>
-                  <div className="text-3xl font-black text-red-400 font-mono mb-4">₹3,50,000 / year</div>
+                  <h4 className="text-base sm:text-lg font-bold text-red-300 mb-1.5">Traditional Legacy ERP</h4>
+                  <div className="text-2xl sm:text-3xl font-black text-red-400 font-mono mb-3">₹3,50,000 / year</div>
                   <ul className="space-y-2 text-xs text-slate-400">
-                    <li className="flex items-center gap-2">❌ On-premise server hardware depreciation: ₹1,50,000</li>
-                    <li className="flex items-center gap-2">❌ On-site server sysadmin salary share: ₹1,20,000</li>
-                    <li className="flex items-center gap-2">❌ AC server room power & UPS batteries: ₹80,000</li>
-                    <li className="flex items-center gap-2">❌ Manual backup risks & hardware failures</li>
+                    <li className="flex items-start gap-2">❌ On-premise server hardware depreciation: ₹1,50,000</li>
+                    <li className="flex items-start gap-2">❌ On-site server sysadmin salary share: ₹1,20,000</li>
+                    <li className="flex items-start gap-2">❌ AC server room power & UPS batteries: ₹80,000</li>
+                    <li className="flex items-start gap-2">❌ Manual backup risks & hardware failures</li>
                   </ul>
                 </div>
 
                 {/* ECAP AWS EC2 Box */}
-                <div className="p-6 rounded-2xl bg-emerald-950/30 border-2 border-emerald-500 relative shadow-xl shadow-emerald-500/10">
-                  <div className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                <div className="p-5 sm:p-6 rounded-2xl bg-emerald-950/30 border-2 border-emerald-500 relative shadow-xl shadow-emerald-500/10">
+                  <div className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 w-max mb-3">
                     80%+ Reduced Cloud Rate
                   </div>
-                  <h4 className="text-lg font-bold text-emerald-300 mb-2">ECAP ERP on AWS EC2</h4>
-                  <div className="text-3xl font-black text-white font-mono mb-4 flex items-baseline gap-2">
+                  <h4 className="text-base sm:text-lg font-bold text-emerald-300 mb-1.5">ECAP ERP on AWS EC2</h4>
+                  <div className="text-2xl sm:text-3xl font-black text-white font-mono mb-3 flex items-baseline gap-2 flex-wrap">
                     <span>₹29,999 / year</span>
                     <span className="text-xs text-emerald-400 font-sans font-semibold">(Starting Tier)</span>
                   </div>
                   <ul className="space-y-2 text-xs text-slate-200">
-                    <li className="flex items-center gap-2"><FaCheckCircle className="text-emerald-400 shrink-0" /> AWS Graviton EC2 compute node: ₹14,000</li>
-                    <li className="flex items-center gap-2"><FaCheckCircle className="text-emerald-400 shrink-0" /> AWS S3 Automated Backups & CDN: ₹5,999</li>
-                    <li className="flex items-center gap-2"><FaCheckCircle className="text-emerald-400 shrink-0" /> Full ERP License & Quarterly Updates: ₹10,000</li>
-                    <li className="flex items-center gap-2"><FaCheckCircle className="text-emerald-400 shrink-0" /> 99.9% Cloud Uptime SLA & zero campus IT hassle</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> AWS Graviton EC2 compute node: ₹14,000</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> AWS S3 Automated Backups & CDN: ₹5,999</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> Full ERP License & Quarterly Updates: ₹10,000</li>
+                    <li className="flex items-start gap-2"><FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" /> 99.9% Cloud Uptime SLA & zero IT hassle</li>
                   </ul>
                 </div>
               </div>
 
               {/* Net Savings Bar */}
-              <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-emerald-950 via-slate-900 to-cyan-950 border border-emerald-500/40 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+              <div className="mt-6 sm:mt-8 p-4 rounded-xl bg-gradient-to-r from-emerald-950 via-slate-900 to-cyan-950 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
                 <div>
-                  <span className="text-xs font-mono uppercase text-emerald-400 tracking-widest block">Net Campus Cost Reduction</span>
-                  <span className="text-xl md:text-2xl font-black text-white">Save over ₹3,20,000 / Year per Institution</span>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase text-emerald-400 tracking-widest block">Net Campus Cost Reduction</span>
+                  <span className="text-base sm:text-xl md:text-2xl font-black text-white">Save over ₹3,20,000 / Year per Institution</span>
                 </div>
                 <button
                   onClick={() => setShowInquiryModal(true)}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition-all shadow-lg cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition-all shadow-lg cursor-pointer shrink-0"
                 >
-                  Get Instant AWS Cloud Quote
+                  Get AWS Cloud Quote
                 </button>
               </div>
             </div>
@@ -1042,19 +1115,19 @@ const Portfolio3D = () => {
         </section>
 
         {/* SECTION: INSTITUTIONAL ROI & COST-SAVINGS CALCULATOR */}
-        <section id="roi-calculator" className="py-20 px-6 max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
+        <section id="roi-calculator" className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 sm:mb-4 px-2">
               Institutional ROI & Savings Calculator
             </h2>
-            <p className="text-slate-400 text-base max-w-2xl mx-auto">
+            <p className="text-xs sm:text-base text-slate-400 max-w-2xl mx-auto px-2">
               Calculate exact time and monetary savings achieved by replacing legacy manual workflows with ECAP ERP.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center bg-slate-900/80 p-8 rounded-3xl border border-slate-800 backdrop-blur-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-center bg-slate-900/80 p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-800 backdrop-blur-xl">
             {/* Sliders */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-5 sm:space-y-6">
               <div>
                 <label className="flex justify-between text-xs font-bold text-slate-300 mb-2">
                   <span>Student Capacity</span>
@@ -1089,20 +1162,20 @@ const Portfolio3D = () => {
 
               <div className="p-4 rounded-2xl bg-slate-950 border border-indigo-500/30 text-xs">
                 <span className="text-slate-400 block mb-1">Calculated ERP Cost for {studentCount} Students:</span>
-                <span className="text-xl font-extrabold text-emerald-400 font-mono">
-                  ₹{Math.round(studentCount * (isMultiYear ? 8.5 : 10)).toLocaleString()} / year
+                <span className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono">
+                  ₹{Math.round(studentCount * (isMultiYear ? 10.2 : 12)).toLocaleString()} / year
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-0.5">
-                  (Just ₹{(isMultiYear ? 8.5 : 10).toFixed(2)} per student per year!)
+                  (Just ₹{(isMultiYear ? 10.2 : 12).toFixed(2)} per student per year!)
                 </span>
               </div>
             </div>
 
             {/* Savings Output Cards */}
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                <FaClock className="text-3xl text-indigo-400 mx-auto mb-2" />
-                <div className="text-3xl font-extrabold text-white mb-1 font-mono">
+            <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+              <div className="p-4 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+                <FaClock className="text-2xl sm:text-3xl text-indigo-400 mx-auto mb-2" />
+                <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1 font-mono">
                   {roiStats.facultyHours}
                 </div>
                 <div className="text-xs text-slate-400 font-medium">
@@ -1110,9 +1183,9 @@ const Portfolio3D = () => {
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                <FaFileExcel className="text-3xl text-emerald-400 mx-auto mb-2" />
-                <div className="text-3xl font-extrabold text-white mb-1 font-mono">
+              <div className="p-4 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+                <FaFileExcel className="text-2xl sm:text-3xl text-emerald-400 mx-auto mb-2" />
+                <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1 font-mono">
                   ₹{roiStats.moneySaved}
                 </div>
                 <div className="text-xs text-slate-400 font-medium">
@@ -1120,9 +1193,9 @@ const Portfolio3D = () => {
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                <FaAward className="text-3xl text-amber-400 mx-auto mb-2" />
-                <div className="text-3xl font-extrabold text-white mb-1 font-mono">
+              <div className="p-4 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+                <FaAward className="text-2xl sm:text-3xl text-amber-400 mx-auto mb-2" />
+                <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1 font-mono">
                   {roiStats.naacDays} Days
                 </div>
                 <div className="text-xs text-slate-400 font-medium">
@@ -1134,50 +1207,50 @@ const Portfolio3D = () => {
         </section>
 
         {/* SECTION: COMMERCIAL LICENSING TIERS */}
-        <section id="pricing" className="py-20 px-6 max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-4">
+        <section id="pricing" className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] sm:text-xs font-semibold mb-3 sm:mb-4">
               <FaTag /> Transparent & Accurately Reduced Cloud Pricing
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 sm:mb-4 px-2">
               Commercial Licensing Tiers
             </h2>
-            <p className="text-slate-400 text-base max-w-2xl mx-auto mb-8">
+            <p className="text-xs sm:text-base text-slate-400 max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
               Thanks to AWS EC2 Graviton efficiency, we offer the most competitive pricing in the education tech market. Zero hidden fees.
             </p>
 
             {/* Billing Toggle (Annual vs 3-Year Institutional Contract) */}
-            <div className="inline-flex items-center p-1.5 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className="inline-flex items-center p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-full overflow-x-auto">
               <button
                 onClick={() => setBillingCycle("annual")}
-                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3.5 sm:px-5 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   billingCycle === "annual"
                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                Standard Annual Billing
+                Standard Annual
               </button>
               <button
                 onClick={() => setBillingCycle("multiyear")}
-                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`px-3.5 sm:px-5 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                   billingCycle === "multiyear"
                     ? "bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg shadow-emerald-600/30"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                3-Year Contract <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px]">SAVE EXTRA 15%</span>
+                3-Year Contract <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono">SAVE 15%</span>
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {/* Standard Campus Tier */}
-            <div className="p-8 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 backdrop-blur-xl transition-all flex flex-col justify-between">
+            <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 backdrop-blur-xl transition-all flex flex-col justify-between">
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-xl font-bold text-white">Standard Campus</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-white">Standard Campus</h3>
                   <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
                     🔥 80% PRICE CUT
                   </span>
@@ -1187,7 +1260,7 @@ const Portfolio3D = () => {
                 {/* Reduced Price Header */}
                 <div className="mb-6">
                   <div className="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹1,50,000 / yr</div>
-                  <div className="text-3xl font-black text-white font-mono flex items-baseline gap-1">
+                  <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
                     ₹{isMultiYear ? "25,499" : "29,999"}
                     <span className="text-xs text-slate-400 font-sans font-normal">/ year</span>
                   </div>
@@ -1196,7 +1269,7 @@ const Portfolio3D = () => {
                   </div>
                 </div>
 
-                <ul className="space-y-3 text-xs text-slate-300 mb-8">
+                <ul className="space-y-2.5 text-xs text-slate-300 mb-6 sm:mb-8">
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-emerald-400 shrink-0" /> Full 10 ERP Workspaces Included</li>
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-emerald-400 shrink-0" /> Automated OBE 7-Sheet Excel Generator</li>
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-emerald-400 shrink-0" /> Transport Digital Pass Generator</li>
@@ -1207,21 +1280,21 @@ const Portfolio3D = () => {
 
               <button
                 onClick={() => setShowInquiryModal(true)}
-                className="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all border border-slate-700 cursor-pointer"
+                className="w-full py-3 sm:py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all border border-slate-700 cursor-pointer"
               >
                 Inquire Standard Tier
               </button>
             </div>
 
             {/* Enterprise Autonomous University (Featured) */}
-            <div className="p-8 rounded-3xl bg-gradient-to-b from-indigo-950/90 via-slate-900 to-slate-950 border-2 border-indigo-500 backdrop-blur-xl transition-all flex flex-col justify-between relative shadow-2xl shadow-indigo-500/20 transform md:-translate-y-4">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-[10px] font-extrabold uppercase tracking-widest shadow-lg">
-                Most Popular for Autonomous Institutions
+            <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-indigo-950/90 via-slate-900 to-slate-950 border-2 border-indigo-500 backdrop-blur-xl transition-all flex flex-col justify-between relative shadow-2xl shadow-indigo-500/20 transform md:-translate-y-2">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap shadow-lg">
+                Most Popular Autonomous Tier
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-3 mt-2">
-                  <h3 className="text-xl font-bold text-white">Enterprise University</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-white">Enterprise University</h3>
                   <span className="px-2.5 py-1 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 text-[10px] font-bold">
                     ⚡ 86% SAVINGS
                   </span>
@@ -1231,7 +1304,7 @@ const Portfolio3D = () => {
                 {/* Reduced Price Header */}
                 <div className="mb-6">
                   <div className="text-xs text-indigo-300/60 line-through mb-0.5 font-mono">Original: ₹4,50,000 / yr</div>
-                  <div className="text-4xl font-black text-white font-mono flex items-baseline gap-1">
+                  <div className="text-3xl sm:text-4xl font-black text-white font-mono flex items-baseline gap-1">
                     ₹{isMultiYear ? "50,999" : "59,999"}
                     <span className="text-xs text-indigo-200 font-sans font-normal">/ year</span>
                   </div>
@@ -1240,28 +1313,28 @@ const Portfolio3D = () => {
                   </div>
                 </div>
 
-                <ul className="space-y-3 text-xs text-slate-200 mb-8">
+                <ul className="space-y-2.5 text-xs text-slate-200 mb-6 sm:mb-8">
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Everything in Standard Tier</li>
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Integrated AI RAG Library Assistant</li>
-                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Custom Regulation Mapping (R22, R18, Autonomous)</li>
+                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Custom Regulation Mapping (R22, R18)</li>
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Custom Domain Integration & Branding</li>
-                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Dedicated On-Site Faculty Training & 24/7 SLA</li>
+                  <li className="flex items-center gap-2"><FaCheckCircle className="text-indigo-400 shrink-0" /> Dedicated On-Site Faculty Training</li>
                 </ul>
               </div>
 
               <button
                 onClick={() => setShowInquiryModal(true)}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white text-xs font-extrabold transition-all shadow-lg shadow-indigo-500/30 cursor-pointer"
+                className="w-full py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white text-xs font-extrabold transition-all shadow-lg shadow-indigo-500/30 cursor-pointer"
               >
                 Request Enterprise Proposal
               </button>
             </div>
 
             {/* SaaS Managed Cloud Tier (AWS EC2) */}
-            <div className="p-8 rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 backdrop-blur-xl transition-all flex flex-col justify-between">
+            <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 backdrop-blur-xl transition-all flex flex-col justify-between">
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-xl font-bold text-white">SaaS Managed Cloud</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-white">SaaS Managed Cloud</h3>
                   <span className="px-2.5 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">
                     ☁️ AWS EC2 HOSTED
                   </span>
@@ -1271,7 +1344,7 @@ const Portfolio3D = () => {
                 {/* Reduced Price Header */}
                 <div className="mb-6">
                   <div className="text-xs text-slate-400 line-through mb-0.5 font-mono">Original: ₹99,999 / yr</div>
-                  <div className="text-3xl font-black text-white font-mono flex items-baseline gap-1">
+                  <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
                     ₹{isMultiYear ? "33,999" : "39,999"}
                     <span className="text-xs text-slate-400 font-sans font-normal">/ year</span>
                   </div>
@@ -1280,7 +1353,7 @@ const Portfolio3D = () => {
                   </div>
                 </div>
 
-                <ul className="space-y-3 text-xs text-slate-300 mb-8">
+                <ul className="space-y-2.5 text-xs text-slate-300 mb-6 sm:mb-8">
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-cyan-400 shrink-0" /> Managed AWS EC2 Graviton Instance</li>
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-cyan-400 shrink-0" /> Automated Daily Database Backups (S3)</li>
                   <li className="flex items-center gap-2"><FaCheckCircle className="text-cyan-400 shrink-0" /> Unlimited Parent Magic-Link Traffic</li>
@@ -1291,7 +1364,7 @@ const Portfolio3D = () => {
 
               <button
                 onClick={() => setShowInquiryModal(true)}
-                className="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all border border-slate-700 cursor-pointer"
+                className="w-full py-3 sm:py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all border border-slate-700 cursor-pointer"
               >
                 Inquire Cloud SaaS
               </button>
@@ -1300,39 +1373,39 @@ const Portfolio3D = () => {
         </section>
 
         {/* SYSTEM ARCHITECTURE & TECH STACK SECTION */}
-        <section id="tech-stack" className="py-20 px-6 max-w-7xl mx-auto">
-          <div className="p-8 md:p-12 rounded-3xl bg-slate-900/80 border border-indigo-500/30 backdrop-blur-2xl">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6 text-center">
+        <section id="tech-stack" className="py-12 sm:py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+          <div className="p-6 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl bg-slate-900/80 border border-indigo-500/30 backdrop-blur-2xl">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-6 text-center">
               System Tech Stack & Architecture
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                <FaTerminal className="text-3xl text-indigo-400 mb-3 mx-auto" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="p-5 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+                <FaTerminal className="text-2xl sm:text-3xl text-indigo-400 mb-3 mx-auto" />
                 <h3 className="text-base font-bold text-white mb-1">Frontend UI</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   React.js, Tailwind CSS, Framer Motion, HTML5 Canvas 3D rendering, and Redux state management.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                <FaServer className="text-3xl text-cyan-400 mb-3 mx-auto" />
+              <div className="p-5 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+                <FaServer className="text-2xl sm:text-3xl text-cyan-400 mb-3 mx-auto" />
                 <h3 className="text-base font-bold text-white mb-1">Backend API</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Node.js, Express REST services, JWT security tokens, and biometric attendance integrations.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                <FaCloud className="text-3xl text-emerald-400 mb-3 mx-auto" />
+              <div className="p-5 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+                <FaCloud className="text-2xl sm:text-3xl text-emerald-400 mb-3 mx-auto" />
                 <h3 className="text-base font-bold text-white mb-1">Database & Storage</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   MongoDB with Mongoose ODM schemas, S3 media asset storage, and index optimizations.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                <FaFileExcel className="text-3xl text-amber-400 mb-3 mx-auto" />
+              <div className="p-5 sm:p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+                <FaFileExcel className="text-2xl sm:text-3xl text-amber-400 mb-3 mx-auto" />
                 <h3 className="text-base font-bold text-white mb-1">Report Compilers</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   ExcelJS engine for pre-filled template parsing, mark validation, and multi-sheet formula compilation.
@@ -1343,22 +1416,22 @@ const Portfolio3D = () => {
         </section>
 
         {/* FOOTER */}
-        <footer className="border-t border-slate-800/80 bg-slate-950 py-12 px-6">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-slate-400">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">
+        <footer className="border-t border-slate-800/80 bg-slate-950 py-8 sm:py-12 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 text-xs text-slate-400 text-center md:text-left">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
                 E
               </div>
               <span className="font-bold text-slate-200 text-sm">ECAP ERP</span>
-              <span>— Educational Campus Administration Portal</span>
+              <span className="hidden sm:inline">— Educational Campus Portal</span>
             </div>
             <div>Developed & Designed by Laxmi Ganji</div>
-            <div className="flex gap-4">
+            <div className="flex items-center justify-center gap-4">
               <button onClick={() => setShowInquiryModal(true)} className="hover:text-indigo-400 cursor-pointer">
                 Commercial Inquiry
               </button>
               <Link to="/" className="hover:text-indigo-400">
-                Institutional Login Portal
+                Institutional Login
               </Link>
             </div>
           </div>
@@ -1369,34 +1442,34 @@ const Portfolio3D = () => {
       {selectedModule && (
         <div
           onClick={() => setSelectedModule(null)}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 md:p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl max-w-2xl w-full p-5 sm:p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <button
               onClick={() => setSelectedModule(null)}
-              className="absolute top-6 right-6 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+              className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
             >
               <FaTimes />
             </button>
 
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-4 rounded-2xl bg-slate-800">{selectedModule.icon}</div>
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 pr-8">
+              <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-800 shrink-0">{selectedModule.icon}</div>
               <div>
-                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${selectedModule.badgeColor}`}>
+                <span className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border ${selectedModule.badgeColor}`}>
                   {selectedModule.badge}
                 </span>
-                <h3 className="text-2xl font-bold text-white mt-1">{selectedModule.title}</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">{selectedModule.title}</h3>
               </div>
             </div>
 
-            <p className="text-sm text-indigo-300 font-medium mb-4">{selectedModule.tagline}</p>
-            <p className="text-xs text-slate-300 leading-relaxed mb-6">{selectedModule.description}</p>
+            <p className="text-xs sm:text-sm text-indigo-300 font-medium mb-3 sm:mb-4">{selectedModule.tagline}</p>
+            <p className="text-xs text-slate-300 leading-relaxed mb-5 sm:mb-6">{selectedModule.description}</p>
 
-            <div className="space-y-3 mb-6">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Core Capabilities:</h4>
+            <div className="space-y-2.5 sm:space-y-3 mb-5 sm:mb-6">
+              <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Core Capabilities:</h4>
               {selectedModule.highlights.map((h, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-xs text-slate-200">
                   <FaCheckCircle className="text-emerald-400 shrink-0 mt-0.5" />
@@ -1405,18 +1478,18 @@ const Portfolio3D = () => {
               ))}
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex justify-between items-center text-xs">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-slate-950 border border-slate-800 flex justify-between items-center text-xs">
               <span className="text-slate-400">Key Metric / USP:</span>
-              <span className="font-bold text-indigo-300">{selectedModule.kpi}</span>
+              <span className="font-bold text-indigo-300 text-[11px] sm:text-xs">{selectedModule.kpi}</span>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-5 sm:mt-6 flex justify-end">
               <button
                 onClick={() => {
                   setSelectedModule(null);
                   setShowInquiryModal(true);
                 }}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer text-center"
               >
                 Inquire About This Module
               </button>
@@ -1429,28 +1502,28 @@ const Portfolio3D = () => {
       {showInquiryModal && (
         <div
           onClick={() => setShowInquiryModal(false)}
-          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-indigo-500/40 rounded-3xl max-w-lg w-full p-6 md:p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-slate-900 border border-indigo-500/40 rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <button
               onClick={() => setShowInquiryModal(false)}
-              className="absolute top-6 right-6 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+              className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
             >
               <FaTimes />
             </button>
 
-            <h3 className="text-2xl font-bold text-white mb-2">Schedule Commercial Demo</h3>
-            <p className="text-xs text-slate-400 mb-6">
-              Submit your institution details to receive reduced AWS EC2 commercial quotes, feature walk-throughs, and sample 7-sheet Excel reports.
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-1.5">Schedule Commercial Demo</h3>
+            <p className="text-xs text-slate-400 mb-5">
+              Submit your institution details to receive reduced AWS EC2 commercial quotes & feature walk-throughs.
             </p>
 
             {formSubmitted ? (
-              <div className="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-center space-y-3">
-                <FaCheckCircle className="text-4xl text-emerald-400 mx-auto" />
-                <h4 className="text-lg font-bold text-white">Inquiry Received!</h4>
+              <div className="p-5 sm:p-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-center space-y-3">
+                <FaCheckCircle className="text-3xl sm:text-4xl text-emerald-400 mx-auto" />
+                <h4 className="text-base sm:text-lg font-bold text-white">Inquiry Received!</h4>
                 <p className="text-xs text-slate-300">
                   Thank you! Our commercial team will contact your institution shortly with custom AWS EC2 pricing details.
                 </p>
@@ -1467,7 +1540,7 @@ const Portfolio3D = () => {
                   e.preventDefault();
                   setFormSubmitted(true);
                 }}
-                className="space-y-4 text-xs"
+                className="space-y-3.5 text-xs"
               >
                 <div>
                   <label className="block text-slate-300 font-semibold mb-1">Full Name</label>
@@ -1475,7 +1548,7 @@ const Portfolio3D = () => {
                     type="text"
                     required
                     placeholder="Dr. Robert Smith"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -1485,18 +1558,18 @@ const Portfolio3D = () => {
                     type="text"
                     required
                     placeholder="St. Peter's Engineering College"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-slate-300 font-semibold mb-1">Official Email</label>
                     <input
                       type="email"
                       required
                       placeholder="principal@institution.edu"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                   <div>
@@ -1505,14 +1578,14 @@ const Portfolio3D = () => {
                       type="tel"
                       required
                       placeholder="+91 98765 43210"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-slate-300 font-semibold mb-1">Student Capacity</label>
-                  <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                  <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                     <option>Under 1,000 Students (₹29,999/yr)</option>
                     <option>1,000 - 3,000 Students (Standard Campus)</option>
                     <option>3,000 - 8,000 Students (Enterprise Tier - ₹59,999/yr)</option>
@@ -1525,13 +1598,13 @@ const Portfolio3D = () => {
                   <textarea
                     rows="3"
                     placeholder="Looking for NAAC OBE Excel export automation, reduced AWS EC2 cloud pricing, and AI Library Bot..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500"
                   ></textarea>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/30 hover:opacity-95 transition-all cursor-pointer"
+                  className="w-full py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/30 hover:opacity-95 transition-all cursor-pointer mt-2"
                 >
                   Submit Commercial Inquiry
                 </button>
