@@ -38,9 +38,11 @@ const App = () => {
             <Route path="/portfolio" element={<Portfolio3D />} />
             <Route path="/portfolio/" element={<Portfolio3D />} />
             <Route path="/portfolio.html" element={<Portfolio3D />} />
+            <Route path="/portfolio/index.html" element={<Portfolio3D />} />
             <Route path="portfolio" element={<Portfolio3D />} />
             <Route path="portfolio/" element={<Portfolio3D />} />
             <Route path="portfolio.html" element={<Portfolio3D />} />
+            <Route path="portfolio/index.html" element={<Portfolio3D />} />
             <Route path="student" element={<StudentHome />} />
             <Route path="faculty" element={<FacultyHome />} />
             <Route path="admin" element={<AdminHome />} />
