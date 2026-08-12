@@ -231,7 +231,7 @@ const SubstituteAttendance = ({ onClose }) => {
       } else {
         newState[student.enrollmentNo] = {
           enrollmentNo: student.enrollmentNo,
-          name: `${student.firstName} ${student.lastName}`,
+          name: `${student.firstName} ${student.middleName ? student.middleName + ' ' : ''}${student.lastName}`.trim(),
           branch: student.branch,
           section: student.section,
           subject: timetableEntry?.subject,
@@ -259,7 +259,7 @@ const SubstituteAttendance = ({ onClose }) => {
       filteredStudents.forEach((student) => {
         attendanceData[student.enrollmentNo] = {
           enrollmentNo: student.enrollmentNo,
-          name: `${student.firstName} ${student.lastName}`,
+          name: `${student.firstName} ${student.middleName ? student.middleName + ' ' : ''}${student.lastName}`.trim(),
           branch: student.branch,
           section: student.section,
           subject: timetableEntry?.subject,
@@ -292,7 +292,7 @@ const SubstituteAttendance = ({ onClose }) => {
       if (presentees.includes(student.enrollmentNo)) {
         newAttendance[student.enrollmentNo] = {
           enrollmentNo: student.enrollmentNo,
-          name: `${student.firstName} ${student.lastName}`,
+          name: `${student.firstName} ${student.middleName ? student.middleName + ' ' : ''}${student.lastName}`.trim(),
           branch: student.branch,
           section: student.section,
           subject: timetableEntry?.subject,
@@ -640,7 +640,7 @@ const SubstituteAttendance = ({ onClose }) => {
                         </td>
                         <td className="py-2 px-4 border">{student.enrollmentNo}</td>
                         <td className="py-2 px-4 border">
-                          {student.firstName} {student.lastName}
+                          {student.firstName} {student.middleName} {student.lastName}
                         </td>
                         <td className="py-2 px-4 border">{student.branch}</td>
                         <td className="py-2 px-4 border">{student.semester}</td>

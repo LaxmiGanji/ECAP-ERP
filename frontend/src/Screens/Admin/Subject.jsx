@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { MdOutlineDelete, MdEdit } from "react-icons/md";
 import { baseApiURL } from "../../baseUrl";
-import { FiBook, FiCalendar, FiUsers, FiGitBranch, FiFilter } from "react-icons/fi";
+import { FiBook, FiCalendar, FiUsers, FiGitBranch, FiFilter, FiAlertCircle } from "react-icons/fi";
 
 const Subjects = ({ branch: lockedBranchName }) => {
   const [data, setData] = useState({ 
@@ -19,6 +19,7 @@ const Subjects = ({ branch: lockedBranchName }) => {
   const [subject, setSubject] = useState([]);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
   
   // Filter states
   const [filters, setFilters] = useState({
@@ -39,6 +40,36 @@ const Subjects = ({ branch: lockedBranchName }) => {
   useEffect(() => {
     filterSubjects();
   }, [subject, filters]);
+
+  useEffect(() => {
+    checkStudentPresence();
+  }, [filters.semester, filters.branch, branches]);
+
+  const checkStudentPresence = async () => {
+    if (!filters.semester) {
+      setNoStudentsMessage("");
+      return;
+    }
+
+    try {
+      const payload = { semester: Number(filters.semester) };
+      if (filters.branch) {
+        const branchObj = branches.find(b => b._id === filters.branch);
+        if (branchObj?.name) {
+          payload.branch = branchObj.name;
+        }
+      }
+
+      const response = await axios.post(`${baseApiURL()}/student/details/getDetails`, payload);
+      if (response.data.success && response.data.user && response.data.user.length > 0) {
+        setNoStudentsMessage("");
+      } else {
+        setNoStudentsMessage("no students are there for that semester");
+      }
+    } catch (error) {
+      setNoStudentsMessage("no students are there for that semester");
+    }
+  };
 
   const getBranchesHandler = () => {
     axios
@@ -453,6 +484,13 @@ const Subjects = ({ branch: lockedBranchName }) => {
               <div className="mt-4 text-sm text-gray-600">
                 Showing {filteredSubjects.length} of {subject.length} subjects
               </div>
+
+              {noStudentsMessage && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center space-x-2">
+                  <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span className="font-medium">{noStudentsMessage}</span>
+                </div>
+              )}
             </div>
 
             {/* Subjects List */}

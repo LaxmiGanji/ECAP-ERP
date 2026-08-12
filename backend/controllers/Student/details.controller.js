@@ -2,6 +2,8 @@ const studentDetails = require("../../models/Students/details.model.js");
 const Library = require("../../models/Other/library.model.js");
 const Attendance = require("../../models/Other/attedence.model.js");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const alumniCredential = require("../../models/Alumni/credential.model.js");
 const { validatePhoneNumber, validateEmail } = require("../../utils/validation.js");
 
 const getDetails = async (req, res) => {
@@ -642,7 +644,100 @@ const getStudentsByBatchAndBranch = async (req, res) => {
   }
 };
 
+// Graduate selected students and create alumni credentials
+const graduateStudents = async (req, res) => {
+  try {
+    const { enrollmentNos } = req.body;
+    if (!enrollmentNos || !Array.isArray(enrollmentNos) || enrollmentNos.length === 0) {
+      return res.status(400).json({ success: false, message: "Please provide enrollmentNos array" });
+    }
+
+    const graduationYear = new Date().getFullYear().toString();
+    const graduatedAt = new Date();
+    const results = [];
+
+    for (const enrollmentNo of enrollmentNos) {
+      const student = await studentDetails.findOne({ enrollmentNo });
+      if (!student) {
+        results.push({ enrollmentNo, success: false, message: "Student not found" });
+        continue;
+      }
+      if (student.isGraduated) {
+        results.push({ enrollmentNo, success: false, message: "Already graduated" });
+        continue;
+      }
+
+      // Mark student as graduated
+      await studentDetails.updateOne(
+        { enrollmentNo },
+        { isGraduated: true, graduationYear, graduatedAt }
+      );
+
+      // Fetch existing student credential password hash
+      const studentCred = await mongoose.model("Student Credential").findOne({ loginid: enrollmentNo });
+      const existingPasswordHash = studentCred
+        ? studentCred.password
+        : await bcrypt.hash(enrollmentNo, 10);
+
+      // Create alumni credential only if not already exists
+      const existingAlumni = await alumniCredential.findOne({ loginid: enrollmentNo });
+      if (!existingAlumni) {
+        await alumniCredential.create({
+          loginid: enrollmentNo,
+          password: existingPasswordHash,
+          enrollmentNo,
+          graduationYear,
+          graduatedAt,
+        });
+      }
+
+      results.push({ enrollmentNo, success: true, message: "Graduated successfully" });
+    }
+
+    const successCount = results.filter(r => r.success).length;
+    return res.json({
+      success: true,
+      message: `${successCount} of ${enrollmentNos.length} student(s) graduated successfully.`,
+      results,
+    });
+  } catch (error) {
+    console.error("graduateStudents error:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
+};
+
+// Update student backlogs (called from student profile)
+const updateBacklogs = async (req, res) => {
+  try {
+    const { enrollmentNo, activeBacklogs, backlogDetails } = req.body;
+    if (!enrollmentNo) {
+      return res.status(400).json({ success: false, message: "enrollmentNo is required" });
+    }
+    const updated = await studentDetails.findOneAndUpdate(
+      { enrollmentNo },
+      {
+        activeBacklogs: Math.max(0, parseInt(activeBacklogs) || 0),
+        backlogDetails: backlogDetails || ""
+      },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+    return res.json({
+      success: true,
+      message: "Backlogs updated successfully",
+      activeBacklogs: updated.activeBacklogs,
+      backlogDetails: updated.backlogDetails
+    });
+  } catch (error) {
+    console.error("updateBacklogs error:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
+};
+
 module.exports = {
+
   getDetails,
   getDetails2,
   getDetailsByEnrollment,
@@ -656,4 +751,6 @@ module.exports = {
   returnBooks,
   searchStudents,
   getStudentsByBatchAndBranch,
+  graduateStudents,
+  updateBacklogs,
 };

@@ -146,7 +146,7 @@ const ViewAttendance = () => {
               <span className="font-medium">Enrollment No:</span> {studentData.enrollmentNo}
             </div>
             <div>
-              <span className="font-medium">Name:</span> {studentData.firstName} {studentData.lastName}
+              <span className="font-medium">Name:</span> {studentData.firstName} {studentData.middleName} {studentData.lastName}
             </div>
             <div>
               <span className="font-medium">Branch:</span> {studentData.branch}

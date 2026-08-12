@@ -9,20 +9,32 @@ import {
   FiLink, 
   FiInfo, 
   FiDownload,
-  FiFileText 
+  FiFileText,
+  FiFilter,
+  FiAlertCircle
 } from "react-icons/fi";
 import { baseApiURL } from "../../../baseUrl";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
-const CoPoMapping = () => {
+const CoPoMapping = ({ branch: lockedBranchName }) => {
   const [subjects, setSubjects] = useState([]);
+  const [filteredSubjects, setFilteredSubjects] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [filters, setFilters] = useState({
+    branch: "",
+    semester: "",
+    regulation: ""
+  });
+  const semesters = [1, 2, 3, 4, 5, 6, 7, 8];
+
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [coPoMappings, setCoPoMappings] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPOInfo, setShowPOInfo] = useState(false);
   const [coAttainments, setCoAttainments] = useState([]);
   const [poAttainments, setPoAttainments] = useState([]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
 
   // Program Outcomes Data
   const poData = [
@@ -42,7 +54,64 @@ const CoPoMapping = () => {
 
   useEffect(() => {
     getSubjectsHandler();
+    getBranchesHandler();
   }, []);
+
+  useEffect(() => {
+    filterSubjects();
+  }, [subjects, filters]);
+
+  const getBranchesHandler = () => {
+    axios
+      .get(`${baseApiURL()}/branch/getBranch`)
+      .then((response) => {
+        if (response.data.success) {
+          setBranches(response.data.branches);
+          if (lockedBranchName) {
+            const matchedBranch = response.data.branches.find(b => b.name === lockedBranchName);
+            if (matchedBranch) {
+              setFilters(prev => ({ ...prev, branch: matchedBranch._id }));
+            }
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching branches:", error);
+      });
+  };
+
+  const filterSubjects = () => {
+    let filtered = [...subjects];
+    
+    if (filters.branch) {
+      filtered = filtered.filter(item => {
+        const branchId = item.branch?._id || item.branch;
+        return branchId === filters.branch;
+      });
+    }
+    
+    if (filters.semester) {
+      filtered = filtered.filter(item => 
+        String(item.semester) === String(filters.semester)
+      );
+    }
+
+    if (filters.regulation) {
+      filtered = filtered.filter(item => 
+        item.regulation && item.regulation.toLowerCase().includes(filters.regulation.toLowerCase())
+      );
+    }
+    
+    setFilteredSubjects(filtered);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      branch: lockedBranchName ? filters.branch : "",
+      semester: "",
+      regulation: ""
+    });
+  };
 
   const getSubjectsHandler = () => {
     setLoading(true);
@@ -417,9 +486,82 @@ const CoPoMapping = () => {
         {/* Left Column - Subject Selection */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center space-x-2 mb-6">
+            <div className="flex items-center space-x-2 mb-4">
               <FiBook className="text-purple-600 text-lg" />
               <h2 className="text-xl font-semibold text-gray-800">Select Subject</h2>
+            </div>
+
+            {/* Filters Section */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <FiFilter className="text-purple-600 text-sm" />
+                  <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Filter Subjects</span>
+                </div>
+                {(filters.branch || filters.semester || filters.regulation) && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs text-purple-600 hover:text-purple-800 font-medium"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Filter by Branch</label>
+                <select
+                  value={filters.branch}
+                  onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
+                  disabled={!!lockedBranchName}
+                  className={`w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors ${lockedBranchName ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                >
+                  <option value="">All Branches</option>
+                  {branches.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Filter by Semester</label>
+                <select
+                  value={filters.semester}
+                  onChange={(e) => setFilters({ ...filters, semester: e.target.value })}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors bg-white"
+                >
+                  <option value="">All Semesters</option>
+                  {semesters.map((sem) => (
+                    <option key={sem} value={sem}>
+                      Semester {sem}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Filter by Regulation</label>
+                <input
+                  type="text"
+                  placeholder="e.g. R20"
+                  value={filters.regulation}
+                  onChange={(e) => setFilters({ ...filters, regulation: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors bg-white"
+                />
+              </div>
+
+              <div className="text-xs text-gray-500 pt-1">
+                Showing {filteredSubjects.length} of {subjects.length} subjects
+              </div>
+
+              {noStudentsMessage && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center space-x-2">
+                  <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span className="font-medium">{noStudentsMessage}</span>
+                </div>
+              )}
             </div>
 
             {loading ? (
@@ -428,7 +570,7 @@ const CoPoMapping = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {subjects.map((subject) => (
+                {filteredSubjects.map((subject) => (
                   <div
                     key={subject._id}
                     className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
@@ -448,6 +590,13 @@ const CoPoMapping = () => {
                         <FiCalendar className="text-purple-500" />
                         <span>Sem {subject.semester}</span>
                       </div>
+                      {subject.regulation && (
+                        <div className="flex items-center space-x-1">
+                          <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-semibold">
+                            {subject.regulation}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="mt-2 flex justify-between">
                       <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
@@ -462,10 +611,10 @@ const CoPoMapping = () => {
                   </div>
                 ))}
                 
-                {subjects.length === 0 && (
+                {filteredSubjects.length === 0 && (
                   <div className="text-center py-8">
                     <FiBook className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No subjects found. Add subjects first.</p>
+                    <p className="text-gray-500">No subjects found matching your filters.</p>
                   </div>
                 )}
               </div>
@@ -519,6 +668,16 @@ const CoPoMapping = () => {
         <div className="lg:col-span-3">
           {selectedSubject ? (
             <div className="space-y-8">
+              {noStudentsMessage && (
+                <div className="p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl flex items-center space-x-3 text-amber-800 shadow-sm">
+                  <FiAlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Notice</p>
+                    <p className="text-sm font-medium text-amber-900">{noStudentsMessage}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Subject Info */}
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
                 <div className="flex items-center justify-between">
@@ -535,6 +694,11 @@ const CoPoMapping = () => {
                         <FiCalendar className="inline mr-1" />
                         Semester {selectedSubject.semester}
                       </span>
+                      {selectedSubject.regulation && (
+                        <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-semibold">
+                          {selectedSubject.regulation}
+                        </span>
+                      )}
                       <span className="text-gray-600">
                         <FiLink className="inline mr-1" />
                         {selectedSubject.courseOutcomes?.length || 0} Course Outcomes

@@ -57,6 +57,8 @@ app.use("/api/hod/management", require("./routes/HOD Api/management.route"));
 app.use("/api/accounts/auth", require("./routes/Accounts Api/credential.route"));
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/parent", require("./routes/Other Api/parentPortal.route"));
+app.use("/api/alumni/auth", require("./routes/Alumni Api/credential.route"));
+
 
 app.use(authenticateToken);
 

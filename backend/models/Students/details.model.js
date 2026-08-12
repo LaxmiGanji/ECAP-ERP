@@ -304,6 +304,30 @@ const studentDetails = new mongoose.Schema({
       }
     }
   },
+  // Graduation & Alumni fields
+  isGraduated: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  graduationYear: {
+    type: String,
+    trim: true
+  },
+  graduatedAt: {
+    type: Date
+  },
+  // Backlogs for placement tracking
+  activeBacklogs: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  backlogDetails: {
+    type: String,
+    default: "",
+    trim: true
+  },
   // Transport history
   transportHistory: [{
     routeId: {

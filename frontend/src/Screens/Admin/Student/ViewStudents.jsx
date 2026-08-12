@@ -5,6 +5,7 @@ import axios from "axios";
 import { baseApiURL } from "../../../baseUrl";
 import toast from "react-hot-toast";
 import { FiDownload, FiUsers, FiSearch, FiTrash2, FiMessageSquare } from "react-icons/fi";
+import { FaGraduationCap } from "react-icons/fa";
 
 const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
   const [students, setStudents] = useState([]);
@@ -15,6 +16,8 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
   const [selectedBranch, setSelectedBranch] = useState(lockedBranch || "-- Select --");
   const [selectedRegulation, setSelectedRegulation] = useState("-- Select --");
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Active"); // "All", "Active", "Graduated"
+  const [selectedStudents, setSelectedStudents] = useState([]); // enrollment nos for graduation
 
   // Custom sorting function for enrollment numbers
   const sortEnrollmentNumbers = (students, order = 'ascending') => {
@@ -138,13 +141,17 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
         (student.enrollmentNo && student.enrollmentNo.toLowerCase().includes(searchTerm.toLowerCase())) ||
         `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (student.email && student.email.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Active" && !student.isGraduated) ||
+        (statusFilter === "Graduated" && student.isGraduated);
 
-      return matchesBranch && matchesSemester && matchesRegulation && matchesSearch;
+      return matchesBranch && matchesSemester && matchesRegulation && matchesSearch && matchesStatus;
     });
 
     filtered = sortEnrollmentNumbers(filtered, sortOrder.toLowerCase());
     setFilteredStudents(filtered);
-  }, [students, selectedBranch, semester, selectedRegulation, sortOrder, searchTerm]);
+  }, [students, selectedBranch, semester, selectedRegulation, sortOrder, searchTerm, statusFilter]);
 
   // Delete student handler
   const handleDeleteStudent = async (id, enrollmentNo) => {
@@ -156,26 +163,17 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
     
     try {
       const headers = { "Content-Type": "application/json" };
-      
-      console.log("Deleting student with ID:", id);
-      console.log("Delete URL:", `${baseApiURL()}/student/details/delete/${id}`);
-      
       const response = await axios.delete(
         `${baseApiURL()}/student/details/delete/${id}`,
         { headers }
       );
-      
       toast.dismiss(loadingToast);
-      
       if (response.data.success) {
         toast.success(`Student ${enrollmentNo} deleted successfully!`);
-        
-        // Update both states
         setStudents((prev) => {
           const updated = prev.filter((s) => s._id !== id);
           return sortEnrollmentNumbers(updated, sortOrder.toLowerCase());
         });
-        
         setFilteredStudents((prev) => {
           const updated = prev.filter((s) => s._id !== id);
           return sortEnrollmentNumbers(updated, sortOrder.toLowerCase());
@@ -185,19 +183,50 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
       }
     } catch (error) {
       toast.dismiss(loadingToast);
-      console.error("Delete error:", error);
-      
       if (error.response) {
-        // Server responded with error
         toast.error(error.response.data?.message || `Server error: ${error.response.status}`);
-        console.log("Error response:", error.response.data);
       } else if (error.request) {
-        // Request made but no response
         toast.error("No response from server. Please check your connection.");
       } else {
-        // Something else happened
         toast.error("Error: " + error.message);
       }
+    }
+  };
+
+  // Toggle checkbox selection for graduation
+  const toggleStudentSelect = (enrollmentNo) => {
+    setSelectedStudents((prev) =>
+      prev.includes(enrollmentNo)
+        ? prev.filter((e) => e !== enrollmentNo)
+        : [...prev, enrollmentNo]
+    );
+  };
+
+  // Graduate selected students
+  const handleGraduateSelected = async () => {
+    if (selectedStudents.length === 0) {
+      toast.error("Please select at least one student to graduate.");
+      return;
+    }
+    if (!window.confirm(`Graduate ${selectedStudents.length} selected student(s)? This will create Alumni credentials and revoke Student Portal access.`)) return;
+    const loadingToast = toast.loading("Processing graduation...");
+    try {
+      const response = await axios.post(
+        `${baseApiURL()}/student/details/graduate`,
+        { enrollmentNos: selectedStudents },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      toast.dismiss(loadingToast);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setSelectedStudents([]);
+        fetchStudents(); // Refresh list
+      } else {
+        toast.error(response.data.message || "Graduation failed.");
+      }
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error(error.response?.data?.message || "Failed to graduate students.");
     }
   };
 
@@ -221,6 +250,15 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
                 <span className="text-white text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
                   {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} found
                 </span>
+                {selectedStudents.length > 0 && (
+                  <button
+                    onClick={handleGraduateSelected}
+                    className="flex items-center space-x-2 bg-amber-400 hover:bg-amber-300 text-gray-900 px-4 py-2 rounded-lg transition-colors font-semibold"
+                  >
+                    <FaGraduationCap className="text-sm" />
+                    <span>Graduate ({selectedStudents.length})</span>
+                  </button>
+                )}
                 <button
                   onClick={downloadExcel}
                   className="flex items-center space-x-2 bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors"
@@ -307,6 +345,22 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
                 </select>
               </div>
 
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Student Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="All">All Students</option>
+                  <option value="Active">Active Students</option>
+                  <option value="Graduated">Graduated / Alumni</option>
+                </select>
+              </div>
+
               {/* Regulation Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -338,6 +392,20 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
                 <table className="w-full border-collapse bg-white">
                   <thead>
                     <tr className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                      <th className="py-4 px-3 text-left">
+                        <input
+                          type="checkbox"
+                          className="rounded"
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedStudents(filteredStudents.filter(s => !s.isGraduated).map(s => s.enrollmentNo));
+                            } else {
+                              setSelectedStudents([]);
+                            }
+                          }}
+                          checked={selectedStudents.length > 0 && selectedStudents.length === filteredStudents.filter(s => !s.isGraduated).length}
+                        />
+                      </th>
                       <th className="py-4 px-6 text-left font-semibold">S.No</th>
                       <th className="py-4 px-6 text-left font-semibold">Enrollment No</th>
                       <th className="py-4 px-6 text-left font-semibold">Name</th>
@@ -361,11 +429,28 @@ const ViewStudents = ({ branch: lockedBranch, onMessageParent }) => {
                       <tr 
                         key={student._id} 
                         className={`border-b hover:bg-blue-50 transition-colors ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          student.isGraduated ? 'bg-amber-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                         }`}
                       >
+                        <td className="py-4 px-3">
+                          {!student.isGraduated && (
+                            <input
+                              type="checkbox"
+                              checked={selectedStudents.includes(student.enrollmentNo)}
+                              onChange={() => toggleStudentSelect(student.enrollmentNo)}
+                              className="rounded"
+                            />
+                          )}
+                        </td>
                         <td className="py-4 px-6 font-medium">{index + 1}</td>
-                        <td className="py-4 px-6 font-mono font-medium">{student.enrollmentNo}</td>
+                        <td className="py-4 px-6 font-mono font-medium">
+                          <span>{student.enrollmentNo}</span>
+                          {student.isGraduated && (
+                            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                              🎓 Alumni
+                            </span>
+                          )}
+                        </td>
                         <td className="py-4 px-6">
                           {[student.firstName, student.middleName, student.lastName].filter(Boolean).join(' ') || 'N/A'}
                         </td>

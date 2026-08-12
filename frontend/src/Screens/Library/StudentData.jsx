@@ -138,7 +138,7 @@ const StudentData = () => {
   }, [fetchStudents, fetchBooks, checkBookBorrowers]);
   const handleStudentSelect = (student) => {
     setSelectedStudent(student);
-    setStudentQuery(`${student.firstName} ${student.lastName}`.trim());
+    setStudentQuery(`${student.firstName} ${student.middleName ? student.middleName + ' ' : ''}${student.lastName}`.trim());
     setStudentResults([]);
     setBooksToAssign([]);
     setBookQuery("");
@@ -284,7 +284,7 @@ const StudentData = () => {
                   onClick={() => handleStudentSelect(student)}
                   className="px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 cursor-pointer"
                 >
-                  {student.firstName} {student.lastName} ({student.enrollmentNo})
+                  {student.firstName} {student.middleName} {student.lastName} ({student.enrollmentNo})
                 </li>
               ))}
             </ul>
@@ -295,7 +295,7 @@ const StudentData = () => {
             <div className="p-3 bg-slate-50 rounded-lg">
               <p className="text-xs uppercase text-slate-500">Name</p>
               <p className="font-medium text-slate-900">
-                {selectedStudent.firstName} {selectedStudent.lastName}
+                {selectedStudent.firstName} {selectedStudent.middleName} {selectedStudent.lastName}
               </p>
             </div>
             <div className="p-3 bg-slate-50 rounded-lg">
@@ -593,7 +593,7 @@ const StudentData = () => {
               {studentsWithBook.map((student) => (
                 <li key={student._id} className="px-4 py-3 text-sm text-slate-700">
                   <p className="font-medium text-slate-900">
-                    {student.firstName} {student.lastName}
+                    {student.firstName} {student.middleName} {student.lastName}
                   </p>
                   <p className="text-slate-500 text-xs">{student.enrollmentNo}</p>
                   <p className="text-slate-500 text-xs">{student.branch}</p>

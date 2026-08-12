@@ -177,7 +177,7 @@ const ViewMarks = ({ setShowViewMarks, branch: lockedBranch }) => {
                     <tr key={student.enrollmentNo}>
                       <td className="border border-gray-300 p-2">{student.enrollmentNo}</td>
                       <td className="border border-gray-300 p-2">
-                        {student.firstName} {student.lastName}
+                        {student.firstName} {student.middleName} {student.lastName}
                       </td>
                       <td colSpan="3" className="border border-gray-300 p-2 text-center">
                         No marks available

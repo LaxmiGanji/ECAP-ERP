@@ -105,6 +105,7 @@ const Applications = () => {
                                     <th className="py-3 px-4 text-left">Email</th>
                                     <th className="py-3 px-4 text-left">Branch</th>
                                     <th className="py-3 px-4 text-left">Semester</th>
+                                    <th className="py-3 px-4 text-left">Active Backlogs</th>
                                     <th className="py-3 px-4 text-left">Applied On</th>
                                     <th className="py-3 px-4 text-left">Resume</th>
                                     <th className="py-3 px-4 text-left">Status</th>
@@ -114,7 +115,7 @@ const Applications = () => {
                             <tbody>
                                 {applications.length === 0 ? (
                                     <tr>
-                                        <td colSpan="9" className="py-8 text-center text-gray-500">
+                                        <td colSpan="10" className="py-8 text-center text-gray-500">
                                             No applications found for this drive.
                                         </td>
                                     </tr>
@@ -135,6 +136,23 @@ const Applications = () => {
                                             </td>
                                             <td className="py-3 px-4">
                                                 {app.student?.semester || 'N/A'}
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                {(() => {
+                                                  const count = app.student?.activeBacklogs ?? null;
+                                                  const details = app.student?.backlogDetails;
+                                                  if (count === null || count === undefined) return <span className="text-gray-400 text-xs">—</span>;
+                                                  return (
+                                                    <span
+                                                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                                        count === 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                      }`}
+                                                      title={details || ''}
+                                                    >
+                                                      {count === 0 ? '✓ No Backlogs' : `⚠ ${count} Backlog${count > 1 ? 's' : ''}`}
+                                                    </span>
+                                                  );
+                                                })()}
                                             </td>
                                             <td className="py-3 px-4">
                                                 {new Date(app.createdAt).toLocaleDateString()}

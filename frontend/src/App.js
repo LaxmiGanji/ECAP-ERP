@@ -16,6 +16,7 @@ import PrincipalHome from "./Screens/Principal/Home";
 import AccountsHome from "./Screens/Accounts/Home";
 import ParentPortal from "./Screens/Common/ParentPortal";
 import Portfolio3D from "./Screens/Common/Portfolio3D";
+import AlumniHome from "./Screens/Alumni/AlumniHome";
 
 const HashRedirect = () => {
   useEffect(() => {
@@ -35,7 +36,11 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/portfolio" element={<Portfolio3D />} />
+            <Route path="/portfolio/" element={<Portfolio3D />} />
+            <Route path="/portfolio.html" element={<Portfolio3D />} />
             <Route path="portfolio" element={<Portfolio3D />} />
+            <Route path="portfolio/" element={<Portfolio3D />} />
+            <Route path="portfolio.html" element={<Portfolio3D />} />
             <Route path="student" element={<StudentHome />} />
             <Route path="faculty" element={<FacultyHome />} />
             <Route path="admin" element={<AdminHome />} />
@@ -48,6 +53,7 @@ const App = () => {
             <Route path="principal/*" element={<PrincipalHome />} />
             <Route path="accounts/*" element={<AccountsHome />} />
             <Route path="parent/dashboard/:token" element={<ParentPortal />} />
+            <Route path="alumni/*" element={<AlumniHome />} />
           </Routes>
         </Router>
       </Provider>

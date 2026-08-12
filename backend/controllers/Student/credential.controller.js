@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const studentCredential = require("../../models/Students/credential.model.js");
+const studentDetails = require("../../models/Students/details.model.js");
 
 const loginHandler = async (req, res) => {
     let { loginid, password } = req.body;
@@ -17,6 +18,14 @@ const loginHandler = async (req, res) => {
             return res
                 .status(400)
                 .json({ success: false, message: "Wrong Credentials" });
+        }
+        // Check if student has graduated
+        const studentRecord = await studentDetails.findOne({ enrollmentNo: loginid });
+        if (studentRecord && studentRecord.isGraduated) {
+            return res.status(403).json({
+                success: false,
+                message: "You have graduated. Please log in to the Alumni Portal."
+            });
         }
         const token = jwt.sign(
             { id: user.id, loginid: user.loginid, role: 'student' },

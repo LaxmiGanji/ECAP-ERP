@@ -16,6 +16,8 @@ const Profile = () => {
     new: "",
     current: "",
   });
+  const [backlogs, setBacklogs] = useState({ activeBacklogs: 0, backlogDetails: "" });
+  const [savingBacklogs, setSavingBacklogs] = useState(false);
 
   useEffect(() => {
     const headers = {
@@ -33,12 +35,17 @@ const Profile = () => {
         if (response.data.success) {
           setData(response.data.user[0]);
           console.log(response.data.user[0]);
+          const u = response.data.user[0];
+          setBacklogs({
+            activeBacklogs: u.activeBacklogs || 0,
+            backlogDetails: u.backlogDetails || "",
+          });
           dispatch(
             setUserData({
-              fullname: `${response.data.user[0].firstName} ${response.data.user[0].middleName} ${response.data.user[0].lastName}`,
-              semester: response.data.user[0].semester,
-              enrollmentNo: response.data.user[0].enrollmentNo,
-              branch: response.data.user[0].branch,
+              fullname: `${u.firstName} ${u.middleName} ${u.lastName}`,
+              semester: u.semester,
+              enrollmentNo: u.enrollmentNo,
+              branch: u.branch,
             })
           );
         } else {
@@ -102,6 +109,27 @@ const Profile = () => {
       });
   };
 
+  const saveBacklogsHandler = async (e) => {
+    e.preventDefault();
+    setSavingBacklogs(true);
+    try {
+      const response = await axios.put(
+        `${baseApiURL()}/student/details/updateBacklogs`,
+        { enrollmentNo: router.state.loginid, activeBacklogs: backlogs.activeBacklogs, backlogDetails: backlogs.backlogDetails },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      if (response.data.success) {
+        toast.success("Backlogs updated successfully!");
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("Failed to update backlogs");
+    } finally {
+      setSavingBacklogs(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {data && (
@@ -140,6 +168,45 @@ const Profile = () => {
                 <p className="font-medium">{data.email}</p>
               </div>
             </div>
+            {/* Backlogs Management */}
+            <div className="mt-8 border border-orange-200 bg-orange-50 rounded-xl p-5">
+              <h2 className="text-base font-bold text-orange-800 mb-1 flex items-center gap-2">
+                📋 Active Backlogs
+              </h2>
+              <p className="text-xs text-orange-600 mb-4">Update your current active backlogs. This will be visible to Placement coordinators.</p>
+              <form onSubmit={saveBacklogsHandler} className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm text-gray-600 mb-1">No. of Active Backlogs</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={backlogs.activeBacklogs}
+                      onChange={(e) => setBacklogs({ ...backlogs, activeBacklogs: parseInt(e.target.value) || 0 })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Backlog Subject Details</label>
+                  <textarea
+                    value={backlogs.backlogDetails}
+                    onChange={(e) => setBacklogs({ ...backlogs, backlogDetails: e.target.value })}
+                    placeholder="e.g. Maths III, Physics Lab..."
+                    rows={2}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={savingBacklogs}
+                  className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white px-5 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  {savingBacklogs ? "Saving..." : "Save Backlogs"}
+                </button>
+              </form>
+            </div>
+
             <div className="mt-8">
               <button
                 className={`${

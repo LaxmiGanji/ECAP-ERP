@@ -75,7 +75,7 @@ const getApplicationsForDrive = async (req, res) => {
             .populate({
                 path: "student",
                 model: "Student Detail",
-                select: "enrollmentNo firstName middleName lastName email branch semester batch phoneNumber"
+                select: "enrollmentNo firstName middleName lastName email branch semester batch phoneNumber activeBacklogs backlogDetails"
             })
             .populate("drive", "title companyName")
             .sort({ createdAt: -1 });
@@ -95,11 +95,12 @@ const getApplicationsForDrive = async (req, res) => {
             profileMap[p.enrollmentNo] = p.resumeLink;
         });
         
-        // Attach resumeLink to each student object
+        // Attach resumeLink, activeBacklogs, backlogDetails to each student object
         const applicationsWithResume = applications.map(app => {
             const appObj = app.toObject();
             if (appObj.student && appObj.student.enrollmentNo) {
                 appObj.student.resumeLink = profileMap[appObj.student.enrollmentNo] || null;
+                // activeBacklogs and backlogDetails come from populated Student Detail
             }
             return appObj;
         });

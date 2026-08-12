@@ -1,14 +1,2673 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECAP ERP - Portfolio Redirect</title>
-  <script>
-    window.location.replace(window.location.origin + "/#/portfolio");
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ECAP ERP | 3D Commercial Portfolio & Pricing — Laxmi Ganji</title>
+  <meta name="description"
+    content="ECAP ERP — AI & OBE Powered Multi-Tenant Campus ERP System by Laxmi Ganji. Interactive 3D presentation, 9+ modules, AWS cloud architecture, and commercial pricing plans." />
+  <!-- Google Fonts: Space Grotesk + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* =========================================================
+       3D DARK THEME SYSTEM — EXACT MATCH TO PORTFOLIO3D
+       Background : #020617 (slate-950)
+       Card       : #0f172a (slate-900)
+       Border     : #1e293b (slate-800)
+       Primary Amber : #f59e0b
+       Accent Cyan   : #06b6d4
+       Indigo Glow   : #6366f1
+       Emerald Green : #10b981
+    ========================================================= */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #020617;
+      --card: rgba(15, 23, 42, 0.85);
+      --card-solid: #0f172a;
+      --card-inner: #020617;
+      --border: #1e293b;
+      --border-light: rgba(99, 102, 241, 0.3);
+      --fg: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #f59e0b;
+      --indigo: #6366f1;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --purple: #a855f7;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.35);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.6);
+    }
+
+    /* ---- 3D CANVAS BACKGROUND ---- */
+    #canvas3d {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.85;
+    }
+
+    /* ---- AMBIENT RADIAL GLOWS ---- */
+    .glow-1 {
+      position: fixed;
+      top: 0;
+      left: 25%;
+      width: 32rem;
+      height: 32rem;
+      background: rgba(99, 102, 241, 0.12);
+      border-radius: 50%;
+      filter: blur(150px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-2 {
+      position: fixed;
+      bottom: 0;
+      right: 25%;
+      width: 32rem;
+      height: 32rem;
+      background: rgba(6, 182, 212, 0.12);
+      border-radius: 50%;
+      filter: blur(150px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .main-wrapper {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ---- GRADIENTS & TEXT ---- */
+    .text-gradient {
+      background: linear-gradient(135deg, #818cf8, #c084fc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .text-gradient-amber {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .text-gradient-cyan {
+      background: linear-gradient(135deg, #38bdf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ---- HEADER NAVBAR ---- */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(2, 6, 23, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+      padding: 0.9rem 1.5rem;
+    }
+
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #06b6d4);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon-inner {
+      width: 100%;
+      height: 100%;
+      background: #020617;
+      border-radius: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: #818cf8;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      tracking: -0.02em;
+    }
+
+    .brand-sub {
+      display: block;
+      font-size: 0.62rem;
+      font-family: monospace;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .nav-links a,
+    .nav-links button {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links button:hover {
+      color: #38bdf8;
+    }
+
+    .btn-header {
+      padding: 0.6rem 1.25rem;
+      border-radius: 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-header:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 25px rgba(79, 70, 229, 0.5);
+    }
+
+    /* ---- HERO ---- */
+    .hero {
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 1.75rem;
+    }
+
+    .hero-h1 {
+      font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      max-width: 1000px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .hero-p {
+      font-size: clamp(0.95rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 780px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 4rem;
+    }
+
+    .btn-primary {
+      padding: 0.9rem 2rem;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #4f46e5, #9333ea, #06b6d4);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.35);
+      transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(79, 70, 229, 0.5);
+    }
+
+    .btn-secondary {
+      padding: 0.9rem 2rem;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--fg);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    /* ---- STAT COUNTERS GRID ---- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .stat-card {
+      padding: 1.25rem 1rem;
+      text-align: center;
+      border-radius: 1rem;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .stat-val {
+      font-family: monospace;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-lbl {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ---- SECTIONS COMMON ---- */
+    .section {
+      padding: 5rem 1.5rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-desc {
+      font-size: 0.95rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* ---- CATEGORY TABS ---- */
+    .cat-tabs {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .cat-tab-btn {
+      padding: 0.55rem 1.2rem;
+      border-radius: 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .cat-tab-btn.active,
+    .cat-tab-btn:hover {
+      background: #4f46e5;
+      color: #fff;
+      border-color: #6366f1;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    /* ---- MODULES GRID ---- */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .module-card {
+      padding: 1.5rem;
+      border-radius: 1.25rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .module-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(99, 102, 241, 0.6);
+      box-shadow: 0 12px 35px rgba(99, 102, 241, 0.2);
+    }
+
+    .mod-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .mod-icon-box {
+      width: 3.2rem;
+      height: 3.2rem;
+      border-radius: 0.85rem;
+      background: rgba(30, 41, 59, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .mod-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+
+    .badge-amber {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-emerald {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-indigo {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .badge-cyan {
+      background: rgba(6, 182, 212, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .badge-purple {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .badge-rose {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .mod-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .mod-tag {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #818cf8;
+      margin-bottom: 0.75rem;
+    }
+
+    .mod-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .mod-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(30, 41, 59, 0.8);
+      pt: 0.75rem;
+      margin-top: auto;
+    }
+
+    .mod-kpi {
+      font-size: 0.72rem;
+      font-family: monospace;
+      color: #34d399;
+    }
+
+    .mod-details-link {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #818cf8;
+    }
+
+    /* ---- PRICING PLANS ---- */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+      margin-bottom: 3rem;
+    }
+
+    .plan-card {
+      padding: 2rem 1.75rem;
+      border-radius: 1.5rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      transition: all 0.35s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .plan-card.featured {
+      border: 2px solid #f59e0b;
+      background: linear-gradient(185deg, rgba(30, 27, 75, 0.9), rgba(15, 23, 42, 0.95));
+      box-shadow: 0 15px 40px rgba(245, 158, 11, 0.15);
+      transform: scale(1.03);
+    }
+
+    .plan-card.featured:hover {
+      transform: scale(1.03) translateY(-8px);
+    }
+
+    .popular-tag {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #020617;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.25rem 1rem;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .plan-name {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+    }
+
+    .plan-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .plan-price {
+      font-family: monospace;
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .plan-card.featured .plan-price {
+      color: #f59e0b;
+    }
+
+    .plan-equiv {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 1.5rem;
+      font-family: monospace;
+    }
+
+    .plan-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 2rem;
+    }
+
+    .plan-list li {
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      display: flex;
+      items-center;
+      gap: 0.5rem;
+    }
+
+    .plan-list li strong {
+      color: #fff;
+    }
+
+    .btn-plan {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 0.85rem;
+      font-size: 0.85rem;
+      font-weight: 800;
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.8);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-plan:hover {
+      border-color: rgba(99, 102, 241, 0.6);
+      background: rgba(51, 65, 85, 0.9);
+    }
+
+    .plan-card.featured .btn-plan {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #020617;
+      border: none;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .plan-card.featured .btn-plan:hover {
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+    }
+
+    /* ---- ADD-ONS CALCULATOR ---- */
+    .calculator-box {
+      padding: 2.5rem;
+      border-radius: 1.5rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .addons-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      margin: 1.75rem 0;
+    }
+
+    .addon-item {
+      padding: 0.85rem 1rem;
+      border-radius: 0.85rem;
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .addon-item.selected {
+      background: rgba(49, 46, 129, 0.6);
+      border-color: #6366f1;
+      color: #fff;
+    }
+
+    .addon-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .addon-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .addon-price {
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f59e0b;
+    }
+
+    .calc-total-bar {
+      padding: 1.25rem 1.75rem;
+      border-radius: 1.15rem;
+      background: #020617;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .total-val {
+      font-family: monospace;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #f59e0b;
+    }
+
+    /* ---- PROFIT MARGIN BOX ---- */
+    .profit-explainer {
+      padding: 2rem 2.5rem;
+      border-radius: 1.5rem;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      text-align: left;
+      align-items: center;
+    }
+
+    .profit-num {
+      font-family: monospace;
+      font-size: 1.85rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    /* ---- MODAL POPUP SYSTEM ---- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(14px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #0f172a;
+      border: 1px solid #6366f1;
+      border-radius: 1.5rem;
+      max-width: 620px;
+      width: 100%;
+      padding: 2rem;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: #1e293b;
+      border: none;
+      color: var(--muted);
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      color: #fff;
+      background: #334155;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.35rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      background: #020617;
+      border: 1px solid #1e293b;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: #6366f1;
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 1024px) {
+
+      .modules-grid,
+      .plans-grid,
+      .addons-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .profit-explainer {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        text-align: center;
+      }
+
+      .plan-card.featured {
+        transform: scale(1);
+      }
+
+      .plan-card.featured:hover {
+        transform: translateY(-8px);
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      .modules-grid,
+      .plans-grid,
+      .addons-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero-h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
 </head>
-<body style="background-color: #020617; color: #ffffff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
-  <p>Redirecting to ECAP 3D Commercial Portfolio...</p>
+
+<body>
+
+  <!-- 3D INTERACTIVE CANVAS BACKGROUND -->
+  <canvas id="canvas3d"></canvas>
+
+  <!-- AMBIENT RADIAL GLOWS -->
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <div class="main-wrapper">
+
+    <!-- HEADER NAVBAR -->
+    <header class="header">
+      <div class="header-inner">
+        <a href="#home" class="brand">
+          <div class="brand-icon">
+            <div class="brand-icon-inner">🎓</div>
+          </div>
+          <div>
+            <span class="brand-title text-gradient">ECAP ERP</span>
+            <span class="brand-sub">Campus Administration Portal</span>
+          </div>
+        </a>
+
+        <ul class="nav-links">
+          <li><a href="#modules">Modules</a></li>
+          <li><a href="#aws">AWS Advantage</a></li>
+          <li><a href="#pricing">Pricing Plans</a></li>
+          <li><a href="#calculator">Add-ons Calculator</a></li>
+        </ul>
+
+        <button class="btn-header" onclick="openDemoModal()">Schedule Demo</button>
+      </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero" id="home">
+      <div class="badge-pill">
+        <span style="width:8px;height:8px;border-radius:50%;background:#34d399;display:inline-block;"></span>
+        <span>⚡ Multi-Tenant AWS Cloud Architecture Live</span>
+      </div>
+
+      <h1 class="hero-h1">
+        The Next-Generation <br />
+        <span class="text-gradient">AI & OBE Powered</span> Campus ERP System
+      </h1>
+
+      <p class="hero-desc">
+        Automate NAAC/NBA accreditation with zero-formula 7-sheet ExcelJS compilers, Google Gemini AI tutors, digital
+        bus pass systems, and <strong>guaranteed profitable multi-tenant pricing</strong> starting at
+        <strong>₹22.70/month per student</strong> (<strong>₹136.20 for 6 months / 1 sem</strong> per student).
+      </p>
+
+      <div class="hero-ctas">
+        <button class="btn-primary" onclick="openDemoModal()">🚀 Request Quote & Live Demo</button>
+        <a href="#pricing" class="btn-secondary">View Commercial Plans →</a>
+      </div>
+
+      <!-- STAT COUNTERS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-val text-gradient-amber">₹22.70 / mo</div>
+          <div class="stat-lbl">Per Student Monthly Rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val text-gradient-cyan">₹136.20 / sem</div>
+          <div class="stat-lbl">Per Student 6 Months (1 Sem)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val text-gradient">₹272.44 / yr</div>
+          <div class="stat-lbl">Per Student Annual (2 Sem)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:#34d399;">99.9%</div>
+          <div class="stat-lbl">AWS Cloud Uptime</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 INSTITUTIONAL MODULES GRID -->
+    <section class="section" id="modules">
+      <div class="section-header">
+        <h2 class="section-title">Comprehensive <span class="text-gradient">Institutional Modules</span></h2>
+        <p class="section-desc">Tailored high-performance workspaces for Principal, HODs, Faculty, Students, Accounts,
+          Transport, and Library teams.</p>
+      </div>
+
+      <!-- CATEGORY TABS -->
+      <div class="cat-tabs" id="catTabsContainer">
+        <!-- Dynamically rendered tabs -->
+      </div>
+
+      <div class="modules-grid" id="modulesContainer">
+        <!-- Dynamically rendered interactive module cards -->
+      </div>
+    </section>
+
+    <!-- COMMERCIAL LICENSING PLANS -->
+    <section class="section" id="pricing">
+      <div class="section-header">
+        <h2 class="section-title">Commercial <span class="text-gradient-amber">Licensing Plans</span></h2>
+        <p class="section-desc">Shared multi-tenant AWS cloud deployment — guaranteed profitable pricing for engineering institutions.</p>
+      </div>
+
+      <div class="plans-grid">
+          <!-- STANDARD -->
+          <div class="plan-card">
+            <div>
+              <h3 class="plan-name">🥉 Standard Plan</h3>
+              <p class="plan-desc">Core ERP modules plus complete Outcome-Based Education (CO-PO) Engine.</p>
+              <div class="plan-price">₹6,93,616 <span style="font-size:0.9rem;font-weight:400;color:var(--muted)">/ 6
+                  months (1 sem)</span></div>
+              <div class="plan-equiv">Total: ₹13,87,232 / year</div>
+              <div
+                style="font-size:0.75rem;color:#38bdf8;margin-bottom:1.25rem;border-top:1px solid #1e293b;padding-top:0.4rem;">
+                Formula: <strong>₹13.62L Expenditure + ₹25k Module</strong></div>
+              <div
+                style="font-size:0.7rem;font-weight:800;color:#38bdf8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">
+                📦 INCLUDED PACKAGE MODULES:</div>
+              <ul class="plan-list">
+                <li>📊 <strong>OBE & CO-PO Attainment Engine</strong>: 7-Sheet NAAC/NBA ExcelJS Compiler</li>
+                <li>✅ <strong>Auth & Role Control</strong>: Student, Faculty, Parent, HOD & Admin Login</li>
+                <li>✅ <strong>Attendance Management</strong>: Subject attendance & absentee alerts</li>
+                <li>✅ <strong>Marks & Exam Entry</strong>: CIE marks, End-Sem grading & results</li>
+                <li>✅ <strong>Notice Board Broadcasting</strong>: Emergency alerts & college news</li>
+                <li>✅ <strong>Student & Parent Portal</strong>: Web access for grades & attendance</li>
+                <li>💼 <strong>Fixed Ops Expenditure Included</strong>: AWS + Domain + Salary + SMS</li>
+              </ul>
+            </div>
+            <button class="btn-plan" onclick="openDemoModal()">Inquire Standard Plan</button>
+          </div>
+
+          <!-- PREMIUM -->
+          <div class="plan-card featured">
+            <div class="popular-tag">⭐ Most Popular Plan</div>
+            <div>
+              <h3 class="plan-name">🥈 Premium Plan</h3>
+              <p class="plan-desc">Full ERP with Native Android App & AI Gemini Assistant.</p>
+              <div class="plan-price">₹7,18,616 <span style="font-size:0.9rem;font-weight:400;color:var(--muted)">/ 6
+                  months (1 sem)</span></div>
+              <div class="plan-equiv">Total: ₹14,37,232 / year</div>
+              <div
+                style="font-size:0.75rem;color:#fbbf24;margin-bottom:1.25rem;border-top:1px solid rgba(245,158,11,0.3);padding-top:0.4rem;">
+                Formula: <strong>₹13.62L Expenditure + ₹75k Module</strong></div>
+              <div
+                style="font-size:0.7rem;font-weight:800;color:#fbbf24;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">
+                🚀 INCLUDED & CUSTOMIZABLE MODULES:</div>
+              <ul class="plan-list">
+                <li>📱 <strong>Native Android & iOS Mobile App Included</strong>: Push alerts & digital pass</li>
+                <li>🤖 <strong>AI Gemini Assistant Integration</strong>: Google Gemini RAG Q&A bot</li>
+                <li>🛰️ <strong>Faculty Geofence & Facial Recognition AI Attendance</strong>: Location-verified check-in</li>
+                <li>📊 <strong>OBE & CO-PO Attainment Engine</strong>: 7-Sheet NAAC ExcelJS Compiler</li>
+                <li>✅ <strong>All Core Modules Included</strong>: Auth, Attendance, Marks & Notices</li>
+                <li>🛠️ <strong>3 Customizable Add-on Modules</strong>: Transport, Library, Accounts, Placement</li>
+                <li>💼 <strong>Fixed Ops Expenditure Included</strong>: AWS + Domain + Salary + SMS</li>
+              </ul>
+            </div>
+            <button class="btn-plan" onclick="openDemoModal()">Get Premium Plan</button>
+          </div>
+
+          <!-- CUSTOMIZABLE -->
+          <div class="plan-card">
+            <div>
+              <h3 class="plan-name">🥇 Customizable Plan</h3>
+              <p class="plan-desc">Tailored à la carte selection for universities & multi-campus custom scaling.</p>
+              <div class="plan-price">₹7,56,116 <span style="font-size:0.9rem;font-weight:400;color:var(--muted)">/ 6
+                  months (1 sem)</span></div>
+              <div class="plan-equiv">Total: ₹15,12,232+ / year</div>
+              <div
+                style="font-size:0.75rem;color:#c084fc;margin-bottom:1.25rem;border-top:1px solid #1e293b;padding-top:0.4rem;">
+                Formula: <strong>₹13.62L Expenditure + Custom Modules</strong></div>
+              <div
+                style="font-size:0.7rem;font-weight:800;color:#c084fc;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">
+                🧩 TAILORED ENTERPRISE MODULES:</div>
+              <ul class="plan-list">
+                <li>✅ <strong>100% Custom Selection</strong>: Pick & pay for any module combo</li>
+                <li>🤖 <strong>Full AI Suite</strong>: Gemini RAG Assistant + AI Question Generator</li>
+                <li>📱 <strong>White-Label Native Mobile Apps</strong>: Custom branded for college</li>
+                <li>🔐 <strong>Multi-Tenant Data Security Vault</strong>: Enterprise tenant isolation & AES-256 encryption</li>
+                <li>⚡ <strong>Dedicated AWS Cluster & Storage</strong>: Multi-campus load balancing</li>
+              </ul>
+            </div>
+            <button class="btn-plan" onclick="openDemoModal()">Contact Sales</button>
+          </div>
+        </div>
+
+        <!-- DETAILED PLAN-BY-PLAN FEATURE COMPARISON TABLE -->
+        <div class="calculator-box" style="margin-bottom:3rem;">
+          <div style="text-align:center;margin-bottom:2rem;">
+            <span
+              style="font-size:0.7rem;font-weight:800;color:#818cf8;letter-spacing:0.12em;text-transform:uppercase;">📋
+              FEATURE-BY-FEATURE COMPARISON</span>
+            <h3 style="font-size:1.8rem;font-weight:800;margin-top:0.3rem;" class="text-gradient">Compare All Plans
+              Side-by-Side</h3>
+            <p style="font-size:0.85rem;color:var(--muted);max-width:600px;margin:0.5rem auto 0;">Detailed feature
+              availability matrix for Standard, Premium, and Customizable plans.</p>
+          </div>
+
+          <div style="overflow-x:auto;border-radius:1rem;border:1px solid var(--border);background:#020617;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left;">
+              <thead>
+                <tr style="background:#0f172a;color:#94a3b8;font-family:monospace;border-bottom:1px solid #1e293b;">
+                  <th style="padding:0.85rem 1rem;color:#fff;width:35%;">Feature</th>
+                  <th style="padding:0.85rem 1rem;text-align:center;color:#38bdf8;">🥉 Standard Plan<br /><small
+                      style="font-weight:400;color:#94a3b8;">₹6,93,616 / sem (₹13.62L Exp + ₹25k)</small></th>
+                  <th
+                    style="padding:0.85rem 1rem;text-align:center;color:#fbbf24;background:rgba(245,158,11,0.1);border-left:1px solid rgba(245,158,11,0.3);border-right:1px solid rgba(245,158,11,0.3);">
+                    🥈 Premium Plan ⭐<br /><small style="font-weight:400;color:#fbbf24;">₹7,18,616 / sem (₹13.62L Exp +
+                      ₹75k)</small></th>
+                  <th style="padding:0.85rem 1rem;text-align:center;color:#c084fc;">🥇 Customizable Plan<br /><small
+                      style="font-weight:400;color:#94a3b8;">₹7,56,116 / sem (₹13.62L Exp + Custom)</small></th>
+                </tr>
+              </thead>
+              <tbody style="color:#cbd5e1;">
+                <tr
+                  style="background:#0f172a;font-weight:800;color:#fbbf24;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;">
+                  <td colspan="4" style="padding:0.6rem 1rem;">👥 Capacity & Scale</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Max Students Supported</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;font-weight:700;color:#38bdf8;">5,000</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;font-weight:800;color:#fbbf24;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    10,000</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;font-weight:700;color:#c084fc;">10,000</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Max Faculty & Staff Accounts</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;">300</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;font-weight:800;color:#fbbf24;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    600</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;font-weight:700;color:#c084fc;">600</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Cloud File Storage</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;font-weight:700;color:#38bdf8;">2 TB</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;font-weight:800;color:#fbbf24;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    10 TB</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;font-weight:700;color:#c084fc;">10 TB</td>
+                </tr>
+
+                <tr
+                  style="background:#0f172a;font-weight:800;color:#818cf8;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;">
+                  <td colspan="4" style="padding:0.6rem 1rem;">🔐 Security & Authentication</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">JWT Token Authentication</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Google OAuth 2.0 Integration</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Two-Factor Authentication (OTP)</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">SSO / IP Whitelisting</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ❌</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+
+                <tr
+                  style="background:#0f172a;font-weight:800;color:#38bdf8;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;">
+                  <td colspan="4" style="padding:0.6rem 1rem;">📦 Core Institutional Modules</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Attendance Management</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Marks & Examination Entry</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Notice Board & Broadcasting</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Faculty & HOD Workspaces</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Geofencing & Facial Recognition (Faculty)</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);font-weight:700;">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;font-weight:700;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">OBE & CO-PO Attainment Engine ⭐</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;font-weight:700;">✅</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);font-weight:700;">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;font-weight:700;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Transport Fleet Management</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Library System & Cataloging</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Placement Cell & Pipeline</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Accounts & Fee Governance</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+
+                <tr
+                  style="background:#0f172a;font-weight:800;color:#c084fc;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;">
+                  <td colspan="4" style="padding:0.6rem 1rem;">⚡ Premium & Innovation Features</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Mobile App (PWA & Android)</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;font-weight:700;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;font-weight:800;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">AI Assistant (Google Gemini RAG)</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#34d399;font-weight:700;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ✅</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;font-weight:800;">✅</td>
+                </tr>
+
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">White Label Branding</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ❌</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e293b;">
+                  <td style="padding:0.75rem 1rem;">Multi-Campus Dashboard</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;">❌</td>
+                  <td
+                    style="padding:0.75rem 1rem;text-align:center;color:#f43f5e;background:rgba(245,158,11,0.05);border-left:1px solid rgba(245,158,11,0.2);border-right:1px solid rgba(245,158,11,0.2);">
+                    ❌</td>
+                  <td style="padding:0.75rem 1rem;text-align:center;color:#34d399;">✅</td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- DETAILED COST & OPERATIONAL OVERHEAD TRANSPARENCY TABLES -->
+        <div class="calculator-box" style="margin-top:3rem;">
+          <div style="text-align:center;margin-bottom:2rem;">
+            <span
+              style="font-size:0.7rem;font-weight:800;color:#f59e0b;letter-spacing:0.12em;text-transform:uppercase;">⚡
+              TRANSPARENT COST & OPERATIONS BREAKDOWN</span>
+            <h3 style="font-size:1.8rem;font-weight:800;margin-top:0.3rem;" class="text-gradient">Why ECAP ERP Pricing
+              Delivers High Value & Sustainability</h3>
+            <p style="font-size:0.85rem;color:var(--muted);max-width:640px;margin:0.5rem auto 0;">Our pricing covers AWS
+              Cloud Hosting infrastructure plus an active <strong>4-Member Dedicated Engineering Team</strong> providing
+              continuous maintenance, 24/7 monitoring, security updates, and NAAC ExcelJS compiler upgrades.</p>
+          </div>
+
+          <!-- TABLE 1: AWS CLOUD INFRASTRUCTURE -->
+          <div style="margin-bottom:2rem;">
+            <h4 style="font-size:0.9rem;font-weight:800;color:#f59e0b;margin-bottom:0.75rem;">☁️ Table 1: AWS
+              Infrastructure Cloud Service Costs</h4>
+            <div style="overflow-x:auto;border-radius:1rem;border:1px solid var(--border);background:#020617;">
+              <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left;">
+                <thead>
+                  <tr style="background:#0f172a;color:#94a3b8;font-family:monospace;border-bottom:1px solid #1e293b;">
+                    <th style="padding:0.75rem 1rem;">AWS Service</th>
+                    <th style="padding:0.75rem 1rem;">Purpose & Specification</th>
+                    <th style="padding:0.75rem 1rem;">USD / Month</th>
+                    <th style="padding:0.75rem 1rem;">INR / Month</th>
+                    <th style="padding:0.75rem 1rem;">INR / Year</th>
+                  </tr>
+                </thead>
+                <tbody style="font-family:monospace;color:#cbd5e1;">
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">EC2 t3.medium × 2</td>
+                    <td style="padding:0.75rem 1rem;font-family:sans-serif;color:#94a3b8;">Node.js Express Cluster (2
+                      Load-Balanced Instances)</td>
+                    <td style="padding:0.75rem 1rem;">$62.00</td>
+                    <td style="padding:0.75rem 1rem;">₹5,208</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹62,496</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">MongoDB Atlas M10 / PostgreSQL RDS</td>
+                    <td style="padding:0.75rem 1rem;font-family:sans-serif;color:#94a3b8;">Managed High-Availability
+                      Database (Mumbai ap-south-1)</td>
+                    <td style="padding:0.75rem 1rem;">$57.00</td>
+                    <td style="padding:0.75rem 1rem;">₹4,788</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹57,456</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Application Load Balancer</td>
+                    <td style="padding:0.75rem 1rem;font-family:sans-serif;color:#94a3b8;">AWS ALB Traffic Routing &
+                      Auto-Scaling Control</td>
+                    <td style="padding:0.75rem 1rem;">$18.00</td>
+                    <td style="padding:0.75rem 1rem;">₹1,512</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹18,144</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Amazon CloudFront CDN</td>
+                    <td style="padding:0.75rem 1rem;font-family:sans-serif;color:#94a3b8;">Global Edge Asset Caching &
+                      HTTPS SSL Accelerator</td>
+                    <td style="padding:0.75rem 1rem;">$7.00</td>
+                    <td style="padding:0.75rem 1rem;">₹588</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹7,056</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Amazon S3 Storage Vault</td>
+                    <td style="padding:0.75rem 1rem;font-family:sans-serif;color:#94a3b8;">PDF Bus Passes, Study
+                      Materials & Excel Exports Storage</td>
+                    <td style="padding:0.75rem 1rem;">$1.50</td>
+                    <td style="padding:0.75rem 1rem;">₹126</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹1,512</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Amazon SES & Route 53</td>
+                    <td style="padding:0.75rem 1rem;font-family:sans-serif;color:#94a3b8;">College Email OTP Dispatch
+                      (~10k emails) & DNS Routing</td>
+                    <td style="padding:0.75rem 1rem;">$2.00</td>
+                    <td style="padding:0.75rem 1rem;">₹168</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹2,016</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">CloudWatch & Secrets Manager</td>
+                    <td style="padding:0.75rem 1rem;font-family:sans-serif;color:#94a3b8;">24/7 Crash Alerts & Encrypted
+                      JWT / OAuth Key Vault</td>
+                    <td style="padding:0.75rem 1rem;">$6.50</td>
+                    <td style="padding:0.75rem 1rem;">₹546</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹6,552</td>
+                  </tr>
+                  <tr style="background:#0f172a;font-weight:800;color:#fff;">
+                    <td style="padding:0.85rem 1rem;" colspan="2">🔴 TOTAL AWS CLOUD INFRASTRUCTURE EXPENSE</td>
+                    <td style="padding:0.85rem 1rem;color:#38bdf8;">$154.00</td>
+                    <td style="padding:0.85rem 1rem;color:#38bdf8;">₹12,936</td>
+                    <td style="padding:0.85rem 1rem;color:#f59e0b;">₹1,55,232 / year</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TABLE 2: COMPLETE OPERATIONAL EXPENSES BREAKDOWN -->
+          <div style="margin-bottom:2rem;">
+            <h4 style="font-size:0.9rem;font-weight:800;color:#c084fc;margin-bottom:0.75rem;">📋 Table 2: Complete
+              Operational Overhead & Per-Student Cost Breakdown</h4>
+            <div style="overflow-x:auto;border-radius:1rem;border:1px solid var(--border);background:#020617;">
+              <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left;">
+                <thead>
+                  <tr style="background:#0f172a;color:#94a3b8;font-family:monospace;border-bottom:1px solid #1e293b;">
+                    <th style="padding:0.75rem 1rem;">Expense Head / Service</th>
+                    <th style="padding:0.75rem 1rem;">Scope & Operational Responsibility</th>
+                    <th style="padding:0.75rem 1rem;">Monthly Cost</th>
+                    <th style="padding:0.75rem 1rem;">Annual Expenses (INR)</th>
+                    <th style="padding:0.75rem 1rem;color:#fbbf24;">Per Student Cost / Year <small
+                        style="font-weight:400;color:#94a3b8;">(5k scale)</small></th>
+                  </tr>
+                </thead>
+                <tbody style="color:#cbd5e1;font-family:monospace;">
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">AWS Cloud Hosting Infrastructure</td>
+                    <td style="padding:0.75rem 1rem;color:#94a3b8;font-family:sans-serif;">EC2 Node.js Cluster, MongoDB
+                      Atlas, Load Balancer, CloudFront CDN, S3 Storage & Secrets</td>
+                    <td style="padding:0.75rem 1rem;color:#38bdf8;">₹12,936 / mo</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#38bdf8;">₹1,55,232 / year</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fbbf24;">₹31.04 / student / yr <small
+                        style="font-weight:400;color:#94a3b8;">(₹2.59/mo)</small></td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">Custom Domain & SSL Security</td>
+                    <td style="padding:0.75rem 1rem;color:#94a3b8;font-family:sans-serif;">Institutional Domain (.edu.in
+                      / .com), DNS Routing & Automated SSL Certificate Vault</td>
+                    <td style="padding:0.75rem 1rem;color:#34d399;">₹417 / mo</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#34d399;">₹5,000 / year</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fbbf24;">₹1.00 / student / yr <small
+                        style="font-weight:400;color:#94a3b8;">(₹0.08/mo)</small></td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">4-Member Engineering Team Salary</td>
+                    <td style="padding:0.75rem 1rem;color:#94a3b8;font-family:sans-serif;">Salary fund for 4 Dedicated
+                      Engineers (DevOps, MERN Dev, OBE Specialist, Client SLA Lead)</td>
+                    <td style="padding:0.75rem 1rem;color:#c084fc;">₹1,00,000 / mo</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#c084fc;">₹12,00,000 / year</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fbbf24;">₹240.00 / student / yr <small
+                        style="font-weight:400;color:#94a3b8;">(₹20.00/mo)</small></td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">SMS & OTP Gateway Dispatch</td>
+                    <td style="padding:0.75rem 1rem;color:#94a3b8;font-family:sans-serif;">Two-Factor Auth Login OTPs,
+                      Parent Attendance Broadcast Alerts & Emergency Notifications</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;">₹166 / mo</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fbbf24;">₹2,000 / year</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fbbf24;">₹0.40 / student / yr <small
+                        style="font-weight:400;color:#94a3b8;">(₹0.03/mo)</small></td>
+                  </tr>
+                  <tr style="background:#0f172a;font-weight:800;color:#fff;">
+                    <td style="padding:0.85rem 1rem;" colspan="2">🟣 TOTAL ANNUAL OPERATIONAL EXPENSES</td>
+                    <td style="padding:0.85rem 1rem;color:#38bdf8;">₹1,13,519 / mo</td>
+                    <td style="padding:0.85rem 1rem;font-family:monospace;color:#34d399;font-size:0.9rem;">₹13,62,232 /
+                      year</td>
+                    <td style="padding:0.85rem 1rem;font-family:monospace;color:#fbbf24;font-size:0.85rem;">₹272.44 /
+                      student / yr <small style="font-weight:400;color:#cbd5e1;">(₹22.70/mo)</small></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TABLE 3: REVENUE VS EXPENSES & NET PROFIT -->
+          <div>
+            <h4 style="font-size:0.9rem;font-weight:800;color:#34d399;margin-bottom:0.75rem;">📈 Table 3: Multi-Tenant
+              Revenue vs Expenses & Net Profit Breakdown</h4>
+            <div style="overflow-x:auto;border-radius:1rem;border:1px solid var(--border);background:#020617;">
+              <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left;">
+                <thead>
+                  <tr style="background:#0f172a;color:#94a3b8;font-family:monospace;border-bottom:1px solid #1e293b;">
+                    <th style="padding:0.75rem 1rem;">Client Scale</th>
+                    <th style="padding:0.75rem 1rem;">Annual Revenue</th>
+                    <th style="padding:0.75rem 1rem;">Total Operational Costs (AWS + Domain + Salary + SMS)</th>
+                    <th style="padding:0.75rem 1rem;">Net Annual Profit</th>
+                    <th style="padding:0.75rem 1rem;">Net Profit Margin</th>
+                  </tr>
+                </thead>
+                <tbody style="font-family:monospace;color:#cbd5e1;">
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">1 Client (Standard Plan 5,000 Students
+                      @ ₹100/sem)</td>
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fff;">₹10,00,000 / yr</td>
+                    <td style="padding:0.75rem 1rem;color:#94a3b8;">₹13,62,232 (AWS ₹1.55L + Domain ₹5k + Salary ₹12L +
+                      SMS ₹2k)</td>
+                    <td style="padding:0.75rem 1rem;color:#fbbf24;font-weight:700;">Subsidized Ops Cover</td>
+                    <td style="padding:0.75rem 1rem;color:#94a3b8;">Initial Infrastructure Phase</td>
+                  </tr>
+                  <tr style="background:rgba(16,185,129,0.1);border-bottom:1px solid #1e293b;">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#fbbf24;">5 Clients (Premium Plan 5,000
+                      Students @ ₹100/sem)</td>
+                    <td style="padding:0.75rem 1rem;font-weight:800;color:#38bdf8;">₹50,00,000 / yr</td>
+                    <td style="padding:0.75rem 1rem;color:#cbd5e1;">₹14,75,232 (AWS Scaled + Full Expenses)</td>
+                    <td style="padding:0.75rem 1rem;color:#34d399;font-weight:800;font-size:0.9rem;">₹35,24,768 / yr
+                    </td>
+                    <td style="padding:0.75rem 1rem;color:#34d399;font-weight:700;">70.5% Net Margin</td>
+                  </tr>
+                  <tr style="background:rgba(99,102,241,0.15);">
+                    <td style="padding:0.75rem 1rem;font-weight:700;color:#c084fc;">10 Clients (Premium Plan 5,000
+                      Students @ ₹100/sem)</td>
+                    <td style="padding:0.75rem 1rem;font-weight:800;color:#38bdf8;">₹1,00,00,000 / yr</td>
+                    <td style="padding:0.75rem 1rem;color:#cbd5e1;">₹15,25,232 (AWS Scaled + Team Ops)</td>
+                    <td style="padding:0.75rem 1rem;color:#34d399;font-weight:800;font-size:0.9rem;">₹84,74,768 / yr
+                    </td>
+                    <td style="padding:0.75rem 1rem;color:#34d399;font-weight:700;">84.7% Net Margin</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.75rem;font-family:sans-serif;">
+              💡 <strong>Per Student Cost Breakdown</strong>: Standard student billing is <strong>₹16.66 per student per
+                month</strong> (₹100/sem = ₹200/year). Complete operational overheads (AWS Cloud ₹2.59/mo + 4-Member
+              Engineering Team Salary ₹20.00/mo + Domain ₹0.08/mo + SMS ₹0.03/mo) total <strong>₹22.70 per student per
+                month</strong> (₹272.44/student/year).
+            </p>
+          </div>
+        </div>
+    </section>
+
+    <!-- FUTURISTIC INNOVATION ADD-ON MODULES SECTION -->
+    <section class="section" id="addons-showcase">
+      <div class="calculator-box" style="border-color: rgba(168, 85, 247, 0.4); background: rgba(15, 23, 42, 0.9);">
+        <div style="text-align:center;margin-bottom:2.5rem;">
+          <span style="font-size:0.7rem;font-weight:800;color:#c084fc;letter-spacing:0.12em;text-transform:uppercase;background:rgba(168,85,247,0.1);padding:0.25rem 0.85rem;border-radius:9999px;border:1px solid rgba(168,85,247,0.3);">
+            🚀 Futuristic Innovation Add-On Suite (12+ Modules)
+          </span>
+          <h2 style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight:800; margin-top:0.75rem;" class="text-gradient">
+            Extend Your Campus ERP With Next-Gen Innovations
+          </h2>
+          <p style="font-size:0.85rem;color:var(--muted);max-width:680px;margin:0.5rem auto 0;line-height:1.6;">
+            Plug-and-play add-on modules designed to digitize specialized campus operations, biometric gates, AI auto-grading, and predictive student risk analytics.
+          </p>
+        </div>
+
+        <div class="addons-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1.25rem;">
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">📇</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(6,182,212,0.1); color:#38bdf8; border:1px solid rgba(6,182,212,0.3);">Hardware IoT</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Smart RFID & Biometric Gate Access</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Automated campus turnstile entry logging with real-time SMS alerts to parents when students arrive or depart from campus gates.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹3,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🎓</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(168,85,247,0.1); color:#c084fc; border:1px solid rgba(168,85,247,0.3);">Placement & Alumni</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Alumni Network & Placement Portal</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Alumni directory registry, job posting board, mentorship scheduling, and institutional donation vault with tax receipt generator.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹2,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🏢</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(16,185,129,0.1); color:#34d399; border:1px solid rgba(16,185,129,0.3);">Hostel & Mess</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Hostel, Mess & Out-Pass Workflow</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Digital student out-pass approval system, room allotment, mess attendance tracking, and warden emergency alert notifications.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹3,499 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🩺</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(244,63,94,0.1); color:#fb7185; border:1px solid rgba(244,63,94,0.3);">Health Vault</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Campus Health & Medical Vault</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Student emergency blood group database, campus doctor visit logs, prescription archives, and instant parent emergency call alerts.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹1,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">📜</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(99,102,241,0.1); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">Blockchain Security</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Blockchain Certificate Verification</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Tamper-proof digital degree & mark sheet hashing stored on blockchain ledger for instant global background check verification.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹4,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">👁️</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(245,158,11,0.1); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">AI Biometrics</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Biometric Face Recognition AI</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Touchless camera-based facial attendance logging for classrooms and examination halls with proxy attendance detection.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹4,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🔬</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(6,182,212,0.1); color:#38bdf8; border:1px solid rgba(6,182,212,0.3);">R&D Governance</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Research Projects & Grant System</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Faculty research funding management, patent application tracking, research journal submissions, and NIRF publication metrics.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹2,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🚌</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(16,185,129,0.1); color:#34d399; border:1px solid rgba(16,185,129,0.3);">GPS Telemetry</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Real-Time Bus GPS Tracking Pass</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Live GPS bus tracking on mobile app, automated arrival notifications for students/parents, and digital QR bus pass verification.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹2,499 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">📝</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(168,85,247,0.1); color:#c084fc; border:1px solid rgba(168,85,247,0.3);">AI Exam Engine</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">AI Question Paper & Auto-Grader</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Bloom's taxonomy question paper generator, automated optical answer script evaluation, and rubric-based CIE marking.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹4,499 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🏆</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(245,158,11,0.1); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">Sports & Clubs</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Sports & Extra-Curricular Portal</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Inter-college tournament registrations, sports quota mark allocations, club activity logs, and digital merit certificates.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹1,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🛡️</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(244,63,94,0.1); color:#fb7185; border:1px solid rgba(244,63,94,0.3);">Cyber SOC</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Cybersecurity SOC & Threat Audit</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Real-time threat monitoring dashboard, automated IP brute-force blocking, vulnerability auditing, and compliance reporting.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹3,999 / year</span>
+            </div>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border); display:flex; flex-direction:column; justify-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-size:1.6rem;">🔮</span>
+                <span style="font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:9999px; background:rgba(99,102,241,0.1); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">ML Predictive AI</span>
+              </div>
+              <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">ML Student Dropout Risk Analytics</h3>
+              <p style="font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;">
+                Machine learning predictive early-warning model flagging at-risk students based on attendance patterns & CIE performance trends.
+              </p>
+            </div>
+            <div style="padding-top:0.75rem; border-top:1px solid rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; font-family:monospace;">
+              <span style="color:var(--muted);">Budget Rate:</span>
+              <span style="color:#fbbf24; font-weight:700;">₹3,499 / year</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA & PROJECT SECURITY ARCHITECTURE SECTION -->
+    <section class="section" id="security">
+      <div class="calculator-box" style="border-color: rgba(16, 185, 129, 0.4); background: rgba(15, 23, 42, 0.9);">
+        <div style="text-align:center;margin-bottom:2.5rem;">
+          <span style="font-size:0.7rem;font-weight:800;color:#34d399;letter-spacing:0.12em;text-transform:uppercase;background:rgba(16,185,129,0.1);padding:0.25rem 0.85rem;border-radius:9999px;border:1px solid rgba(16,185,129,0.3);">
+            🛡️ Enterprise Security & Data Governance
+          </span>
+          <h2 style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight:800; margin-top:0.75rem;" class="text-gradient">
+            Institutional Data & Project Security Infrastructure
+          </h2>
+          <p style="font-size:0.85rem;color:var(--muted);max-width:680px;margin:0.5rem auto 0;line-height:1.6;">
+            Bank-grade encryption, zero-trust RBAC access controls, automated cloud backups, and multi-tenant data isolation engineered into every layer of ECAP ERP.
+          </p>
+        </div>
+
+        <div class="addons-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1.25rem;">
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; margin-bottom:0.75rem;">🛡️</div>
+            <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">JWT & RBAC Access Control</h3>
+            <p style="font-size:0.78rem; color:var(--muted); line-height:1.6;">
+              Stateless JSON Web Tokens with cryptographic signatures. Strict Role-Based Access Control (RBAC) isolates permissions for Admin, Principal, HOD, Faculty, Student, and Parent accounts.
+            </p>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; margin-bottom:0.75rem;">🔐</div>
+            <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">TLS 1.3 & AES-256 Encryption</h3>
+            <p style="font-size:0.78rem; color:var(--muted); line-height:1.6;">
+              256-bit SSL/TLS end-to-end encryption for all web and API traffic. Database records and sensitive documents are protected with hardware-level AES-256 data-at-rest encryption.
+            </p>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; margin-bottom:0.75rem;">🏰</div>
+            <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Multi-Tenant Data Isolation</h3>
+            <p style="font-size:0.78rem; color:var(--muted); line-height:1.6;">
+              Logical multi-tenancy with mandatory tenant key scoping prevents cross-institutional data leakage. Each institution operates in an isolated secure namespace.
+            </p>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; margin-bottom:0.75rem;">💾</div>
+            <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Automated Hourly Cloud Backups</h3>
+            <p style="font-size:0.78rem; color:var(--muted); line-height:1.6;">
+              Continuous point-in-time recovery with automated hourly snapshots archived to AWS S3 Glacier Object Vault with 99.999999999% (11 9s) data durability.
+            </p>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; margin-bottom:0.75rem;">🔑</div>
+            <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Bcrypt Hashing & Secrets Vault</h3>
+            <p style="font-size:0.78rem; color:var(--muted); line-height:1.6;">
+              Password security with salted Bcrypt hashing (12 rounds). Zero plaintext storage. AWS Secrets Manager securely handles database credentials and API tokens.
+            </p>
+          </div>
+
+          <div style="padding:1.5rem; border-radius:1rem; background:#020617; border:1px solid var(--border);">
+            <div style="font-size:1.8rem; margin-bottom:0.75rem;">⚡</div>
+            <h3 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">DDoS Protection & Audit Logs</h3>
+            <p style="font-size:0.78rem; color:var(--muted); line-height:1.6;">
+              AWS WAF and Shield protect Node.js server endpoints from malicious volumetric DDoS attacks, SQL/NoSQL injection, and XSS exploits while logging full audit trails.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLATFORM BENCHMARK COMPARISON SECTION -->
+    <section class="section" id="comparison">
+      <div class="calculator-box" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(15, 23, 42, 0.9);">
+        <div style="text-align:center;margin-bottom:2.5rem;">
+          <span style="font-size:0.7rem;font-weight:800;color:#fbbf24;letter-spacing:0.12em;text-transform:uppercase;background:rgba(245,158,11,0.1);padding:0.25rem 0.85rem;border-radius:9999px;border:1px solid rgba(245,158,11,0.3);">
+            🏆 Architectural Superiority Benchmark
+          </span>
+          <h2 style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight:800; margin-top:0.75rem;" class="text-gradient">
+            Why ECAP ERP Outperforms Traditional Campus ERP Systems
+          </h2>
+          <p style="font-size:0.85rem;color:var(--muted);max-width:680px;margin:0.5rem auto 0;line-height:1.6;">
+            A side-by-side technical evaluation highlighting the modern AI, OBE automation, and cost advantages of our next-gen platform against legacy software.
+          </p>
+        </div>
+
+        <div style="overflow-x:auto;border-radius:1rem;border:1px solid var(--border);background:#020617;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left;">
+            <thead>
+              <tr style="background:#0f172a;color:#94a3b8;font-family:monospace;border-bottom:1px solid #1e293b;">
+                <th style="padding:1rem;width:25%;">Evaluation Category</th>
+                <th style="padding:1rem;width:37.5%;color:#34d399;background:rgba(16,185,129,0.1);border-left:1px solid rgba(16,185,129,0.3);border-right:1px solid rgba(16,185,129,0.3);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-weight:800;font-size:0.9rem;color:#fff;">🚀 ECAP ERP System</span>
+                    <span style="font-size:0.65rem;font-weight:800;background:#10b981;color:#020617;padding:0.15rem 0.5rem;border-radius:9999px;text-transform:uppercase;">⭐ OUR PROJECT</span>
+                  </div>
+                </th>
+                <th style="padding:1rem;width:37.5%;color:#94a3b8;">
+                  <span style="font-weight:800;font-size:0.9rem;color:#cbd5e1;">🏢 Traditional / Legacy Campus ERPs</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody style="color:#cbd5e1;">
+              <tr style="border-bottom:1px solid #1e293b;">
+                <td style="padding:1rem;font-weight:700;color:#fff;">OBE & CO-PO Attainment</td>
+                <td style="padding:1rem;background:rgba(16,185,129,0.05);border-left:1px solid rgba(16,185,129,0.2);border-right:1px solid rgba(16,185,129,0.2);color:#34d399;">
+                  <strong>✅ Automated 7-Sheet ExcelJS Engine</strong>: Zero-formula calculation, instant CO-PO attainment mapping & direct NAAC/NBA exports.
+                </td>
+                <td style="padding:1rem;color:#94a3b8;">
+                  <span style="color:#f43f5e;font-weight:700;">❌ Manual Spreadsheet Entry</span>: High risk of human formula error, tedious manual calculation, no direct NBA mapping.
+                </td>
+              </tr>
+              <tr style="border-bottom:1px solid #1e293b;">
+                <td style="padding:1rem;font-weight:700;color:#fff;">Artificial Intelligence (AI)</td>
+                <td style="padding:1rem;background:rgba(16,185,129,0.05);border-left:1px solid rgba(16,185,129,0.2);border-right:1px solid rgba(16,185,129,0.2);color:#34d399;">
+                  <strong>✅ Integrated Google Gemini AI Tutors</strong>: RAG-based 24/7 student query resolution, AI question generator & intelligent insights.
+                </td>
+                <td style="padding:1rem;color:#94a3b8;">
+                  <span style="color:#f43f5e;font-weight:700;">❌ No Built-In AI Intelligence</span>: Static forms, slow ticket-based manual support, zero automated tutoring.
+                </td>
+              </tr>
+              <tr style="border-bottom:1px solid #1e293b;">
+                <td style="padding:1rem;font-weight:700;color:#fff;">Pricing Transparency & ROI</td>
+                <td style="padding:1rem;background:rgba(16,185,129,0.05);border-left:1px solid rgba(16,185,129,0.2);border-right:1px solid rgba(16,185,129,0.2);color:#34d399;">
+                  <strong>✅ ₹22.70 / student / month (₹272.44/yr)</strong>: Transparent operational overhead model including AWS cloud + 4-member SLA engineering team.
+                </td>
+                <td style="padding:1rem;color:#94a3b8;">
+                  <span style="color:#f43f5e;font-weight:700;">❌ Expensive Per-User Licensing</span>: Opaque pricing, expensive annual maintenance contracts (AMC), hidden per-module fees.
+                </td>
+              </tr>
+              <tr style="border-bottom:1px solid #1e293b;">
+                <td style="padding:1rem;font-weight:700;color:#fff;">Mobile & Transport Pass</td>
+                <td style="padding:1rem;background:rgba(16,185,129,0.05);border-left:1px solid rgba(16,185,129,0.2);border-right:1px solid rgba(16,185,129,0.2);color:#34d399;">
+                  <strong>✅ Native Android & PWA Mobile Apps</strong>: Real-time push notifications, digital bus pass with QR validation & parent tracking.
+                </td>
+                <td style="padding:1rem;color:#94a3b8;">
+                  <span style="color:#f43f5e;font-weight:700;">❌ Desktop-Only Web Interface</span>: Non-responsive mobile access, no native app push notifications or digital bus passes.
+                </td>
+              </tr>
+              <tr style="border-bottom:1px solid #1e293b;">
+                <td style="padding:1rem;font-weight:700;color:#fff;">Cloud Hosting & Scalability</td>
+                <td style="padding:1rem;background:rgba(16,185,129,0.05);border-left:1px solid rgba(16,185,129,0.2);border-right:1px solid rgba(16,185,129,0.2);color:#34d399;">
+                  <strong>✅ AWS Multi-Tenant Cloud Architecture</strong>: Load-balanced EC2 cluster, 99.9% uptime SLA, automated hourly backups & 10 TB storage.
+                </td>
+                <td style="padding:1rem;color:#94a3b8;">
+                  <span style="color:#f43f5e;font-weight:700;">❌ On-Premise Legacy Servers</span>: High risk of server crashes during exam result releases, manual server maintenance.
+                </td>
+              </tr>
+              <tr style="border-bottom:1px solid #1e293b;">
+                <td style="padding:1rem;font-weight:700;color:#fff;">Dedicated Support SLA</td>
+                <td style="padding:1rem;background:rgba(16,185,129,0.05);border-left:1px solid rgba(16,185,129,0.2);border-right:1px solid rgba(16,185,129,0.2);color:#34d399;">
+                  <strong>✅ 4-Member Dedicated Engineering SLA Team</strong>: Active DevOps, MERN dev, OBE specialist & client lead with 24/7 monitoring.
+                </td>
+                <td style="padding:1rem;color:#94a3b8;">
+                  <span style="color:#f43f5e;font-weight:700;">❌ Slow Support Resolution</span>: Days/weeks for ticket resolution, extra charges for custom features and upgrades.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="border-top:1px solid var(--border);padding:2.5rem 1.5rem;text-align:center;background:#020617;">
+      <div style="font-size:1.25rem;font-weight:800;margin-bottom:0.5rem;" class="text-gradient">ECAP ERP</div>
+      <p style="font-size:0.8rem;color:var(--muted);">Educational Campus Administration Portal — Developed by Laxmi
+        Ganji</p>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem;">© 2026 ECAP-SPHN. All rights reserved.</p>
+    </footer>
+
+  </div>
+
+  <!-- MODULE DETAIL MODAL POPUP -->
+  <div class="modal-overlay" id="moduleModal">
+    <div class="modal-box" id="moduleModalBox">
+      <!-- Dynamically filled module content -->
+    </div>
+  </div>
+
+  <!-- INQUIRY MODAL -->
+  <div class="modal-overlay" id="demoModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeDemoModal()">✕</button>
+      <h3 style="font-size:1.4rem;font-weight:800;margin-bottom:0.5rem;">Schedule Commercial Demo</h3>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem;">Submit your institution details for custom
+        pricing quotes and feature walkthroughs.</p>
+
+      <form onsubmit="handleFormSubmit(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" required class="form-control" placeholder="Dr. Robert Smith" />
+        </div>
+        <div class="form-group">
+          <label>Institution Name</label>
+          <input type="text" required class="form-control" placeholder="Engineering College Name" />
+        </div>
+        <div class="form-group">
+          <label>Official Email</label>
+          <input type="email" required class="form-control" placeholder="principal@institution.edu" />
+        </div>
+        <div class="form-group">
+          <label>Selected Plan</label>
+          <select class="form-control">
+            <option>Standard Plan: Includes Core Modules & Web Portal</option>
+            <option>Premium Plan: All Modules + Native Android App & AI Assistant</option>
+            <option>Customizable Plan: À la Carte Modules & Custom Campus Scale</option>
+            <option>Custom Add-on Module Plan</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;margin-top:0.5rem;">Submit Commercial
+          Inquiry</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3D CANVAS & INTERACTIVE LOGIC SCRIPT -->
+  <script>
+    // -------------------------------------------------------------
+    // MODULE DATA DEFINITIONS (WITH FULL CAPABILITIES & KPIS)
+    // -------------------------------------------------------------
+    const modulesData = [
+      {
+        id: "obe",
+        category: "academic",
+        badge: "Core USP",
+        badgeClass: "badge-amber",
+        icon: "📊",
+        title: "OBE Attainment & Excel Engine",
+        tagline: "Automated NAAC/NBA Accreditation Excel Report Compiler",
+        description: "Revolutionary Outcome-Based Education (OBE) module that recalculates 80% direct exam attainment and 20% indirect Course End Survey levels in real-time. Features native ExcelJS chart compilation producing 7-sheet formula workbooks.",
+        highlights: [
+          "Dynamic 80:20 Direct & Indirect Attainment calculation engine",
+          "CO-PO & PSO Mapping strength matrix (1: Weak, 2: Medium, 3: Strong)",
+          "Pre-filled IA1, IA2 & SEE split template export/import",
+          "Native Excel chart generation with zero formulas broken",
+          "Automated Gap Analysis & CAYm1 Action Plan compilation"
+        ],
+        kpi: "98% Reduction in NAAC Audit Prep Time"
+      },
+      {
+        id: "rag",
+        category: "ai",
+        badge: "AI Powered",
+        badgeClass: "badge-emerald",
+        icon: "🤖",
+        title: "AI RAG Library Assistant",
+        tagline: "Natural Language Vector Document Query Engine",
+        description: "Integrated Retrieval Augmented Generation (RAG) assistant leveraging Pinecone vector embeddings and Google Gemini AI. Students and faculty ask natural language questions about syllabus, past papers, and reference books.",
+        highlights: [
+          "Vector search powered by Pinecone & Google Gemini AI",
+          "Sub-second document snippet retrieval across thousands of books",
+          "Filter by Branch, Subject, Regulation, and Document Category",
+          "Instant citation links pointing directly to source pages",
+          "24/7 AI tutor for students and research support for faculty"
+        ],
+        kpi: "3.5x Faster Research & Material Discovery"
+      },
+      {
+        id: "principal",
+        category: "admin",
+        badge: "Executive",
+        badgeClass: "badge-indigo",
+        icon: "👤",
+        title: "Principal & Executive Console",
+        tagline: "Institutional Bird's-Eye Dashboard & Compliance Monitor",
+        description: "High-level executive cockpit giving campus leaders instant visibility into overall attendance percentages, pass rates, accreditation readiness, faculty workloads, and financial metrics across all departments.",
+        highlights: [
+          "Real-time institutional attendance & mark trends",
+          "Department-wise performance benchmarks and comparative charts",
+          "NAAC/NBA accreditation audit compliance scorecards",
+          "Global Notice broadcasting & critical alert escalation",
+          "Cross-departmental faculty substitution oversight"
+        ],
+        kpi: "100% Executive Governance Transparency"
+      },
+      {
+        id: "hod",
+        category: "academic",
+        badge: "Departmental",
+        badgeClass: "badge-cyan",
+        icon: "🎓",
+        title: "HOD Workspace & Substitution",
+        tagline: "Automated Workload & Class Substitution Routing",
+        description: "Department heads can review and approve faculty leave applications while automatically assigning substitute teachers to prevent lost class hours. Features departmental timetables, subject allocation, and student rosters.",
+        highlights: [
+          "Smart faculty leave approval workflow with substitution check",
+          "Real-time class period coverage & conflict detection",
+          "Departmental attendance & mark override approvals",
+          "Course outcome target setting & CES survey reviews",
+          "Automated faculty performance metrics"
+        ],
+        kpi: "Zero Unassigned Class Periods"
+      },
+      {
+        id: "faculty",
+        category: "academic",
+        badge: "Faculty Core",
+        badgeClass: "badge-purple",
+        icon: "👨‍🏫",
+        title: "Faculty Workspace & Marks",
+        tagline: "Streamlined Attendance, Excel Marks & Study Material Hub",
+        description: "Empowers teachers with rapid daily attendance logging, one-click absentee marking, bulk Excel marks import with validation, study material uploads (PDFs, links, notes), and personalized class timetables.",
+        highlights: [
+          "Instant daily attendance tracker with percentage calculation",
+          "Bulk Excel mark import with automatic max mark boundary validation",
+          "Question-wise CO mapping for internal and assignment tests",
+          "Study Material Repository with student download statistics",
+          "Personal leave management with substitute request routing"
+        ],
+        kpi: "15+ Hours Saved Per Faculty Monthly"
+      },
+      {
+        id: "geofence_faculty",
+        category: "ai",
+        badge: "Faculty Security AI",
+        badgeClass: "badge-emerald",
+        icon: "🛰️",
+        title: "Faculty Geofence & Face AI Attendance",
+        tagline: "GPS Location Geofencing & Touchless AI Facial Recognition",
+        description: "Enforces tamper-proof faculty attendance logging with campus boundary GPS geofencing radius validation and real-time AI biometric face match verification.",
+        highlights: [
+          "🛰️ Campus boundary GPS geofence radius check-in for faculty",
+          "🎯 Touchless AI biometric face match verification",
+          "🚫 Anti-spoofing & proxy attendance prevention engine",
+          "📊 Real-time HOD dashboard & automated leave reconciliation"
+        ],
+        kpi: "100% Location-Verified Faculty Attendance"
+      },
+      {
+        id: "student",
+        category: "portal",
+        badge: "Student Hub",
+        badgeClass: "badge-cyan",
+        icon: "👨‍🎓",
+        title: "Student Portal & Parent View",
+        tagline: "Interactive Dashboard, Parent Magic-Link & Pass Center",
+        description: "Centralized portal for students to track subject-wise attendance, view mark sheets, download study materials, apply for placement drives, and generate digital bus passes. Includes secure tokenized parent view.",
+        highlights: [
+          "Real-time attendance percentage alerts & deficit warnings",
+          "Subject-wise marks & internal assessment gradebook",
+          "Magic-token secure Parent Portal requiring zero registration hassle",
+          "Digital Bus Pass viewer with live route & seat status",
+          "Direct access to AI RAG Library Assistant"
+        ],
+        kpi: "95% Active Daily Student Engagement"
+      },
+      {
+        id: "transport",
+        category: "services",
+        badge: "Logistics",
+        badgeClass: "badge-amber",
+        icon: "🚍",
+        title: "Smart Transport Management",
+        tagline: "Bus Route Stop Builder, Seat Count & Pass Generator",
+        description: "Comprehensive campus fleet manager allowing admins to configure routes, stops, and dynamic fares. Students select stops, submit fee payment references, and download verified digital bus passes.",
+        highlights: [
+          "Dynamic route, stop, and distance-based fare tiering",
+          "Real-time seat capacity reservation & availability counters",
+          "Transport Admin payment verification console",
+          "Automated Digital QR Bus Pass generation",
+          "Student transport fee logging & breakdown"
+        ],
+        kpi: "100% Digital Fleet Pass Accounting"
+      },
+      {
+        id: "placement",
+        category: "services",
+        badge: "Career Hub",
+        badgeClass: "badge-rose",
+        icon: "💼",
+        title: "Placement Cell & Drive Tracking",
+        tagline: "Corporate Recruitment Publisher & Candidate Pipeline",
+        description: "Streamlines campus placement drives. Placement officers post company profiles, eligibility criteria (min CGPA, backlogs), CTC packages, and manage multi-stage interview selection rounds.",
+        highlights: [
+          "One-click job drive posting with branch & CGPA filters",
+          "Student application portal with automated eligibility checks",
+          "Multi-stage interview round tracking (Aptitude, Tech, HR)",
+          "Offer letter logging & company placement statistics",
+          "Placement analytics for NAAC/NIRF reporting"
+        ],
+        kpi: "30% Increase in Placement Speed"
+      },
+      {
+        id: "library",
+        category: "services",
+        badge: "Digital Catalog",
+        badgeClass: "badge-cyan",
+        icon: "📚",
+        title: "Library System & Cataloging",
+        tagline: "Book Circulation Ledger, Newspaper & Overdue Alerts",
+        description: "Digital library management tracking book inventory, authors, ISBN numbers, borrow requests, issue dates, and return deadlines. Integrated with the AI RAG Assistant for content searching.",
+        highlights: [
+          "Comprehensive book cataloging with quantity & edition control",
+          "Student checkout console with live overdue calculation",
+          "Newspaper & periodic subscription logging",
+          "Barcode/Accession number lookup",
+          "AI RAG index sync for automatic document embedding"
+        ],
+        kpi: "Zero Lost Book Records"
+      },
+      {
+        id: "accounts",
+        category: "admin",
+        badge: "Governance",
+        badgeClass: "badge-rose",
+        icon: "💳",
+        title: "Accounts & Fee Governance",
+        tagline: "Centralized Academic & Transport Fee Reconciliation",
+        description: "Complete financial administration workspace for tracking tuition fees, transport fees, payment reference verification, invoice generation, and pending fee reminders.",
+        highlights: [
+          "Multi-tier fee structure configuration (Branch/Regulation/Transport)",
+          "Student payment reference approval workflow",
+          "Automated fee receipt generation & payment ledger",
+          "Pending fee alerts sent directly to parent portal",
+          "Financial reporting export for campus audits"
+        ],
+        kpi: "100% Audited Fee Collection Accuracy"
+      }
+    ];
+
+    // Category Tabs Configuration
+    const categories = [
+      { id: "all", label: "All 11 Modules" },
+      { id: "academic", label: "Academic & OBE" },
+      { id: "admin", label: "Admin & Executive" },
+      { id: "ai", label: "AI & Innovation" },
+      { id: "services", label: "Campus Services" },
+      { id: "portal", label: "Student & Parent" }
+    ];
+
+    let activeCategory = "all";
+
+    function renderCategoryTabs() {
+      const container = document.getElementById("catTabsContainer");
+      container.innerHTML = categories.map(cat => `
+        <button class="cat-tab-btn ${activeCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')">
+          ${cat.label}
+        </button>
+      `).join("");
+    }
+
+    function setCategory(catId) {
+      activeCategory = catId;
+      renderCategoryTabs();
+      renderModules();
+    }
+
+    function renderModules() {
+      const filtered = activeCategory === "all" ? modulesData : modulesData.filter(m => m.category === activeCategory);
+      const container = document.getElementById("modulesContainer");
+
+      container.innerHTML = filtered.map(mod => `
+        <div class="module-card" onclick="openModuleModal('${mod.id}')">
+          <div>
+            <div class="mod-top">
+              <div class="mod-icon-box">${mod.icon}</div>
+              <span class="mod-badge ${mod.badgeClass}">${mod.badge}</span>
+            </div>
+            <h3 class="mod-title">${mod.title}</h3>
+            <p class="mod-tag">${mod.tagline}</p>
+            <p class="mod-desc">${mod.description}</p>
+          </div>
+          <div class="mod-footer">
+            <span class="mod-kpi">${mod.kpi}</span>
+            <span class="mod-details-link">Details →</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openModuleModal(modId) {
+      const mod = modulesData.find(m => m.id === modId);
+      if (!mod) return;
+
+      const modalBox = document.getElementById("moduleModalBox");
+      modalBox.innerHTML = `
+        <button class="modal-close" onclick="closeModuleModal()">✕</button>
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+          <div style="font-size:2.2rem;background:#1e293b;padding:0.75rem;border-radius:1rem;">${mod.icon}</div>
+          <div>
+            <span class="mod-badge ${mod.badgeClass}" style="margin-bottom:0.2rem;">${mod.badge}</span>
+            <h3 style="font-size:1.4rem;font-weight:800;">${mod.title}</h3>
+          </div>
+        </div>
+
+        <p style="font-size:0.85rem;font-weight:700;color:#818cf8;margin-bottom:0.75rem;">${mod.tagline}</p>
+        <p style="font-size:0.82rem;color:#cbd5e1;line-height:1.6;margin-bottom:1.5rem;">${mod.description}</p>
+
+        <div style="margin-bottom:1.5rem;">
+          <h4 style="font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:0.75rem;">Core Capabilities:</h4>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            ${mod.highlights.map(h => `
+              <div style="font-size:0.82rem;color:#e2e8f0;display:flex;align-items:start;gap:0.5rem;">
+                <span style="color:#34d399;">✓</span>
+                <span>${h}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <div style="padding:1rem;background:#020617;border-radius:0.85rem;border:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <span style="font-size:0.78rem;color:#94a3b8;">Key Metric / USP:</span>
+          <span style="font-size:0.85rem;font-weight:800;color:#818cf8;font-family:monospace;">${mod.kpi}</span>
+        </div>
+
+        <button class="btn-primary" style="width:100%;" onclick="closeModuleModal(); openDemoModal();">Inquire About This Module</button>
+      `;
+
+      document.getElementById("moduleModal").classList.add("active");
+    }
+
+    function closeModuleModal() {
+      document.getElementById("moduleModal").classList.remove("active");
+    }
+
+    renderCategoryTabs();
+    renderModules();
+
+    // -------------------------------------------------------------
+    // 3D CANVAS ENGINE (Floating Books, Buses, Laptops, Caps, Cubes)
+    // -------------------------------------------------------------
+    const canvas = document.getElementById("canvas3d");
+    const ctx = canvas.getContext("2d");
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    window.addEventListener("resize", () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    let mouseX = 0, mouseY = 0;
+    let targetMouseX = 0, targetMouseY = 0;
+    let cameraRotY = 0, cameraRotX = 0;
+
+    window.addEventListener("mousemove", (e) => {
+      targetMouseX = (e.clientX - width / 2) * 0.35;
+      targetMouseY = (e.clientY - height / 2) * 0.35;
+    });
+    window.addEventListener("touchmove", (e) => {
+      if (e.touches && e.touches[0]) {
+        targetMouseX = (e.touches[0].clientX - width / 2) * 0.35;
+        targetMouseY = (e.touches[0].clientY - height / 2) * 0.35;
+      }
+    });
+
+    const types = ["book", "bus", "laptop", "cap", "cube"];
+    const isMobile = width < 640;
+    const numObjects = isMobile ? 24 : 42;
+
+    const objects3D = Array.from({ length: numObjects }, (_, i) => {
+      const type = types[i % types.length];
+      return {
+        type,
+        x: (Math.random() - 0.5) * (isMobile ? 1000 : 1700),
+        y: (Math.random() - 0.5) * (isMobile ? 1000 : 1300),
+        z: Math.random() * 1200 - 300,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        vz: (Math.random() - 0.5) * 0.4,
+        rotX: Math.random() * Math.PI * 2,
+        rotY: Math.random() * Math.PI * 2,
+        rotZ: Math.random() * Math.PI * 2,
+        vRotX: (Math.random() - 0.5) * 0.016,
+        vRotY: (Math.random() - 0.5) * 0.016,
+        vRotZ: (Math.random() - 0.5) * 0.016,
+        size: isMobile ? Math.random() * 12 + 16 : Math.random() * 18 + 24,
+        color: type === "book" ? "#38bdf8" : type === "bus" ? "#f59e0b" : type === "laptop" ? "#818cf8" : type === "cap" ? "#c084fc" : "#34d399"
+      };
+    });
+
+    function project3D(x, y, z, cx, cy, fov) {
+      let cosY = Math.cos(cameraRotY), sinY = Math.sin(cameraRotY);
+      let cosX = Math.cos(cameraRotX), sinX = Math.sin(cameraRotX);
+      let x1 = x * cosY - z * sinY;
+      let z1 = z * cosY + x * sinY;
+      let y1 = y * cosX - z1 * sinX;
+      let z2 = z1 * cosX + y * sinX;
+      const depth = z2 + 850;
+      if (depth <= 10) return null;
+      const scale = fov / depth;
+      return { x: cx + x1 * scale, y: cy + y1 * scale, scale, depth };
+    }
+
+    function drawBook(ctx, screenP, obj) {
+      const s = obj.size * screenP.scale;
+      ctx.save();
+      ctx.translate(screenP.x, screenP.y);
+      const angle = obj.rotY;
+      const cosA = Math.cos(angle);
+      const width2 = s * cosA;
+      ctx.fillStyle = obj.color;
+      ctx.shadowBlur = 12 * screenP.scale;
+      ctx.shadowColor = obj.color;
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.6);
+      ctx.lineTo(-width2, -s * 0.5);
+      ctx.lineTo(-width2, s * 0.5);
+      ctx.lineTo(0, s * 0.6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.6);
+      ctx.lineTo(width2, -s * 0.5);
+      ctx.lineTo(width2, s * 0.5);
+      ctx.lineTo(0, s * 0.6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.52);
+      ctx.lineTo(-width2 * 0.88, -s * 0.44);
+      ctx.lineTo(-width2 * 0.88, s * 0.44);
+      ctx.lineTo(0, s * 0.52);
+      ctx.lineTo(width2 * 0.88, s * 0.44);
+      ctx.lineTo(width2 * 0.88, -s * 0.44);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.2 * screenP.scale;
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.6);
+      ctx.lineTo(0, s * 0.6);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawBus(ctx, screenP, obj) {
+      const s = obj.size * 1.25 * screenP.scale;
+      ctx.save();
+      ctx.translate(screenP.x, screenP.y);
+      ctx.fillStyle = obj.color;
+      ctx.shadowBlur = 14 * screenP.scale;
+      ctx.shadowColor = obj.color;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-s * 0.8, -s * 0.4, s * 1.6, s * 0.8, 5 * screenP.scale);
+      else ctx.rect(-s * 0.8, -s * 0.4, s * 1.6, s * 0.8);
+      ctx.fill();
+      ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+      ctx.fillRect(-s * 0.7, -s * 0.3, s * 0.35, s * 0.28);
+      ctx.fillRect(-s * 0.25, -s * 0.3, s * 0.4, s * 0.25);
+      ctx.fillRect(s * 0.25, -s * 0.3, s * 0.4, s * 0.25);
+      ctx.fillStyle = "rgba(254, 240, 138, 0.5)";
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.8, -s * 0.1);
+      ctx.lineTo(-s * 1.45, -s * 0.3);
+      ctx.lineTo(-s * 1.45, s * 0.2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.arc(-s * 0.45, s * 0.4, s * 0.18, 0, Math.PI * 2);
+      ctx.arc(s * 0.45, s * 0.4, s * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawLaptop(ctx, screenP, obj) {
+      const s = obj.size * screenP.scale;
+      ctx.save();
+      ctx.translate(screenP.x, screenP.y);
+      ctx.shadowBlur = 14 * screenP.scale;
+      ctx.shadowColor = obj.color;
+      ctx.fillStyle = "#1e293b";
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = 1.8 * screenP.scale;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-s * 0.7, -s * 0.6, s * 1.4, s * 0.9, 4 * screenP.scale);
+      else ctx.rect(-s * 0.7, -s * 0.6, s * 1.4, s * 0.9);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#020617";
+      ctx.fillRect(-s * 0.62, -s * 0.52, s * 1.24, s * 0.74);
+      ctx.fillStyle = obj.color;
+      ctx.fillRect(-s * 0.5, -s * 0.4, s * 0.65, s * 0.05);
+      ctx.fillRect(-s * 0.5, -s * 0.28, s * 0.85, s * 0.05);
+      ctx.fillRect(-s * 0.5, -s * 0.16, s * 0.45, s * 0.05);
+      ctx.fillRect(-s * 0.5, -s * 0.04, s * 0.7, s * 0.05);
+      ctx.fillStyle = "#334155";
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.85, s * 0.35);
+      ctx.lineTo(s * 0.85, s * 0.35);
+      ctx.lineTo(s * 0.7, s * 0.55);
+      ctx.lineTo(-s * 0.7, s * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawCap(ctx, screenP, obj) {
+      const s = obj.size * screenP.scale;
+      ctx.save();
+      ctx.translate(screenP.x, screenP.y);
+      ctx.shadowBlur = 14 * screenP.scale;
+      ctx.shadowColor = obj.color;
+      ctx.fillStyle = obj.color;
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.5);
+      ctx.lineTo(s * 0.9, 0);
+      ctx.lineTo(0, s * 0.3);
+      ctx.lineTo(-s * 0.9, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.4, 0.05 * s);
+      ctx.lineTo(s * 0.4, 0.05 * s);
+      ctx.lineTo(s * 0.3, s * 0.45);
+      ctx.lineTo(-s * 0.3, s * 0.45);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 1.8 * screenP.scale;
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.1);
+      ctx.lineTo(s * 0.7, s * 0.25);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawCube(ctx, screenP, obj) {
+      const s = obj.size * 0.7 * screenP.scale;
+      ctx.save();
+      ctx.translate(screenP.x, screenP.y);
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = 1.4 * screenP.scale;
+      ctx.shadowBlur = 12 * screenP.scale;
+      ctx.shadowColor = obj.color;
+      const rot = obj.rotY;
+      const cosR = Math.cos(rot);
+      const sinR = Math.sin(rot);
+      const dx = s * cosR;
+      const dy = s * sinR * 0.5;
+      ctx.strokeRect(-dx, -s + dy, dx * 2, s * 1.4);
+      ctx.strokeRect(-dx * 0.5, -s * 0.6, dx * 2, s * 1.4);
+      ctx.beginPath();
+      ctx.moveTo(-dx, -s + dy);
+      ctx.lineTo(-dx * 0.5, -s * 0.6);
+      ctx.moveTo(dx, -s + dy);
+      ctx.lineTo(dx * 1.5, -s * 0.6);
+      ctx.moveTo(-dx, s * 0.4 + dy);
+      ctx.lineTo(-dx * 0.5, s * 0.8);
+      ctx.moveTo(dx, s * 0.4 + dy);
+      ctx.lineTo(dx * 1.5, s * 0.8);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function render3D() {
+      ctx.fillStyle = "rgba(2, 6, 23, 0.45)";
+      ctx.fillRect(0, 0, width, height);
+
+      mouseX += (targetMouseX - mouseX) * 0.05;
+      mouseY += (targetMouseY - mouseY) * 0.05;
+      cameraRotY = (mouseX / width) * 0.5;
+      cameraRotX = (mouseY / height) * 0.5;
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const fov = isMobile ? 420 : 520;
+
+      const projected = [];
+      objects3D.forEach(obj => {
+        obj.x += obj.vx; obj.y += obj.vy; obj.z += obj.vz;
+        obj.rotX = (obj.rotX || 0) + obj.vRotX;
+        obj.rotY += obj.vRotY;
+        const boundX = isMobile ? 600 : 1000;
+        const boundY = isMobile ? 500 : 800;
+        if (obj.x < -boundX) obj.x = boundX;
+        if (obj.x > boundX) obj.x = -boundX;
+        if (obj.y < -boundY) obj.y = boundY;
+        if (obj.y > boundY) obj.y = -boundY;
+        if (obj.z < -350) obj.z = 1050;
+        if (obj.z > 1050) obj.z = -350;
+
+        const p = project3D(obj.x, obj.y, obj.z, cx, cy, fov);
+        if (p && p.x >= -100 && p.x <= width + 100 && p.y >= -100 && p.y <= height + 100) {
+          projected.push({ obj, p });
+        }
+      });
+
+      projected.sort((a, b) => b.p.depth - a.p.depth);
+
+      projected.forEach(({ obj, p }) => {
+        if (obj.type === "book") drawBook(ctx, p, obj);
+        else if (obj.type === "bus") drawBus(ctx, p, obj);
+        else if (obj.type === "laptop") drawLaptop(ctx, p, obj);
+        else if (obj.type === "cap") drawCap(ctx, p, obj);
+        else if (obj.type === "cube") drawCube(ctx, p, obj);
+      });
+
+      // Connecting constellation beams
+      ctx.lineWidth = 0.75;
+      const beamDist = isMobile ? 100 : 145;
+      for (let i = 0; i < projected.length; i++) {
+        for (let j = i + 1; j < projected.length; j++) {
+          const p1 = projected[i].p;
+          const p2 = projected[j].p;
+          const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+          if (dist < beamDist) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            const alpha = (1 - dist / beamDist) * 0.25;
+            ctx.strokeStyle = `rgba(129, 140, 248, ${alpha})`;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(render3D);
+    }
+    render3D();
+
+    // -------------------------------------------------------------
+    // À LA CARTE ADD-ONS CALCULATOR LOGIC
+    // -------------------------------------------------------------
+    const addonList = [
+      { id: "base", label: "🏛️ Base Plan Infrastructure (Mandatory)", price: 4999, isBase: true },
+      { id: "faculty", label: "🏢 Faculty & HOD Workspace", price: 2999 },
+      { id: "attendance", label: "📋 Attendance Management", price: 3499 },
+      { id: "marks", label: "📝 Marks & Examination", price: 3499 },
+      { id: "obe", label: "📊 OBE & CO-PO Attainment ⭐", price: 4999 },
+      { id: "transport", label: "🚍 Transport Management", price: 2499 },
+      { id: "library", label: "📚 Library System & Cataloging", price: 1999 },
+      { id: "placement", label: "💼 Placement Cell & Pipeline", price: 2499 },
+      { id: "accounts", label: "💳 Accounts & Fee Governance", price: 3999 },
+      { id: "mobile", label: "📱 Mobile App (PWA & Android/iOS)", price: 5999 },
+      { id: "ai", label: "🤖 AI Assistant (Google Gemini)", price: 4999 },
+      { id: "whatsapp", label: "🔔 WhatsApp Parent Bot Alerts", price: 2999 },
+      { id: "payment", label: "💳 Online Payment Gateway (Razorpay/PayTM)", price: 1999 },
+      { id: "training", label: "🚀 On-Site Faculty Training & Setup Support", price: 4999 },
+      { id: "maintenance", label: "🛠️ Annual Maintenance & Core Updations (SLA)", price: 5999 },
+      { id: "domain", label: "🌐 Custom Domain (.edu.in / .com) + SSL", price: 999 },
+      { id: "backup", label: "💾 Automated Daily S3 Database Storage Vault", price: 1499 },
+      /* 12 NEW FUTURE & INNOVATION ADD-ON MODULES */
+      { id: "rfid", label: "🪪 Smart RFID & Biometric Gate Access Attendance", price: 3999 },
+      { id: "alumni", label: "🚀 Alumni Network & Global Career Placement Portal", price: 2999 },
+      { id: "hostel", label: "🏨 Hostel, Mess & Out-Pass Workflow Governance", price: 3499 },
+      { id: "health", label: "🩺 Campus Health & Medical Records Vault", price: 1999 },
+      { id: "blockchain", label: "🔐 Blockchain Digital Certificate Verification", price: 4999 },
+      { id: "face_ai", label: "🎯 Biometric Face Recognition Attendance AI", price: 4999 },
+      { id: "research", label: "🎓 Research Projects & Grant Management System", price: 2999 },
+      { id: "gps", label: "🚌 Real-Time Bus GPS Live Tracking Mobile Pass", price: 2499 },
+      { id: "exam_ai", label: "📝 AI Exam Question Paper Generator & Auto-Grader", price: 4499 },
+      { id: "sports", label: "🏆 Extra-Curricular & Sports Quota Management", price: 1999 },
+      { id: "soc_cyber", label: "🛡️ Cybersecurity SOC & Incident Audit Trail", price: 3999 },
+      { id: "analytics_ai", label: "📊 Machine Learning Student Dropout Risk Analytics", price: 3499 }
+    ];
+
+    let selectedAddonIds = ["base", "faculty", "attendance", "obe"];
+
+    function renderAddons() {
+      const container = document.getElementById("addonsContainer");
+      container.innerHTML = addonList.map(item => {
+        const isSelected = selectedAddonIds.includes(item.id);
+        return `
+          <div class="addon-item ${isSelected ? 'selected' : ''}" onclick="toggleAddon('${item.id}', ${item.isBase || false})">
+            <div class="addon-left">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} ${item.isBase ? 'disabled' : ''}/>
+              <span class="addon-label">${item.label}</span>
+            </div>
+            <span class="addon-price">₹${item.price.toLocaleString("en-IN")}</span>
+          </div>
+        `;
+      }).join("");
+
+      updateTotal();
+    }
+
+    function toggleAddon(id, isBase) {
+      if (isBase) return;
+      if (selectedAddonIds.includes(id)) {
+        selectedAddonIds = selectedAddonIds.filter(a => a !== id);
+      } else {
+        selectedAddonIds.push(id);
+      }
+      renderAddons();
+    }
+
+    function updateTotal() {
+      const total = selectedAddonIds.reduce((sum, id) => {
+        const item = addonList.find(a => a.id === id);
+        return sum + (item ? item.price : 0);
+      }, 0);
+      document.getElementById("calcTotal").innerText = `₹${total.toLocaleString("en-IN")} / year`;
+    }
+
+    renderAddons();
+
+    // -------------------------------------------------------------
+    // INQUIRY DEMO MODAL HANDLERS
+    // -------------------------------------------------------------
+    function openDemoModal() {
+      document.getElementById("demoModal").classList.add("active");
+    }
+    function closeDemoModal() {
+      document.getElementById("demoModal").classList.remove("active");
+    }
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      alert("Thank you! Your commercial inquiry has been received. Our sales team will reach out shortly.");
+      closeDemoModal();
+    }
+  </script>
 </body>
+
 </html>

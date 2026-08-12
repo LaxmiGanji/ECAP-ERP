@@ -553,7 +553,7 @@ const AddAttendance = ({ branch: lockedBranch }) => {
       } else {
         newState[student.enrollmentNo] = {
           enrollmentNo: student.enrollmentNo,
-          name: `${student.firstName} ${student.lastName}`,
+          name: `${student.firstName} ${student.middleName ? student.middleName + ' ' : ''}${student.lastName}`.trim(),
           branch: student.branch,
           section: student.section,
           subject: selectedSubject,
@@ -589,7 +589,7 @@ const AddAttendance = ({ branch: lockedBranch }) => {
         if (!absentees.includes(student.enrollmentNo)) {
           attendanceDataForBulk[student.enrollmentNo] = {
             enrollmentNo: student.enrollmentNo,
-            name: `${student.firstName} ${student.lastName}`,
+            name: `${student.firstName} ${student.middleName ? student.middleName + ' ' : ''}${student.lastName}`.trim(),
             branch: student.branch,
             section: student.section,
             subject: selectedSubject,

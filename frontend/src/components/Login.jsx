@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { FiLogIn, FiEye, FiEyeOff } from "react-icons/fi";
-import { FaUserGraduate, FaChalkboardTeacher, FaUserShield, FaBook, FaBusAlt, FaClipboardList, FaBriefcase } from "react-icons/fa";
+import { FaUserGraduate, FaChalkboardTeacher, FaUserShield, FaBook, FaBusAlt, FaClipboardList, FaBriefcase, FaGraduationCap } from "react-icons/fa";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { baseApiURL } from "../baseUrl";
@@ -26,7 +26,9 @@ const Login = () => {
     { name: "HOD", icon: FaUserShield, path: "/hod" },
     { name: "Principal", icon: FaUserShield, path: "/principal" },
     { name: "Accounts", icon: FaClipboardList, path: "/accounts" },
+    { name: "Alumni", icon: FaGraduationCap, path: "/alumni" },
   ];
+
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
