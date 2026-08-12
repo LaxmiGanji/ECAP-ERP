@@ -27,6 +27,13 @@ const HashRedirect = () => {
   return null;
 };
 
+const PortfolioRedirect = () => {
+  useEffect(() => {
+    window.location.replace("/portfolio/index.html");
+  }, []);
+  return null;
+};
+
 const App = () => {
   return (
     <>
@@ -35,14 +42,12 @@ const App = () => {
           <HashRedirect />
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/portfolio" element={<Portfolio3D />} />
-            <Route path="/portfolio/" element={<Portfolio3D />} />
-            <Route path="/portfolio.html" element={<Portfolio3D />} />
-            <Route path="/portfolio/index.html" element={<Portfolio3D />} />
-            <Route path="portfolio" element={<Portfolio3D />} />
-            <Route path="portfolio/" element={<Portfolio3D />} />
-            <Route path="portfolio.html" element={<Portfolio3D />} />
-            <Route path="portfolio/index.html" element={<Portfolio3D />} />
+            <Route path="/portfolio" element={<PortfolioRedirect />} />
+            <Route path="/portfolio/" element={<PortfolioRedirect />} />
+            <Route path="/portfolio.html" element={<PortfolioRedirect />} />
+            <Route path="portfolio" element={<PortfolioRedirect />} />
+            <Route path="portfolio/" element={<PortfolioRedirect />} />
+            <Route path="portfolio.html" element={<PortfolioRedirect />} />
             <Route path="student" element={<StudentHome />} />
             <Route path="faculty" element={<FacultyHome />} />
             <Route path="admin" element={<AdminHome />} />
