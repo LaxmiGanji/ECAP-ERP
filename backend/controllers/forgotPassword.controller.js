@@ -103,12 +103,15 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
       try {
         const transportOptions = (smtpHost || "").includes("gmail")
           ? {
-              service: "gmail",
-              auth: { user: smtpUser, pass: smtpPass }
+              host: "smtp.gmail.com",
+              port: 465,
+              secure: true,
+              auth: { user: smtpUser, pass: smtpPass },
+              tls: { rejectUnauthorized: false }
             }
           : {
               host: smtpHost,
-              port: Number(smtpPort),
+              port: Number(smtpPort) || 587,
               secure: Number(smtpPort) === 465,
               auth: { user: smtpUser, pass: smtpPass },
               tls: { rejectUnauthorized: false }
@@ -129,7 +132,8 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
         console.log(`✅ [PasswordReset] Email successfully sent to ${email} via SMTP.`);
         return { sentViaSMTP: true };
       } catch (smtpErr) {
-        console.warn(`⚠️ [PasswordReset] SMTP sending failed (${smtpErr.message}). Falling back to console/on-screen mode.`);
+        console.warn(`⚠️ [PasswordReset] SMTP sending failed (${smtpErr.message}).`);
+        return { sentViaSMTP: false, error: smtpErr.message };
       }
     }
 
@@ -139,10 +143,10 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
     console.log(`Role: ${role} | Login ID: ${loginid}`);
     console.log(`Reset Link: ${resetLink}`);
     console.log(`======================================================\n`);
-    return { sentViaSMTP: false };
+    return { sentViaSMTP: false, error: "SMTP host/user/pass not configured" };
   } catch (err) {
     console.error("❌ [PasswordReset] Error sending email:", err);
-    return { sentViaSMTP: false };
+    return { sentViaSMTP: false, error: err.message };
   }
 };
 
@@ -246,7 +250,7 @@ const requestPasswordReset = async (req, res) => {
     } else {
       return res.status(500).json({
         success: false,
-        message: `Failed to send email to ${destinationEmail}. Please add valid SMTP App Password credentials to backend/.env.`
+        message: `Failed to send email to ${destinationEmail}: ${mailResult?.error || "SMTP error"}`
       });
     }
 
