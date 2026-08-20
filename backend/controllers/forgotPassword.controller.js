@@ -268,19 +268,25 @@ const verifyResetToken = async (req, res) => {
     const { token, role } = req.query;
 
     if (!token) {
-      return res.status(400).json({ success: false, message: "Token is required." });
+      return res.status(400).json({ success: false, valid: false, message: "Reset token is required." });
     }
 
-    const resetRecord = await PasswordReset.findOne({
-      token,
-      expiresAt: { $gt: new Date() }
-    });
+    const trimmedToken = token.trim();
+    const resetRecord = await PasswordReset.findOne({ token: trimmedToken });
 
     if (!resetRecord) {
       return res.status(400).json({
         success: false,
         valid: false,
-        message: "Invalid or expired password reset token."
+        message: "Invalid reset link or this link has already been used."
+      });
+    }
+
+    if (new Date(resetRecord.expiresAt).getTime() < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        valid: false,
+        message: "This password reset link has expired. Please request a new one."
       });
     }
 
@@ -295,7 +301,8 @@ const verifyResetToken = async (req, res) => {
     console.error("Error in verifyResetToken:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error."
+      valid: false,
+      message: "Internal server error while verifying reset token."
     });
   }
 };
@@ -319,16 +326,20 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Find token record
-    const resetRecord = await PasswordReset.findOne({
-      token,
-      expiresAt: { $gt: new Date() }
-    });
+    const trimmedToken = token.trim();
+    const resetRecord = await PasswordReset.findOne({ token: trimmedToken });
 
     if (!resetRecord) {
       return res.status(400).json({
         success: false,
-        message: "Invalid or expired password reset token. Please request a new password reset link."
+        message: "Invalid password reset token or this link was already used. Please request a new link."
+      });
+    }
+
+    if (new Date(resetRecord.expiresAt).getTime() < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "This password reset link has expired. Please request a new link."
       });
     }
 

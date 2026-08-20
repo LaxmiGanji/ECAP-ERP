@@ -148,8 +148,10 @@ const Login = () => {
         if (err.response?.data?.requireEmail) {
           setForgotRequireEmail(true);
           toast.error(err.response.data.message);
+        } else if (err.response?.data?.message) {
+          toast.error(err.response.data.message);
         } else {
-          toast.error(err.response?.data?.message || "Failed to request password reset.");
+          toast.error("Failed to request password reset.");
         }
       })
       .finally(() => {
