@@ -1,4 +1,5 @@
 import Login from "./components/Login";
+import ResetPassword from "./components/ResetPassword";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { Provider } from "react-redux";
@@ -42,6 +43,7 @@ const App = () => {
           <HashRedirect />
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/portfolio" element={<PortfolioRedirect />} />
             <Route path="/portfolio/" element={<PortfolioRedirect />} />
             <Route path="/portfolio.html" element={<PortfolioRedirect />} />

@@ -1,19 +1,26 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { FiLogIn, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiLogIn, FiEye, FiEyeOff, FiMail, FiX, FiKey } from "react-icons/fi";
 import { FaUserGraduate, FaChalkboardTeacher, FaUserShield, FaBook, FaBusAlt, FaClipboardList, FaBriefcase, FaGraduationCap } from "react-icons/fa";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { baseApiURL } from "../baseUrl";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, getValues } = useForm();
+
+  // Forgot password modal states
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotLoginId, setForgotLoginId] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [sendingForgot, setSendingForgot] = useState(false);
+  const [forgotRequireEmail, setForgotRequireEmail] = useState(false);
 
   const roles = [
     { name: "Student", icon: FaUserGraduate, path: "/student" },
@@ -28,7 +35,6 @@ const Login = () => {
     { name: "Accounts", icon: FaClipboardList, path: "/accounts" },
     { name: "Alumni", icon: FaGraduationCap, path: "/alumni" },
   ];
-
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -105,6 +111,52 @@ const Login = () => {
     reset(); // Clear form fields when going back
   };
 
+  const openForgotModal = () => {
+    const currentLoginId = getValues("loginid") || "";
+    setForgotLoginId(currentLoginId);
+    setForgotEmail("");
+    setForgotRequireEmail(false);
+    setShowForgotModal(true);
+  };
+
+  const handleForgotPasswordSubmit = (e) => {
+    e.preventDefault();
+    if (!forgotLoginId.trim()) {
+      toast.error("Please enter your Login ID");
+      return;
+    }
+    setSendingForgot(true);
+
+    axios
+      .post(`${baseApiURL()}/auth/forgot-password`, {
+        role: selectedRole,
+        loginid: forgotLoginId.trim(),
+        email: forgotEmail.trim() || undefined,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          toast.success(res.data.message || "Password reset link sent to your registered email!");
+          setShowForgotModal(false);
+          setForgotLoginId("");
+          setForgotEmail("");
+          setForgotRequireEmail(false);
+        } else {
+          toast.error(res.data.message || "Failed to send reset email.");
+        }
+      })
+      .catch((err) => {
+        if (err.response?.data?.requireEmail) {
+          setForgotRequireEmail(true);
+          toast.error(err.response.data.message);
+        } else {
+          toast.error(err.response?.data?.message || "Failed to request password reset.");
+        }
+      })
+      .finally(() => {
+        setSendingForgot(false);
+      });
+  };
+
   return (
     <div className="min-h-screen w-full flex bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 justify-center items-center p-4 sm:p-8 relative">
       {/* Animated background elements */}
@@ -140,7 +192,6 @@ const Login = () => {
             >
               Please select your role to continue
             </motion.p>
-
 
             <motion.div 
               className="flex justify-center mb-10"
@@ -236,6 +287,15 @@ const Login = () => {
                     {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
                   </button>
                 </div>
+                <div className="flex justify-end mt-2">
+                  <button
+                    type="button"
+                    onClick={openForgotModal}
+                    className="text-xs text-blue-300 hover:text-white hover:underline transition-colors font-medium"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
               </div>
 
               <motion.button
@@ -263,6 +323,93 @@ const Login = () => {
         </motion.div>
         )}
       </div>
+
+      {/* Forgot Password Modal */}
+      <AnimatePresence>
+        {showForgotModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-md bg-slate-900/95 border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative text-white"
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(false)}
+                className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+              >
+                <FiX size={20} />
+              </button>
+
+              <div className="text-center mb-6">
+                <div className="w-14 h-14 bg-blue-600/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mx-auto mb-3 text-blue-400 shadow-inner">
+                  <FiKey size={26} />
+                </div>
+                <h3 className="text-2xl font-bold">Forgot Password?</h3>
+                <p className="text-blue-200/80 text-xs mt-1">
+                  Enter details to receive password reset mail for <span className="text-blue-400 font-semibold">{selectedRole}</span>
+                </p>
+              </div>
+
+              <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-blue-200 uppercase tracking-wider mb-2">
+                    {selectedRole} Login ID
+                  </label>
+                  <input
+                    type="text"
+                    value={forgotLoginId}
+                    onChange={(e) => setForgotLoginId(e.target.value)}
+                    placeholder={`Enter your ${selectedRole} ID`}
+                    required
+                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-blue-200/20 text-white placeholder-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+                  />
+                </div>
+
+                {(forgotRequireEmail || true) && (
+                  <div>
+                    <label className="block text-xs font-semibold text-blue-200 uppercase tracking-wider mb-2 flex justify-between">
+                      <span>Registered Email</span>
+                      <span className="text-blue-300/60 font-normal lowercase">(Optional if on record)</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="e.g. user@example.com"
+                        className="w-full px-4 py-3 rounded-xl bg-white/10 border border-blue-200/20 text-white placeholder-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm pl-10"
+                      />
+                      <FiMail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-200/60" />
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={sendingForgot}
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 disabled:opacity-50 flex items-center justify-center space-x-2 text-sm"
+                  >
+                    {sendingForgot ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <FiMail size={16} />
+                        <span>Send Password Reset Mail</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <Toaster 
         position="bottom-center"
         toastOptions={{
