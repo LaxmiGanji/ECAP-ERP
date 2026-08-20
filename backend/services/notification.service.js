@@ -111,8 +111,66 @@ class NotificationService {
     }
   }
 
-  // SMTP Mail Sender (Supports 100% Free Gmail SMTP & Free Fallback)
+  // SMTP Mail Sender (Supports 100% Free Gmail SMTP, HTTPS REST API & Free Fallback)
   static async dispatchEmail(email, subject, text, settings) {
+    const apiKey = process.env.EMAIL_API_KEY || process.env.BREVO_API_KEY || (settings && settings.emailApiKey);
+    const htmlContent = `<div style="font-family: Arial, sans-serif; padding: 25px; line-height: 1.6; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px; margin: 0 auto; background: #ffffff;">
+                           <div style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); padding: 15px; border-radius: 8px 8px 0 0; text-align: center;">
+                             <h2 style="color: #ffffff; margin: 0; font-size: 20px;">Sphoorthy Engineering College - ECAP Portal</h2>
+                           </div>
+                           <div style="padding: 20px 0;">
+                             <p style="font-size: 15px; color: #1e293b;">Dear Parent/Student,</p>
+                             <p style="font-size: 15px; color: #334155; line-height: 1.8;">${text.replace(/\n/g, "<br>")}</p>
+                           </div>
+                           <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
+                           <small style="color: #64748b; display: block; text-align: center;">This is an automated notification from Sphoorthy Engineering College. Please do not reply directly to this email.</small>
+                         </div>`;
+
+    if (apiKey) {
+      try {
+        const https = require("https");
+        const data = JSON.stringify({
+          sender: { name: "Sphoorthy Engineering College - ECAP", email: settings.smtpUser || "laxmiganji2005@gmail.com" },
+          to: [{ email: email }],
+          subject: subject,
+          htmlContent: htmlContent,
+          textContent: text
+        });
+
+        await new Promise((resolve, reject) => {
+          const req = https.request(
+            {
+              hostname: "api.brevo.com",
+              port: 443,
+              path: "/v3/smtp/email",
+              method: "POST",
+              headers: {
+                "accept": "application/json",
+                "api-key": apiKey,
+                "content-type": "application/json",
+                "content-length": Buffer.byteLength(data)
+              }
+            },
+            (res) => {
+              let body = "";
+              res.on("data", (chunk) => (body += chunk));
+              res.on("end", () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) resolve();
+                else reject(new Error(`Brevo API Error ${res.statusCode}: ${body}`));
+              });
+            }
+          );
+          req.on("error", reject);
+          req.write(data);
+          req.end();
+        });
+        console.log(`✅ [NotificationService] Email sent to ${email} via HTTPS REST API.`);
+        return;
+      } catch (restErr) {
+        console.warn(`⚠️ [NotificationService] HTTPS REST API failed (${restErr.message}). Trying SMTP fallback...`);
+      }
+    }
+
     if (settings.smtpHost && settings.smtpUser && settings.smtpPass) {
       const transporter = nodemailer.createTransport({
         host: settings.smtpHost,
@@ -120,6 +178,9 @@ class NotificationService {
         secure: Number(settings.smtpPort) === 465,
         auth: { user: settings.smtpUser, pass: settings.smtpPass },
         family: 4,
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 8000,
         tls: { rejectUnauthorized: false }
       });
 
@@ -128,17 +189,7 @@ class NotificationService {
         to: email,
         subject: subject,
         text: text,
-        html: `<div style="font-family: Arial, sans-serif; padding: 25px; line-height: 1.6; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px; margin: 0 auto; background: #ffffff;">
-                 <div style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); padding: 15px; border-radius: 8px 8px 0 0; text-align: center;">
-                   <h2 style="color: #ffffff; margin: 0; font-size: 20px;">Sphoorthy Engineering College - ECAP Portal</h2>
-                 </div>
-                 <div style="padding: 20px 0;">
-                   <p style="font-size: 15px; color: #1e293b;">Dear Parent/Student,</p>
-                   <p style="font-size: 15px; color: #334155; line-height: 1.8;">${text.replace(/\n/g, "<br>")}</p>
-                 </div>
-                 <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
-                 <small style="color: #64748b; display: block; text-align: center;">This is an automated notification from Sphoorthy Engineering College. Please do not reply directly to this email.</small>
-               </div>`
+        html: htmlContent
       });
     } else {
       // 100% FREE MODE FALLBACK

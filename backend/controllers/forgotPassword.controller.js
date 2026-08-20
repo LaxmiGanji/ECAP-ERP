@@ -1,8 +1,60 @@
+const https = require("https");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const PasswordReset = require("../models/Other/passwordReset.model");
 const NotificationSettings = require("../models/Other/notificationSettings.model");
+
+// Helper to send email via HTTPS REST API (Port 443)
+const sendViaHttpsRest = (apiKey, toEmail, subject, htmlContent, textContent, fromEmail) => {
+  return new Promise((resolve) => {
+    const data = JSON.stringify({
+      sender: { name: "Sphoorthy Engineering College - ECAP", email: fromEmail || "laxmiganji2005@gmail.com" },
+      to: [{ email: toEmail }],
+      subject: subject,
+      htmlContent: htmlContent,
+      textContent: textContent
+    });
+
+    console.log(`Sending email via HTTPS REST API (Port 443) to ${toEmail}...`);
+
+    const req = https.request(
+      {
+        hostname: "api.brevo.com",
+        port: 443,
+        path: "/v3/smtp/email",
+        method: "POST",
+        headers: {
+          "accept": "application/json",
+          "api-key": apiKey,
+          "content-type": "application/json",
+          "content-length": Buffer.byteLength(data)
+        }
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (chunk) => (body += chunk));
+        res.on("end", () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            console.log(`✅ [PasswordReset] Email successfully sent via HTTPS REST API to ${toEmail}.`);
+            resolve({ sentViaSMTP: true });
+          } else {
+            console.warn(`⚠️ [PasswordReset] HTTPS REST API returned ${res.statusCode}: ${body}`);
+            resolve({ sentViaSMTP: false, error: body });
+          }
+        });
+      }
+    );
+
+    req.on("error", (e) => {
+      console.error("❌ [PasswordReset] HTTPS REST API Error:", e.message);
+      resolve({ sentViaSMTP: false, error: e.message });
+    });
+
+    req.write(data);
+    req.end();
+  });
+};
 
 // Credential models
 const studentCredential = require("../models/Students/credential.model");
@@ -99,6 +151,17 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
       </div>
     `;
 
+    const emailApiKey = process.env.EMAIL_API_KEY || process.env.BREVO_API_KEY || (settings && settings.emailApiKey);
+    const subject = "🔒 ECAP Password Reset Request - Sphoorthy Engineering College";
+    const textContent = `Hello ${loginid} (${role}),\n\nWe received a request to reset your password for your ECAP account.\n\nPlease use the link below to reset your password:\n${resetLink}\n\nThis link will expire in 1 hour.\n\nSphoorthy Engineering College ECAP System`;
+
+    // 1. If HTTPS REST API key is configured, send via HTTPS REST API over Port 443
+    if (emailApiKey) {
+      const restResult = await sendViaHttpsRest(emailApiKey, email, subject, htmlContent, textContent, smtpUser);
+      if (restResult.sentViaSMTP) return restResult;
+    }
+
+    // 2. Otherwise try standard SMTP transport
     if (smtpHost && smtpUser && smtpPass) {
       try {
         const transportOptions = (smtpHost || "").includes("gmail")
@@ -116,20 +179,18 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
               tls: { rejectUnauthorized: false }
             };
 
-        const textContent = `Hello ${loginid} (${role}),\n\nWe received a request to reset your password for your ECAP account.\n\nPlease use the link below to reset your password:\n${resetLink}\n\nThis link will expire in 1 hour.\n\nSphoorthy Engineering College ECAP System`;
-
         const transporter = nodemailer.createTransport({
           ...transportOptions,
-          connectionTimeout: 8000,
-          greetingTimeout: 8000,
-          socketTimeout: 10000
+          connectionTimeout: 5000,
+          greetingTimeout: 5000,
+          socketTimeout: 8000
         });
 
         await transporter.sendMail({
           from: smtpFrom || `"ECAP System" <${smtpUser}>`,
           replyTo: smtpUser,
           to: email,
-          subject: "🔒 ECAP Password Reset Request - Sphoorthy Engineering College",
+          subject: subject,
           text: textContent,
           html: htmlContent,
         });
@@ -137,6 +198,9 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
         return { sentViaSMTP: true };
       } catch (smtpErr) {
         console.warn(`⚠️ [PasswordReset] SMTP sending failed (${smtpErr.message}).`);
+        if (emailApiKey) {
+          return await sendViaHttpsRest(emailApiKey, email, subject, htmlContent, textContent, smtpUser);
+        }
         return { sentViaSMTP: false, error: smtpErr.message };
       }
     }

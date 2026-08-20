@@ -26,6 +26,7 @@ const notificationSettingsSchema = new mongoose.Schema({
   smtpUser: { type: String, default: "" },
   smtpPass: { type: String, default: "" },
   smtpFrom: { type: String, default: "" },
+  emailApiKey: { type: String, default: "" },
 
   // Message Templates
   absentInstantTemplate: { 
