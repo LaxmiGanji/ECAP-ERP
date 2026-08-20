@@ -63,8 +63,9 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
     let settings = await NotificationSettings.findOne();
     const smtpHost = process.env.SMTP_HOST || (settings && settings.smtpHost);
     const smtpPort = process.env.SMTP_PORT || (settings && settings.smtpPort) || 587;
-    const smtpUser = process.env.SMTP_USER || (settings && settings.smtpUser);
-    const smtpPass = process.env.SMTP_PASS || (settings && settings.smtpPass);
+    const smtpUser = (process.env.SMTP_USER || (settings && settings.smtpUser) || "").trim();
+    const rawPass = process.env.SMTP_PASS || (settings && settings.smtpPass) || "";
+    const smtpPass = rawPass.replace(/\s+/g, "");
     const smtpFrom = process.env.SMTP_FROM || (settings && settings.smtpFrom) || smtpUser || '"ECAP Portal" <no-reply@ecap.edu>';
 
     const htmlContent = `
