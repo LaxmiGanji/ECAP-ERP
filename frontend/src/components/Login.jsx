@@ -132,7 +132,7 @@ const Login = () => {
         role: selectedRole,
         loginid: forgotLoginId.trim(),
         email: forgotEmail.trim() || undefined,
-      })
+      }, { timeout: 45000 })
       .then((res) => {
         if (res.data.success) {
           toast.success(res.data.message || "Password reset link sent to your registered email!");

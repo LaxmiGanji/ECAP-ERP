@@ -33,7 +33,7 @@ const ResetPassword = () => {
 
     // Verify token validity
     axios
-      .get(`${baseApiURL()}/auth/verify-reset-token?token=${token}&role=${role}`)
+      .get(`${baseApiURL()}/auth/verify-reset-token?token=${token}&role=${role}`, { timeout: 30000 })
       .then((res) => {
         if (res.data.valid) {
           setIsValidToken(true);
@@ -73,7 +73,7 @@ const ResetPassword = () => {
         token,
         role,
         newPassword,
-      })
+      }, { timeout: 30000 })
       .then((res) => {
         if (res.data.success) {
           setIsSuccess(true);
