@@ -61,12 +61,12 @@ const getRoleModels = (roleName) => {
 const sendResetEmail = async (email, resetLink, role, loginid) => {
   try {
     let settings = await NotificationSettings.findOne();
-    const smtpHost = process.env.SMTP_HOST || (settings && settings.smtpHost);
+    const smtpHost = process.env.SMTP_HOST || (settings && settings.smtpHost) || "smtp.gmail.com";
     const smtpPort = process.env.SMTP_PORT || (settings && settings.smtpPort) || 587;
-    const smtpUser = (process.env.SMTP_USER || (settings && settings.smtpUser) || "").trim();
-    const rawPass = process.env.SMTP_PASS || (settings && settings.smtpPass) || "";
+    const smtpUser = (process.env.SMTP_USER || (settings && settings.smtpUser) || "laxmiganji2005@gmail.com").trim();
+    const rawPass = process.env.SMTP_PASS || (settings && settings.smtpPass) || "hvjfuoddldnuifrd";
     const smtpPass = rawPass.replace(/\s+/g, "");
-    const smtpFrom = process.env.SMTP_FROM || (settings && settings.smtpFrom) || smtpUser || '"ECAP Portal" <no-reply@ecap.edu>';
+    const smtpFrom = process.env.SMTP_FROM || (settings && settings.smtpFrom) || `"ECAP Portal" <${smtpUser}>`;
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 25px; line-height: 1.6; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px; margin: 0 auto; background: #ffffff;">
@@ -228,9 +228,9 @@ const requestPasswordReset = async (req, res) => {
     });
 
     // Build reset link
-    const frontendBaseUrl = process.env.FRONTEND_API_LINK
+    const frontendBaseUrl = req.headers.origin || (process.env.FRONTEND_API_LINK
       ? process.env.FRONTEND_API_LINK.replace(/\/api\/?$/, "")
-      : "http://localhost:3000";
+      : "https://ecap-erp-frontend.onrender.com");
 
     const resetLink = `${frontendBaseUrl}/reset-password?token=${token}&role=${encodeURIComponent(role)}`;
 
