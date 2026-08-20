@@ -103,9 +103,12 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
       try {
         const transportOptions = (smtpHost || "").includes("gmail")
           ? {
-              service: "gmail",
+              host: "smtp.gmail.com",
+              port: 587,
+              secure: false,
               auth: { user: smtpUser, pass: smtpPass },
-              family: 4
+              family: 4,
+              tls: { rejectUnauthorized: false }
             }
           : {
               host: smtpHost,

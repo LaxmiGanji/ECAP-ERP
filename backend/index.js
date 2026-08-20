@@ -1,8 +1,12 @@
 //index.js
+const dns = require("dns");
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
 const connectToMongo = require("./Database/db");
 const express = require("express");
 const app = express();
-const path = require("path")
+const path = require("path");
 connectToMongo();
 
 const port = process.env.PORT || 5001;
