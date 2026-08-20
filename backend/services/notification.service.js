@@ -119,6 +119,7 @@ class NotificationService {
         port: Number(settings.smtpPort) || 587,
         secure: Number(settings.smtpPort) === 465,
         auth: { user: settings.smtpUser, pass: settings.smtpPass },
+        family: 4,
         tls: { rejectUnauthorized: false }
       });
 
