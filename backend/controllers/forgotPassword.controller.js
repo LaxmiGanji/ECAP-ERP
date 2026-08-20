@@ -118,7 +118,12 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
 
         const textContent = `Hello ${loginid} (${role}),\n\nWe received a request to reset your password for your ECAP account.\n\nPlease use the link below to reset your password:\n${resetLink}\n\nThis link will expire in 1 hour.\n\nSphoorthy Engineering College ECAP System`;
 
-        const transporter = nodemailer.createTransport(transportOptions);
+        const transporter = nodemailer.createTransport({
+          ...transportOptions,
+          connectionTimeout: 8000,
+          greetingTimeout: 8000,
+          socketTimeout: 10000
+        });
 
         await transporter.sendMail({
           from: smtpFrom || `"ECAP System" <${smtpUser}>`,
