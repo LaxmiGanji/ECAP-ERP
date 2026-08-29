@@ -70,76 +70,65 @@ const Material = () => {
     setSelected(e.target.value);
   };
 
-  // Simplified download handler - uses direct Cloudinary links
+  // Enhanced download handler - fetches blob to guarantee proper file download with extension
   const handleDownload = async (item) => {
-    if (!item.link) return;
-    
+    if (!item || !item.link) {
+      toast.error("No file link available");
+      return;
+    }
+
+    const url = item.link;
+    const toastId = toast.loading("Downloading material...");
+
     try {
-      let url = item.link;
-      
-      // For Cloudinary URLs
-      if (url.includes('cloudinary.com')) {
-        // Clean up URL - ensure it has proper format
-        if (!url.includes('upload/')) {
-          toast.error("Invalid file URL");
-          return;
-        }
-        
-        // Check if it's already a direct file link
-        if (url.includes('image/upload') || url.includes('raw/upload')) {
-          // Add download flag to force download instead of preview
-          const downloadUrl = url + (url.includes('?') ? '&' : '?') + 'fl=attachment';
-          
-          // Create temporary link for download
-          const link = document.createElement('a');
-          link.href = downloadUrl;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          
-          // Extract filename from URL or use title
-          let filename = item.title || 'download';
-          if (url.includes('/')) {
-            const urlParts = url.split('/');
-            const lastPart = urlParts[urlParts.length - 1];
-            if (lastPart.includes('.')) {
-              filename = lastPart.split('?')[0];
-            }
-          }
-          
-          // Clean filename
-          filename = filename.replace(/[^a-zA-Z0-9._-]/g, '_') + '.pdf';
-          link.download = filename;
-          
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          toast.success(`Downloading ${filename}...`);
-        } else {
-          // Open in new tab for other URLs
-          window.open(url, '_blank');
-          toast.success("Opening file...");
-        }
-      } else {
-        // For non-Cloudinary URLs, open directly
-        window.open(url, '_blank');
-        toast.success("Opening file...");
+      // If it's a external standard link or non-cloud file, open directly in new tab
+      if (!url.includes('cloudinary.com') && !url.includes('amazonaws.com')) {
+        toast.dismiss(toastId);
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
       }
-    } catch (error) {
-      console.error("Download error:", error);
-      toast.error("Failed to access file. Please try again.");
+
+      // For Cloudinary or AWS S3 files, fetch as blob so we can force a named download with proper extension
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch file from cloud storage");
       
-      // Fallback: try direct download endpoint
-      try {
-        const response = await fetch(`${baseApiURL()}/download/direct-download?url=${encodeURIComponent(item.link)}`);
-        if (response.ok) {
-          window.open(`${baseApiURL()}/download/direct-download?url=${encodeURIComponent(item.link)}`, '_blank');
-        }
-      } catch (fallbackError) {
-        console.error("Fallback also failed:", fallbackError);
+      const blob = await response.blob();
+      
+      // Determine file extension from Content-Type or title or URL
+      let extension = ".pdf";
+      const contentType = response.headers.get("content-type") || blob.type;
+      
+      if (contentType.includes("image/jpeg")) extension = ".jpg";
+      else if (contentType.includes("image/png")) extension = ".png";
+      else if (contentType.includes("spreadsheet") || contentType.includes("excel") || contentType.includes("xlsx")) extension = ".xlsx";
+      else if (contentType.includes("word") || contentType.includes("document") || contentType.includes("docx")) extension = ".docx";
+      else if (contentType.includes("presentation") || contentType.includes("pptx")) extension = ".pptx";
+      else if (url.endsWith(".pdf") || url.includes(".pdf")) extension = ".pdf";
+
+      let fileName = item.title || "material";
+      if (!fileName.toLowerCase().endsWith(extension)) {
+        fileName += extension;
       }
+
+      // Create Blob Object URL and trigger download
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+
+      toast.dismiss(toastId);
+      toast.success(`Downloaded: ${fileName}`);
+    } catch (err) {
+      console.error("Blob download failed, falling back to direct tab:", err);
+      toast.dismiss(toastId);
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
+
 
   // Format date
   const formatDate = (dateString) => {

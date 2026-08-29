@@ -85,14 +85,14 @@ Ensure your latest code is committed and pushed to your GitHub repository.
 
 ### Step 2: Create a Cloudflare Pages Project
 1. Log into your [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. In the left navigation, click **Workers & Pages** -> Click **Create application** -> Select **Pages** tab.
-3. Click **Connect to Git** and authorize your GitHub account.
-4. Select your `ECAP_Authentication` repository.
+2. Click the blue **Create application** button on the **Workers & Pages** screen.
+3. At the bottom of the card on the screen, click **Get started** next to **"Looking to deploy Pages?"** (or click **Continue with GitHub**).
+4. Authorize your GitHub account and select your `ECAP-ERP` (or `ECAP_Authentication`) repository.
 
 ### Step 3: Configure Build Settings
 * **Project name**: `college-ecap` (or your preferred name)
 * **Production branch**: `main` (or `master`)
-* **Framework preset**: `Create React App`
+* **Framework preset**: **`Create React App`** (or **`React Static`**)
 * **Root directory**: `frontend`
 * **Build command**: `npm run build`
 * **Build output directory**: `build`
@@ -100,7 +100,9 @@ Ensure your latest code is committed and pushed to your GitHub repository.
 ### Step 4: Add Environment Variables in Cloudflare Pages
 Under **Environment Variables (Advanced)**:
 * `REACT_APP_API_URL` = `https://your-backend-api.onrender.com` (or your production API URL).
+* `REACT_APP_GOOGLE_CLIENT_ID` = `your-google-client-id.apps.googleusercontent.com`
 * `NODE_VERSION` = `20`
+* `CI` = `false` *(Critical: Prevents ESLint warnings from failing the build)*
 
 Click **Save and Deploy**. Cloudflare will build your React application and give you a global URL (`https://college-ecap.pages.dev`).
 
