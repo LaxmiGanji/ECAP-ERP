@@ -432,16 +432,30 @@ const assignSectionToStudents = async (req, res) => {
   }
 };
 
+const { deleteCloudFile } = require("../../utils/cloudDelete");
+
 const deleteDetails = async (req, res) => {
   try {
     const user = await studentDetails.findByIdAndDelete(req.params.id);
     if (!user) return res.status(400).json({ success: false, message: "No Student Found" });
 
+    // Clean up profile photo and certificates from AWS S3 / Cloudinary
+    if (user.profile) {
+      await deleteCloudFile(user.profile);
+    }
+    if (user.certifications && Array.isArray(user.certifications)) {
+      for (const certUrl of user.certifications) {
+        await deleteCloudFile(certUrl);
+      }
+    }
+
     res.json({ success: true, message: "Deleted Successfully!" });
   } catch (error) {
+    console.error("Error deleting student:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 const getCount = async (req, res) => {
   try {

@@ -170,7 +170,7 @@ const updateMaterial = async (req, res) => {
     }
 }
 
-const { deleteFromS3 } = require("../../utils/s3");
+const { deleteCloudFile } = require("../../utils/cloudDelete");
 
 // Delete material
 const deleteMaterial = async (req, res) => {
@@ -186,27 +186,8 @@ const deleteMaterial = async (req, res) => {
         }
         
         // Delete file from AWS S3 or Cloudinary
-        try {
-            if (material.link) {
-                if (material.link.includes('amazonaws.com') || (process.env.AWS_S3_BUCKET_NAME && material.link.includes(process.env.AWS_S3_BUCKET_NAME))) {
-                    const urlObj = new URL(material.link);
-                    const key = urlObj.pathname.startsWith('/') ? urlObj.pathname.substring(1) : urlObj.pathname;
-                    if (key) {
-                        await deleteFromS3(key);
-                        console.log("✅ Deleted from AWS S3 Key:", key);
-                    }
-                } else if (material.link.includes('cloudinary.com')) {
-                    const urlParts = material.link.split('/');
-                    const publicIdWithExtension = urlParts[urlParts.length - 1];
-                    const publicId = publicIdWithExtension.split('.')[0];
-                    if (publicId) {
-                        await cloudinary.uploader.destroy(publicId);
-                        console.log("✅ Deleted from Cloudinary:", publicId);
-                    }
-                }
-            }
-        } catch (cloudErr) {
-            console.error("⚠️ Error deleting file from cloud storage:", cloudErr.message);
+        if (material.link) {
+            await deleteCloudFile(material.link);
         }
         
         console.log("✅ Material deleted successfully from database");
@@ -221,6 +202,7 @@ const deleteMaterial = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
+
 
 
 // Get all materials with filters (for faculty view)

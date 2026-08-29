@@ -72,12 +72,20 @@ const updateLibraryBook = async (req, res) => {
   }
 };
 
+const { deleteCloudFile } = require("../../utils/cloudDelete");
+
 const deleteLibraryBook = async (req, res) => {
   try {
     let book = await Library.findByIdAndDelete(req.params.id);
     if (!book) {
       return res.status(400).json({ success: false, message: "No Book Exists!" });
     }
+
+    // Clean up uploaded book file / pdf from cloud storage
+    if (book.fileUrl) await deleteCloudFile(book.fileUrl);
+    if (book.pdfUrl) await deleteCloudFile(book.pdfUrl);
+    if (book.link) await deleteCloudFile(book.link);
+
     res.json({
       success: true,
       message: "Book Deleted!",
@@ -87,6 +95,7 @@ const deleteLibraryBook = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 const getLibraryBook = async (req, res) => {
   try {

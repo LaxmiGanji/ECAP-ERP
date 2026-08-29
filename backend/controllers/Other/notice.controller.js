@@ -66,14 +66,22 @@ const updateNotice = async (req, res) => {
     }
 }
 
+const { deleteCloudFile } = require("../../utils/cloudDelete");
+
 const deleteNotice = async (req, res) => {
     try {
         let notice = await Notice.findByIdAndDelete(req.params.id);
         if (!notice) {
             return res
-                .status(400)
+                .status(404)
                 .json({ success: false, message: "No Notice Available!" });
         }
+
+        // Delete notice attachment from cloud storage
+        if (notice.link) {
+            await deleteCloudFile(notice.link);
+        }
+
         res.json({
             success: true,
             message: "Notice Deleted Successfully",
@@ -83,5 +91,6 @@ const deleteNotice = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
+
 
 module.exports = { getNotice, addNotice, updateNotice, deleteNotice }
