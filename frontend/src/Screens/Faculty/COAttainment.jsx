@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { toast } from "react-toastify";
+import { FiAlertCircle } from "react-icons/fi";
 import { baseApiURL } from "../../baseUrl";
 
 const COAttainment = () => {
@@ -12,6 +13,61 @@ const COAttainment = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
+  const [studentRegulations, setStudentRegulations] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(`${baseApiURL()}/student/details/getRegulations`)
+      .then((res) => {
+        if (res.data.success) {
+          setStudentRegulations(res.data.regulations || []);
+        }
+      })
+      .catch((err) => console.error("Error fetching student regulations:", err));
+  }, []);
+
+  useEffect(() => {
+    checkStudentPresence();
+  }, [selectedSemester, selectedBranch, branches]);
+
+  const checkStudentPresence = async () => {
+    if (!selectedSemester) {
+      setNoStudentsMessage("");
+      return;
+    }
+
+    try {
+      let bName = selectedBranch;
+      if (selectedBranch) {
+        const bObj = branches.find(b => b._id === selectedBranch || b.name === selectedBranch);
+        if (bObj?.name) bName = bObj.name;
+      }
+
+      const response = await axios.post(`${baseApiURL()}/student/details/getCohortRegulation`, {
+        semester: Number(selectedSemester),
+        branch: bName
+      });
+
+      if (response.data.success && response.data.count > 0 && response.data.regulations?.length > 0) {
+        const studentReg = response.data.regulation || response.data.regulations[0];
+        if (studentReg) {
+          setSelectedRegulation(studentReg);
+        }
+        setNoStudentsMessage("");
+      } else {
+        setNoStudentsMessage("no student in that semester");
+        setSelectedRegulation("");
+        setSelectedSubject("");
+      }
+    } catch (error) {
+      console.error("COAttainment checkStudentPresence error:", error);
+      setNoStudentsMessage("no student in that semester");
+      setSelectedRegulation("");
+      setSelectedSubject("");
+    }
+  };
   const [subjectCOs, setSubjectCOs] = useState([]);
 
   // Step 2: Assessment Configuration
@@ -796,18 +852,49 @@ const COAttainment = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Step 1: Select Filters</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {/* Regulation Selection */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-gray-700 font-semibold">Regulation</label>
+                  {selectedRegulation && (
+                    <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-semibold border border-blue-100">
+                      Auto-fetched
+                    </span>
+                  )}
+                </div>
+                <select
+                  value={selectedRegulation}
+                  onChange={(e) => setSelectedRegulation(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">All Regulations</option>
+                  {(studentRegulations.length > 0 ? studentRegulations : Array.from(new Set(subjects.map(s => s.regulation).filter(Boolean)))).map((reg) => (
+                    <option key={reg} value={reg}>
+                      {reg}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Subject Selection */}
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">Subject *</label>
                 <select
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={!!noStudentsMessage}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    noStudentsMessage ? "border-red-300 bg-red-50 text-red-700 font-medium" : "border-gray-300"
+                  }`}
                 >
-                  <option value="">Select Subject</option>
-                  {subjects.map((subject) => (
+                  <option value="">
+                    {noStudentsMessage ? "no student in that semester" : "Select Subject"}
+                  </option>
+                  {(noStudentsMessage ? [] : subjects
+                    .filter(s => !selectedRegulation || s.regulation?.toUpperCase() === selectedRegulation.toUpperCase())
+                  ).map((subject) => (
                     <option key={subject._id} value={subject._id}>
-                      {subject.name} ({subject.code})
+                      {subject.name} ({subject.code}) {subject.regulation ? `[${subject.regulation}]` : ''}
                     </option>
                   ))}
                 </select>
@@ -847,6 +934,13 @@ const COAttainment = () => {
                 </select>
               </div>
             </div>
+
+            {noStudentsMessage && (
+              <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center space-x-2 w-full">
+                <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <span className="font-medium">{noStudentsMessage}</span>
+              </div>
+            )}
 
             <button
               onClick={() => {

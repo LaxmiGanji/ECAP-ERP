@@ -23,11 +23,24 @@ const CourseOutcome = ({ branch: lockedBranchName }) => {
   const [editMode, setEditMode] = useState(false);
   const [editingCO, setEditingCO] = useState(null);
   const [noStudentsMessage, setNoStudentsMessage] = useState("");
+  const [studentRegulations, setStudentRegulations] = useState([]);
 
   useEffect(() => {
     getSubjectsHandler();
     getBranchesHandler();
+    getStudentRegulationsHandler();
   }, []);
+
+  const getStudentRegulationsHandler = () => {
+    axios
+      .get(`${baseApiURL()}/student/details/getRegulations`)
+      .then((response) => {
+        if (response.data.success) {
+          setStudentRegulations(response.data.regulations || []);
+        }
+      })
+      .catch((error) => console.error("Error fetching student regulations:", error));
+  };
 
   useEffect(() => {
     filterSubjects();
@@ -44,28 +57,37 @@ const CourseOutcome = ({ branch: lockedBranchName }) => {
       return;
     }
 
-    try {
-      const payload = { semester: Number(targetSemester) };
-      if (filters.branch) {
-        const branchObj = branches.find(b => b._id === filters.branch);
-        if (branchObj?.name) {
-          payload.branch = branchObj.name;
-        }
-      } else if (selectedSubject?.branch) {
-        const branchName = selectedSubject.branch?.name || selectedSubject.branch;
-        if (typeof branchName === 'string') {
-          payload.branch = branchName;
-        }
-      }
+    let branchName = "";
+    if (filters.branch) {
+      const branchObj = branches.find(b => b._id === filters.branch || b.name === filters.branch);
+      if (branchObj?.name) branchName = branchObj.name;
+    } else if (selectedSubject?.branch) {
+      branchName = selectedSubject.branch?.name || selectedSubject.branch;
+    }
 
-      const response = await axios.post(`${baseApiURL()}/student/details/getDetails`, payload);
-      if (response.data.success && response.data.user && response.data.user.length > 0) {
+    if (!branchName) {
+      setNoStudentsMessage("");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${baseApiURL()}/student/details/getCohortRegulation`, {
+        branch: branchName,
+        semester: Number(targetSemester)
+      });
+
+      if (response.data.success && response.data.count > 0 && response.data.regulations?.length > 0) {
+        const autoReg = response.data.regulations[0]; // e.g. R22
+        setFilters(prev => ({ ...prev, regulation: autoReg }));
         setNoStudentsMessage("");
       } else {
-        setNoStudentsMessage("no students are there for that semester");
+        setFilters(prev => ({ ...prev, regulation: "" }));
+        setNoStudentsMessage("no student in that semester");
       }
     } catch (error) {
-      setNoStudentsMessage("no students are there for that semester");
+      console.error("Error detecting cohort regulation:", error);
+      setFilters(prev => ({ ...prev, regulation: "" }));
+      setNoStudentsMessage("no student in that semester");
     }
   };
 
@@ -89,6 +111,10 @@ const CourseOutcome = ({ branch: lockedBranchName }) => {
   };
 
   const filterSubjects = () => {
+    if (noStudentsMessage) {
+      setFilteredSubjects([]);
+      return;
+    }
     let filtered = [...subjects];
     
     if (filters.branch) {
@@ -106,7 +132,7 @@ const CourseOutcome = ({ branch: lockedBranchName }) => {
 
     if (filters.regulation) {
       filtered = filtered.filter(item => 
-        item.regulation && item.regulation.toLowerCase().includes(filters.regulation.toLowerCase())
+        item.regulation && item.regulation.toUpperCase() === filters.regulation.toUpperCase()
       );
     }
     
@@ -309,14 +335,26 @@ const CourseOutcome = ({ branch: lockedBranchName }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Filter by Regulation</label>
-                <input
-                  type="text"
-                  placeholder="e.g. R20"
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-gray-600">Filter by Regulation</label>
+                  {filters.regulation && (
+                    <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-semibold border border-blue-100">
+                      Auto-fetched
+                    </span>
+                  )}
+                </div>
+                <select
                   value={filters.regulation}
-                  onChange={(e) => setFilters({ ...filters, regulation: e.target.value.toUpperCase() })}
+                  onChange={(e) => setFilters({ ...filters, regulation: e.target.value })}
                   className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                />
+                >
+                  <option value="">All Regulations</option>
+                  {(studentRegulations.length > 0 ? studentRegulations : Array.from(new Set(subjects.map(s => s.regulation).filter(Boolean)))).map((reg) => (
+                    <option key={reg} value={reg}>
+                      {reg}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="text-xs text-gray-500 pt-1">

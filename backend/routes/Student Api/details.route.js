@@ -18,10 +18,16 @@ const {
   searchStudents,
   getStudentsByBatchAndBranch,
   graduateStudents,
+  ungraduateStudent,
   updateBacklogs,
+  getStudentRegulations,
+  getCohortRegulation,
 } = require("../../controllers/Student/details.controller.js");
 
 // Routes
+router.get("/getRegulations", getStudentRegulations);
+router.post("/getCohortRegulation", getCohortRegulation);
+router.get("/getCohortRegulation", getCohortRegulation);
 router.post("/getDetails", getDetails);
 router.get("/getDetails2", getDetails2);
 router.get("/getDetailsByEnrollment", getDetailsByEnrollment);
@@ -36,6 +42,7 @@ router.post("/returnBooks", returnBooks);
 router.get("/search", searchStudents);
 router.get("/reports/byBatchBranch", getStudentsByBatchAndBranch);
 router.post("/graduate", graduateStudents);
+router.post("/ungraduate", ungraduateStudent);
 router.put("/updateBacklogs", updateBacklogs);
 
 // Find students by book - Enhanced version

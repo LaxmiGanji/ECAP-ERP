@@ -16,7 +16,25 @@ const ViewTimetable = () => {
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [availableDays, setAvailableDays] = useState([]);
 
+  const [sectionsList, setSectionsList] = useState(["A", "B", "C", "D"]);
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selected.branch) params.branch = selected.branch;
+        if (selected.semester) params.semester = selected.semester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSectionsList(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selected.branch, selected.semester]);
 
   useEffect(() => {
     fetchBranches();
@@ -333,81 +351,108 @@ const ViewTimetable = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-6">
-      <div className="w-3/4 flex flex-col gap-4">
-        <select
-          className="px-4 py-2 border rounded-md"
-          value={selected.branch}
-          onChange={(e) => setSelected({ ...selected, branch: e.target.value })}
-          disabled={editMode}
-        >
-          <option value="">Select Branch</option>
-          {branches.map((b) => (
-            <option key={b.name} value={b.name}>{b.name}</option>
-          ))}
-        </select>
+    <div className="w-full space-y-6">
+      {/* Selection Filter Bento Card */}
+      <div className="bento-card p-6 bg-white border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+          <h3 className="font-bold text-slate-900 text-base">Select Timetable Class Parameters</h3>
+        </div>
 
-        <select
-          className="px-4 py-2 border rounded-md"
-          value={selected.semester}
-          onChange={(e) => setSelected({ ...selected, semester: e.target.value })}
-          disabled={editMode}
-        >
-          <option value="">Select Semester</option>
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-            <option key={sem} value={sem}>{sem} Semester</option>
-          ))}
-        </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label htmlFor="viewBranch" className="block text-xs font-bold text-slate-600 mb-1">
+              Select Branch
+            </label>
+            <select
+              id="viewBranch"
+              className="w-full"
+              value={selected.branch}
+              onChange={(e) => setSelected({ ...selected, branch: e.target.value })}
+              disabled={editMode}
+            >
+              <option value="">Select Branch</option>
+              {branches.map((b) => (
+                <option key={b.name} value={b.name}>{b.name}</option>
+              ))}
+            </select>
+          </div>
 
-        <select
-          className="px-4 py-2 border rounded-md"
-          value={selected.section}
-          onChange={(e) => setSelected({ ...selected, section: e.target.value })}
-          disabled={editMode}
-        >
-          <option value="">Select Section</option>
-          {["A", "B", "C", "D", "SOC", "WIPRO TRAINING", "ATT"].map((sec) => (
-            <option key={sec} value={sec}>Section {sec}</option>
-          ))}
-        </select>
+          <div>
+            <label htmlFor="viewSemester" className="block text-xs font-bold text-slate-600 mb-1">
+              Select Semester
+            </label>
+            <select
+              id="viewSemester"
+              className="w-full"
+              value={selected.semester}
+              onChange={(e) => setSelected({ ...selected, semester: e.target.value })}
+              disabled={editMode}
+            >
+              <option value="">Select Semester</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                <option key={sem} value={sem}>{sem} Semester</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            className="w-full px-4 py-2 border rounded-md bg-gray-50 font-semibold text-blue-700 cursor-not-allowed"
-            value={selected.regulation || ""}
-            placeholder="Regulation Auto-detected"
-            readOnly
-          />
-          <div className="absolute right-3 top-2.5">
-            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
+          <div>
+            <label htmlFor="viewSection" className="block text-xs font-bold text-slate-600 mb-1">
+              Select Section
+            </label>
+            <select
+              id="viewSection"
+              className="w-full"
+              value={selected.section}
+              onChange={(e) => setSelected({ ...selected, section: e.target.value })}
+              disabled={editMode}
+            >
+              <option value="">Select Section</option>
+              {sectionsList.map((sec) => (
+                <option key={sec} value={sec}>Section {sec}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="viewRegulation" className="block text-xs font-bold text-slate-600 mb-1">
+              Regulation
+            </label>
+            <input
+              id="viewRegulation"
+              type="text"
+              className="w-full bg-slate-50 font-bold text-indigo-600 cursor-not-allowed"
+              value={selected.regulation || ""}
+              placeholder="Auto-detected"
+              readOnly
+            />
           </div>
         </div>
 
-        <div className="flex gap-4 items-center">
-          <button
-            onClick={fetchTimetable}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md w-max"
-            disabled={editMode}
-          >
-            View Timetable
-          </button>
-          
-          {timetable && !editMode && (
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-100">
+          <div className="flex items-center space-x-3">
             <button
-              onClick={handleEdit}
-              className="px-6 py-2 bg-yellow-500 text-white rounded-md w-max"
+              onClick={fetchTimetable}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              disabled={editMode}
             >
-              Edit Timetable
+              View Timetable
             </button>
-          )}
-          
+            
+            {timetable && !editMode && (
+              <button
+                onClick={handleEdit}
+                className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+              >
+                Edit Timetable
+              </button>
+            )}
+          </div>
+
           {selected.branch && selected.semester && (
-            <div className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-md">
+            <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/80">
               {filteredSubjects.length} subject(s) available for {selected.branch} - Semester {selected.semester}
-            </div>
+            </span>
           )}
         </div>
       </div>

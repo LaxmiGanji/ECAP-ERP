@@ -6,6 +6,57 @@ const bcrypt = require("bcrypt");
 const alumniCredential = require("../../models/Alumni/credential.model.js");
 const { validatePhoneNumber, validateEmail } = require("../../utils/validation.js");
 
+const studentPlacementProfileModel = require("../../models/Placement/studentProfile.model.js");
+
+const mergePlacementData = async (student) => {
+  if (!student || !student.enrollmentNo) return student;
+  try {
+    const pProfile = await studentPlacementProfileModel.findOne({ enrollmentNo: student.enrollmentNo }).lean();
+    if (pProfile) {
+      return {
+        ...student,
+        tenthPercentage: student.tenthPercentage !== undefined && student.tenthPercentage !== null ? student.tenthPercentage : pProfile.tenthPercentage,
+        twelfthPercentage: student.twelfthPercentage !== undefined && student.twelfthPercentage !== null ? student.twelfthPercentage : pProfile.twelfthPercentage,
+        cgpa: student.cgpa !== undefined && student.cgpa !== null ? student.cgpa : pProfile.cgpa,
+        activeBacklogs: student.activeBacklogs !== undefined && student.activeBacklogs !== null ? student.activeBacklogs : (pProfile.activeBacklogs || 0),
+        resumeLink: student.resumeLink || pProfile.resumeLink || "",
+        linkedinLink: student.linkedinLink || pProfile.linkedinLink || pProfile.githubLink || "",
+      };
+    }
+  } catch (err) {
+    console.error("Error merging placement data:", err);
+  }
+  return student;
+};
+
+const getJntuRank = (s) => {
+  const str = (typeof s === "object" ? (s?.enrollmentNo || s?.enrollment || s?.rollNo || s?.loginid || "") : (s || "")).toString().trim().toUpperCase();
+  if (!str) return { prefix: "", rank: 0 };
+  if (str.length < 3) return { prefix: str, rank: 0 };
+
+  const prefix = str.substring(0, str.length - 2);
+  const suff = str.substring(str.length - 2);
+
+  if (/^\d{2}$/.test(suff)) return { prefix, rank: parseInt(suff, 10) };
+  if (/^[A-Z]\d$/.test(suff)) {
+    const charCode = suff.charCodeAt(0) - 65;
+    const digit = parseInt(suff[1], 10);
+    return { prefix, rank: 100 + charCode * 10 + digit };
+  }
+  return { prefix, rank: 9999 };
+};
+
+const sortEnrollmentNo = (a, b) => {
+  const rA = getJntuRank(a);
+  const rB = getJntuRank(b);
+
+  if (rA.prefix !== rB.prefix) {
+    return rA.prefix.localeCompare(rB.prefix, undefined, { numeric: true, sensitivity: "base" });
+  }
+
+  return rA.rank - rB.rank;
+};
+
 const getDetails = async (req, res) => {
   try {
     // Use .lean() to avoid hydration issues when stored documents contain unexpected types
@@ -18,7 +69,10 @@ const getDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: "No Student Found" });
     }
 
-    res.json({ success: true, message: "Student Details Found!", user });
+    const mergedUsers = await Promise.all(user.map(mergePlacementData));
+    mergedUsers.sort(sortEnrollmentNo);
+
+    res.json({ success: true, message: "Student Details Found!", user: mergedUsers });
   } catch (error) {
     console.error("getDetails error:", error);
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
@@ -41,7 +95,9 @@ const getDetailsByEnrollment = async (req, res) => {
       return res.status(404).json({ success: false, message: "Student not found" });
     }
 
-    res.json({ success: true, message: "Student Details Found!", user: [student] });
+    const mergedStudent = await mergePlacementData(student);
+
+    res.json({ success: true, message: "Student Details Found!", user: [mergedStudent] });
   } catch (error) {
     console.error("getDetailsByEnrollment error:", error);
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
@@ -60,6 +116,8 @@ const getDetails2 = async (req, res) => {
     if (!students || students.length === 0) {
       return res.status(404).json({ success: false, message: "No Students Found" });
     }
+
+    students.sort(sortEnrollmentNo);
 
     res.json({ success: true, message: "Student Details Found!", students });
   } catch (error) {
@@ -197,11 +255,12 @@ const updateDetails = async (req, res) => {
     // Prepare update data - only include fields that are present in request
     const updateData = {};
     
-    // List of all possible fields - including optional parent fields
+    // List of all possible fields - including academic & placement credentials
     const fields = [
       'firstName', 'middleName', 'lastName', 'email', 'phoneNumber',
       'FatherName', 'MotherName', 'FatherPhoneNumber', 'MotherPhoneNumber',
-      'semester', 'branch', 'batch', 'regulation', 'gender', 'detained', 'passed'
+      'semester', 'branch', 'batch', 'regulation', 'gender', 'detained', 'passed',
+      'tenthPercentage', 'twelfthPercentage', 'cgpa', 'activeBacklogs', 'resumeLink', 'linkedinLink'
     ];
     
     // Only add fields that exist in req.body (they can be empty strings)
@@ -210,6 +269,9 @@ const updateDetails = async (req, res) => {
         // Convert string booleans to actual booleans
         if (field === 'detained' || field === 'passed') {
           updateData[field] = req.body[field] === 'true' || req.body[field] === true;
+        } else if (field === 'tenthPercentage' || field === 'twelfthPercentage' || field === 'cgpa' || field === 'activeBacklogs') {
+          const num = Number(req.body[field]);
+          updateData[field] = Number.isFinite(num) ? num : undefined;
         } else {
           // Allow empty strings for all fields
           updateData[field] = req.body[field];
@@ -230,6 +292,30 @@ const updateDetails = async (req, res) => {
       { $set: updateData },
       { new: true, runValidators: true }
     );
+
+    // Also sync placement profile if enrollmentNo exists
+    if (updatedStudent && updatedStudent.enrollmentNo) {
+      try {
+        const studentPlacementProfile = require("../../models/Placement/studentProfile.model.js");
+        const placementPayload = {
+          enrollmentNo: updatedStudent.enrollmentNo,
+          branch: updatedStudent.branch,
+          tenthPercentage: updatedStudent.tenthPercentage,
+          twelfthPercentage: updatedStudent.twelfthPercentage,
+          cgpa: updatedStudent.cgpa,
+          activeBacklogs: updatedStudent.activeBacklogs || 0,
+          resumeLink: updatedStudent.resumeLink,
+          linkedinLink: updatedStudent.linkedinLink,
+        };
+        await studentPlacementProfile.findOneAndUpdate(
+          { enrollmentNo: updatedStudent.enrollmentNo },
+          { $set: placementPayload },
+          { upsert: true }
+        );
+      } catch (err) {
+        console.error("Error syncing student placement profile:", err);
+      }
+    }
     
     if (!updatedStudent) {
       return res.status(404).json({
@@ -359,10 +445,15 @@ const deleteDetails = async (req, res) => {
 
 const getCount = async (req, res) => {
   try {
-    const user = await studentDetails.count(req.body);
-    res.json({ success: false, message: "Count Successful!", user });
+    const user = await studentDetails.countDocuments(req.body || {});
+    res.json({ success: true, message: "Count Successful!", user });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal Server Error", error });
+    try {
+      const allStudents = await studentDetails.find(req.body || {});
+      res.json({ success: true, message: "Count Successful!", user: allStudents.length });
+    } catch (err) {
+      res.status(500).json({ success: false, message: "Internal Server Error", error: err });
+    }
   }
 };
 
@@ -702,7 +793,34 @@ const graduateStudents = async (req, res) => {
     });
   } catch (error) {
     console.error("graduateStudents error:", error);
-    return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
+};
+
+const ungraduateStudent = async (req, res) => {
+  try {
+    const { enrollmentNo } = req.body;
+    if (!enrollmentNo) {
+      return res.status(400).json({ success: false, message: "Please provide enrollmentNo" });
+    }
+
+    const student = await studentDetails.findOne({ enrollmentNo });
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    await studentDetails.updateOne(
+      { enrollmentNo },
+      { $set: { isGraduated: false, semester: 8 }, $unset: { graduationYear: "", graduatedAt: "" } }
+    );
+
+    return res.json({
+      success: true,
+      message: `Student ${enrollmentNo} restored to 8th Semester active status successfully.`,
+    });
+  } catch (error) {
+    console.error("ungraduateStudent error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
 
@@ -736,8 +854,94 @@ const updateBacklogs = async (req, res) => {
   }
 };
 
-module.exports = {
+const getStudentRegulations = async (req, res) => {
+  try {
+    const regs = await studentDetails.distinct("regulation");
+    const cleanRegs = (regs || []).filter(Boolean).sort();
+    return res.json({
+      success: true,
+      message: "Regulations fetched successfully",
+      regulations: cleanRegs
+    });
+  } catch (error) {
+    console.error("getStudentRegulations error:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 
+const getCohortRegulation = async (req, res) => {
+  try {
+    const branchInput = req.query.branch || req.body.branch;
+    const semInput = req.query.semester || req.body.semester;
+
+    if (!semInput) {
+      return res.status(400).json({
+        success: false,
+        message: "Semester is required"
+      });
+    }
+
+    const Branch = require("../../models/Other/branch.model.js");
+    let branchName = branchInput || "";
+    if (branchInput && mongoose.Types.ObjectId.isValid(branchInput)) {
+      const bObj = await Branch.findById(branchInput);
+      if (bObj) branchName = bObj.name;
+    }
+
+    const query = {
+      semester: Number(semInput),
+      isGraduated: { $ne: true }
+    };
+
+    if (branchName && branchName.trim()) {
+      const clean = branchName.trim();
+      let branchPattern = clean.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      if (/^cse$/i.test(clean) || /^computer science$/i.test(clean) || /^computer science & engineering$/i.test(clean)) {
+        branchPattern = "(cse|computer science|computer science engineering|computer science & engineering)";
+      }
+      query.branch = { $regex: new RegExp(`^${branchPattern}$`, "i") };
+    }
+
+    const students = await studentDetails.find(query).select("regulation branch semester batch").lean();
+    const count = students.length;
+
+    if (count === 0) {
+      return res.json({
+        success: true,
+        count: 0,
+        regulations: [],
+        regulation: "",
+        academicYears: [],
+        academicYear: "",
+        message: "no student in that semester"
+      });
+    }
+
+    const regulations = Array.from(new Set(students.map(s => s.regulation).filter(Boolean)));
+    const academicYears = Array.from(new Set(students.map(s => {
+      if (s.batch && s.semester) {
+        const startYear = Number(s.batch) + Math.floor((Number(s.semester) - 1) / 2);
+        return `${startYear}-${startYear + 1}`;
+      }
+      return null;
+    }).filter(Boolean)));
+
+    return res.json({
+      success: true,
+      count,
+      regulations,
+      regulation: regulations[0] || "",
+      academicYears,
+      academicYear: academicYears[0] || "",
+      message: "Student regulation and academic year detected successfully"
+    });
+  } catch (error) {
+    console.error("getCohortRegulation error:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
+};
+
+module.exports = {
   getDetails,
   getDetails2,
   getDetailsByEnrollment,
@@ -752,5 +956,8 @@ module.exports = {
   searchStudents,
   getStudentsByBatchAndBranch,
   graduateStudents,
+  ungraduateStudent,
   updateBacklogs,
-};
+  getStudentRegulations,
+  getCohortRegulation,
+};

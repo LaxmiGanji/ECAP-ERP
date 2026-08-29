@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { baseApiURL } from "../../baseUrl";
+import { sortEnrollmentNo } from "../../utils/enrollmentSorter";
 
 const Reports = () => {
   const [branches, setBranches] = useState([]);
@@ -13,35 +14,9 @@ const Reports = () => {
   const [loading, setLoading] = useState(false);
 
   // Custom sorting function for enrollment numbers
-  const sortEnrollmentNumbers = (students, order = 'ascending') => {
-    return [...students].sort((a, b) => {
-      // Extract the numeric and alphabetic parts
-      const getSortValue = (enrollment) => {
-        if (!enrollment) return '';
-        
-        // Match the pattern: numbers first, then optional letters
-        const match = enrollment.match(/^(\d+)([A-Z]*)(\d*)([A-Z]*)$/);
-        if (!match) return enrollment;
-        
-        const [, prefix, letters1, numbers, letters2] = match;
-        
-        // Convert to a sortable format
-        // Pad numbers with leading zeros for proper numeric sorting
-        const paddedPrefix = prefix.padStart(10, '0');
-        const letters1Value = letters1 || '';
-        const paddedNumbers = numbers.padStart(3, '0');
-        const letters2Value = letters2 || '';
-        
-        return `${paddedPrefix}${letters1Value}${paddedNumbers}${letters2Value}`;
-      };
-
-      const valA = getSortValue(a.enrollmentNo);
-      const valB = getSortValue(b.enrollmentNo);
-      
-      return order === 'ascending' 
-        ? valA.localeCompare(valB)
-        : valB.localeCompare(valA);
-    });
+  const sortEnrollmentNumbers = (studentsList, order = 'ascending') => {
+    const sorted = [...studentsList].sort(sortEnrollmentNo);
+    return order === 'ascending' ? sorted : sorted.reverse();
   };
 
   useEffect(() => {

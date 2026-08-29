@@ -100,48 +100,50 @@ const Student = ({ onMessageParent }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-white/20 p-2 rounded-lg">
-                  <FiUser className="text-white text-xl" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-white">Student Management</h1>
-                  <p className="text-blue-100 text-sm">Search and view student information</p>
-                </div>
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    selected === "search" 
-                      ? "bg-white text-blue-600" 
-                      : "text-white hover:bg-white/20"
-                  }`}
-                  onClick={() => setSelected("search")}
-                >
-                  Search Student
-                </button>
-                <button
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    selected === "view" 
-                      ? "bg-white text-blue-600" 
-                      : "text-white hover:bg-white/20"
-                  }`}
-                  onClick={() => setSelected("view")}
-                >
-                  View All Students
-                </button>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Student Management</h1>
+          <p className="text-slate-500 font-medium text-xs md:text-sm mt-1">Search and view student academic information</p>
+        </div>
+      </div>
 
-          {/* Content */}
-          <div className="p-8">
+      {/* Sub-tab Navigation */}
+      <div className="bento-card p-2 bg-slate-100/80 border border-slate-200">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            className={`px-4 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 ${
+              selected === "view"
+                ? "bg-white text-indigo-600 shadow-sm font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+            }`}
+            onClick={() => setSelected("view")}
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <FiUser className="w-4 h-4" />
+              <span>View All Students</span>
+            </div>
+          </button>
+
+          <button
+            className={`px-4 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 ${
+              selected === "search"
+                ? "bg-white text-indigo-600 shadow-sm font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+            }`}
+            onClick={() => setSelected("search")}
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <FiSearch className="w-4 h-4" />
+              <span>Search Student</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="w-full">
             {selected === "search" && (
               <div className="space-y-8">
                 {/* Search Section */}
@@ -306,8 +308,6 @@ const Student = ({ onMessageParent }) => {
             )}
 
             {selected === "view" && <ViewStudents onMessageParent={onMessageParent} />}
-          </div>
-        </div>
       </div>
     </div>
   );

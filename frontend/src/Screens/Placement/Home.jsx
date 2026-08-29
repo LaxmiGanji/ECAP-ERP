@@ -27,7 +27,8 @@ const PlacementHome = () => {
   });
 
   useEffect(() => {
-    if (router.state === null) {
+    const activeToken = localStorage.getItem("token");
+    if (router.state === null && !activeToken) {
       navigate("/");
     }
     setLoad(true);

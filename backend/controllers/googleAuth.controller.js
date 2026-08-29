@@ -30,32 +30,35 @@ const googleLogin = async (req, res) => {
        return res.status(400).json({ success: false, message: "Could not retrieve email from Google" });
     }
 
-    // 2. Search all models for this email
+    const emailTrimmed = email.trim();
+    const emailQuery = { email: { $regex: new RegExp(`^${emailTrimmed.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")}$`, "i") } };
+
+    // 2. Search all models for this email (case-insensitive)
     let user = null;
     let role = null;
     let loginid = null;
 
-    user = await StudentDetail.findOne({ email });
+    user = await StudentDetail.findOne(emailQuery);
     if (user) { role = "student"; loginid = user.enrollmentNo; }
 
     if (!user) {
-      user = await FacultyDetail.findOne({ email });
+      user = await FacultyDetail.findOne(emailQuery);
       if (user) { role = "faculty"; loginid = user.employeeId; }
     }
     if (!user) {
-      user = await AdminDetail.findOne({ email });
+      user = await AdminDetail.findOne(emailQuery);
       if (user) { role = "admin"; loginid = user.employeeId; }
     }
     if (!user) {
-      user = await ExaminationDetail.findOne({ email });
+      user = await ExaminationDetail.findOne(emailQuery);
       if (user) { role = "examination"; loginid = user.employeeId; }
     }
     if (!user) {
-      user = await LibraryDetail.findOne({ email });
+      user = await LibraryDetail.findOne(emailQuery);
       if (user) { role = "library"; loginid = user.employeeId; }
     }
     if (!user) {
-      user = await TransportDetail.findOne({ email });
+      user = await TransportDetail.findOne(emailQuery);
       if (user) { role = "transport"; loginid = user.employeeId; }
     }
 

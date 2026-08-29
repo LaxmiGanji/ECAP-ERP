@@ -101,63 +101,94 @@ const Profile = () => {
       });
   };
 
+  const facultyObj = data && data[0] ? data[0] : (data || {});
+  const fullName = [facultyObj.firstName, facultyObj.middleName, facultyObj.lastName].filter(Boolean).join(" ");
+  const initial = facultyObj.firstName?.[0] || "F";
+  const profileImgUrl = facultyObj.profile ? getFileUrl(facultyObj.profile) : null;
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {data && data[0] && (
-        <div className="bg-white shadow-xl rounded-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6">
-            <div className="flex items-center">
-              <img
-                src={getFileUrl(data?.[0]?.profile)}
-                alt="Faculty profile"
-                className="h-24 w-24 rounded-full border-4 border-white mr-4 object-cover"
-              />
+    <div className="w-full space-y-6">
+      {facultyObj && (
+        <div className="bento-card p-0 bg-white border border-slate-200/80 shadow-xs overflow-hidden rounded-3xl">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-slate-800">
+            <div className="absolute right-0 top-0 -mt-10 -mr-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="flex items-center space-x-5 relative z-10">
+              {profileImgUrl ? (
+                <img
+                  src={profileImgUrl}
+                  alt={fullName}
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-indigo-400/40 shadow-xl"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-black shadow-lg border-2 border-white/20">
+                  {initial}
+                </div>
+              )}
               <div>
-                <h1 className="text-3xl font-bold text-white">
-                  {data[0].firstName} {data[0].middleName} {data[0].lastName}
-                </h1>
-                <p className="text-blue-100">Employee ID: {data[0].employeeId}</p>
-                <p className="text-blue-100">JNTU ID: {data[0].jntuId}</p>
-                <p className="text-blue-100">AICTE ID: {data[0].aicteId}</p>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+                    Faculty Profile
+                  </span>
+                  {facultyObj.department && (
+                    <span className="px-2.5 py-0.5 bg-indigo-500/30 text-indigo-200 font-bold rounded-lg text-xs border border-indigo-400/30">
+                      {facultyObj.department} Dept
+                    </span>
+                  )}
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">{fullName}</h1>
+                <p className="text-xs sm:text-sm font-semibold text-indigo-200/80 mt-0.5">
+                  Employee ID: <span className="text-white font-bold font-mono">{facultyObj.employeeId}</span>
+                  {facultyObj.jntuId && <span className="ml-3">JNTU ID: <span className="text-white font-bold font-mono">{facultyObj.jntuId}</span></span>}
+                </p>
               </div>
             </div>
+
+            <button
+              className={`relative z-10 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm cursor-pointer ${
+                showPass
+                  ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20"
+              }`}
+              onClick={() => setShowPass(!showPass)}
+            >
+              {showPass ? "Close Password Settings" : "🔒 Change Password"}
+            </button>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-600">Post</p>
-                <p className="font-medium">{data[0].post}</p>
+
+          {/* Details & Password Body */}
+          <div className="p-6 sm:p-8 space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Designation / Post</p>
+                <p className="text-sm font-bold text-slate-900">{facultyObj.post || "Faculty"}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Email Address</p>
-                <p className="font-medium">{data[0].email}</p>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Department</p>
+                <p className="text-sm font-bold text-indigo-600">{facultyObj.department || "N/A"}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Phone Number</p>
-                <p className="font-medium">{data[0].phoneNumber}</p>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Phone Number</p>
+                <p className="text-sm font-bold text-slate-900">+91 {facultyObj.phoneNumber || "N/A"}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Department</p>
-                <p className="font-medium">{data[0].department}</p>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email Address</p>
+                <p className="text-sm font-bold text-slate-900 truncate">{facultyObj.email || "N/A"}</p>
               </div>
             </div>
-            <div className="mt-8">
-              <button
-                className={`${
-                  showPass
-                    ? "bg-red-100 text-red-600 hover:bg-red-200"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                } px-4 py-2 rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-                onClick={() => setShowPass(!showPass)}
-              >
-                {showPass ? "Close Change Password" : "Change Password"}
-              </button>
-            </div>
+
+            {/* Change Password Form */}
             {showPass && (
               <form
-                className="mt-6 space-y-4"
+                className="bg-slate-50/80 border border-slate-200 p-6 rounded-2xl space-y-4 max-w-lg"
                 onSubmit={checkPasswordHandler}
               >
+                <h3 className="text-sm font-extrabold text-slate-900 mb-2">Update Account Password</h3>
                 <div className="relative">
                   <input
                     type={showCurrentPassword ? "text" : "password"}
@@ -166,16 +197,17 @@ const Profile = () => {
                       setPassword({ ...password, current: e.target.value })
                     }
                     placeholder="Current Password"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pr-12"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-bold text-slate-400 hover:text-slate-600"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   >
                     {showCurrentPassword ? "Hide" : "Show"}
                   </button>
                 </div>
+
                 <div className="relative">
                   <input
                     type={showNewPassword ? "text" : "password"}
@@ -184,21 +216,22 @@ const Profile = () => {
                       setPassword({ ...password, new: e.target.value })
                     }
                     placeholder="New Password"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pr-12"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-bold text-slate-400 hover:text-slate-600"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
                     {showNewPassword ? "Hide" : "Show"}
                   </button>
                 </div>
+
                 <button
-                  className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
                   type="submit"
                 >
-                  Change Password
+                  Save New Password
                 </button>
               </form>
             )}

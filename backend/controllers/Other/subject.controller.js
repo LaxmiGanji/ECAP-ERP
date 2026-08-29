@@ -2,6 +2,7 @@
 const Subject = require("../../models/Other/subject.model");
 const coattainmentService = require("../../services/coattainment.service");
 const { filterSubjectsByStudentRegulation } = require("../../utils/subjectFilter");
+const { generateAutoCoPoMappingForDescription, autoMapSubject } = require("../../services/autoCoPoMapper.service");
 
 const getSubject = async (req, res) => {
     try {
@@ -12,8 +13,6 @@ const getSubject = async (req, res) => {
                 .json({ success: false, message: "No Subject Available" });
         }
         
-        // Filter subjects dynamically according to student regulations
-        subject = await filterSubjectsByStudentRegulation(subject);
         const data = {
             success: true,
             message: "All Subject Loaded!",
@@ -63,8 +62,6 @@ const getSubjectsByBranch = async (req, res) => {
                 .json({ success: false, message: "No Subjects Available for this Branch" });
         }
 
-        // Filter subjects dynamically according to student regulations
-        subjects = await filterSubjectsByStudentRegulation(subjects);
         const data = {
             success: true,
             message: "Subjects Loaded for Branch!",
@@ -354,35 +351,52 @@ const addCourseOutcome = async (req, res) => {
             });
         }
 
+        const normalizedCoNumber = coNumber.toUpperCase();
+
         // Check if CO already exists
         const existingCO = subject.courseOutcomes.find(co => 
-            co.coNumber.toUpperCase() === coNumber.toUpperCase()
+            co.coNumber.toUpperCase() === normalizedCoNumber
         );
 
         if (existingCO) {
             // Update existing CO
             existingCO.description = description;
-            await subject.save();
-            
-            res.json({
-                success: true,
-                message: `Course Outcome ${coNumber} updated successfully`,
-                subject: subject
-            });
         } else {
             // Add new CO
             subject.courseOutcomes.push({ 
-                coNumber: coNumber.toUpperCase(), 
+                coNumber: normalizedCoNumber, 
                 description 
             });
-            await subject.save();
-            
-            res.json({
-                success: true,
-                message: `Course Outcome ${coNumber} added successfully`,
-                subject: subject
-            });
         }
+
+        // Auto-generate CO-PO mappings for this CO description
+        const autoMappings = generateAutoCoPoMappingForDescription(description);
+        
+        // Remove existing mappings for this CO number
+        subject.coPoMappings = subject.coPoMappings.filter(
+            mapping => mapping.coNumber.toUpperCase() !== normalizedCoNumber
+        );
+
+        // Add auto generated mappings
+        Object.entries(autoMappings).forEach(([poNum, strength]) => {
+            if (strength !== null && strength !== undefined) {
+                subject.coPoMappings.push({
+                    coNumber: normalizedCoNumber,
+                    poNumber: poNum.toUpperCase(),
+                    strength: strength
+                });
+            }
+        });
+
+        await subject.save();
+
+        res.json({
+            success: true,
+            message: existingCO 
+                ? `Course Outcome ${normalizedCoNumber} updated & auto-mapped successfully`
+                : `Course Outcome ${normalizedCoNumber} added & auto-mapped successfully`,
+            subject: subject
+        });
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ 
@@ -392,6 +406,39 @@ const addCourseOutcome = async (req, res) => {
         });
     }
 };
+
+// Auto-map all COs for a Subject
+const autoMapSubjectCoPo = async (req, res) => {
+    try {
+        const { subjectId } = req.params;
+        const subject = await Subject.findById(subjectId);
+        if (!subject) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Subject not found!" 
+            });
+        }
+
+        const newMappings = autoMapSubject(subject);
+        subject.coPoMappings = newMappings;
+        await subject.save();
+
+        res.json({
+            success: true,
+            message: "Automatic CO-PO mapping generated successfully for all COs",
+            subject: subject,
+            coPoMappings: newMappings
+        });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: "Internal Server Error",
+            error: error.message 
+        });
+    }
+};
+
 
 // Delete Course Outcome
 const deleteCourseOutcome = async (req, res) => {
@@ -627,6 +674,7 @@ module.exports = {
     updateSectionTotal,
     incrementSectionTotalByOne,
     addCourseOutcome,
+    autoMapSubjectCoPo,
     deleteCourseOutcome,
     updateCoPoMapping,
     getCoPoMappings,

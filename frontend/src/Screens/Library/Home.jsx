@@ -15,7 +15,8 @@ const Home = () => {
   const navigate = useNavigate();
   const [load, setLoad] = useState(false);
   useEffect(() => {
-    if (router.state === null) {
+    const activeToken = localStorage.getItem("token");
+    if (router.state === null && !activeToken) {
       navigate("/");
     }
     setLoad(true);

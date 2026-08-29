@@ -20,6 +20,7 @@ const Subjects = ({ branch: lockedBranchName }) => {
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [branches, setBranches] = useState([]);
   const [noStudentsMessage, setNoStudentsMessage] = useState("");
+  const [studentRegulations, setStudentRegulations] = useState([]);
   
   // Filter states
   const [filters, setFilters] = useState({
@@ -34,7 +35,19 @@ const Subjects = ({ branch: lockedBranchName }) => {
   useEffect(() => {
     getSubjectHandler();
     getBranchesHandler();
+    getStudentRegulationsHandler();
   }, []);
+
+  const getStudentRegulationsHandler = () => {
+    axios
+      .get(`${baseApiURL()}/student/details/getRegulations`)
+      .then((res) => {
+        if (res.data.success) {
+          setStudentRegulations(res.data.regulations || []);
+        }
+      })
+      .catch((err) => console.error("Error fetching student regulations:", err));
+  };
 
   // Apply filters whenever subjects or filters change
   useEffect(() => {
@@ -230,43 +243,42 @@ const Subjects = ({ branch: lockedBranchName }) => {
   };
 
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Subject Management</h1>
-            <p className="text-gray-600 mt-2">Add, edit, and manage academic subjects by branch</p>
-          </div>
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Subject Management</h1>
+          <p className="text-xs md:text-sm mt-1">Configure and review academic subjects, total classes & regulations by branch</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-        <div className="flex border-b border-gray-200">
+      <div className="bento-card p-2 bg-slate-100/80 border border-slate-200">
+        <div className="grid grid-cols-2 gap-2">
           <button
-            className={`flex-1 px-6 py-4 text-center font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 ${
               selected === "add"
-                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
             onClick={() => setSelected("add")}
           >
             <div className="flex items-center justify-center space-x-2">
-              <FiBook className="w-5 h-5" />
+              <FiBook className="w-4 h-4" />
               <span>Add Subject</span>
             </div>
           </button>
+
           <button
-            className={`flex-1 px-6 py-4 text-center font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 ${
               selected === "view"
-                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
             onClick={() => setSelected("view")}
           >
             <div className="flex items-center justify-center space-x-2">
-              <FiUsers className="w-5 h-5" />
+              <FiUsers className="w-4 h-4" />
               <span>View Subjects</span>
             </div>
           </button>
@@ -357,15 +369,20 @@ const Subjects = ({ branch: lockedBranchName }) => {
                       <label htmlFor="regulation" className="block text-sm font-medium text-gray-700 mb-2">
                         Regulation *
                       </label>
-                      <input
-                        type="text"
+                      <select
                         id="regulation"
                         required
                         value={data.regulation}
-                        onChange={(e) => setData({ ...data, regulation: e.target.value.toUpperCase() })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="e.g. R20"
-                      />
+                        onChange={(e) => setData({ ...data, regulation: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                      >
+                        <option value="">Select Regulation</option>
+                        {(studentRegulations.length > 0 ? studentRegulations : ["R24", "R23", "R22", "R20"]).map((reg) => (
+                          <option key={reg} value={reg}>
+                            {reg}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label htmlFor="total" className="block text-sm font-medium text-gray-700 mb-2">
@@ -460,14 +477,19 @@ const Subjects = ({ branch: lockedBranchName }) => {
                   <label htmlFor="filterRegulation" className="block text-sm font-medium text-gray-700 mb-2">
                     Filter by Regulation
                   </label>
-                  <input
-                    type="text"
+                  <select
                     id="filterRegulation"
-                    placeholder="e.g. R20"
                     value={filters.regulation}
-                    onChange={(e) => setFilters({ ...filters, regulation: e.target.value.toUpperCase() })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  />
+                    onChange={(e) => setFilters({ ...filters, regulation: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                  >
+                    <option value="">All Regulations</option>
+                    {(studentRegulations.length > 0 ? studentRegulations : Array.from(new Set(subject.map(s => s.regulation).filter(Boolean)))).map((reg) => (
+                      <option key={reg} value={reg}>
+                        {reg}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex items-end">
@@ -658,15 +680,20 @@ const Subjects = ({ branch: lockedBranchName }) => {
                       <label htmlFor="editRegulation" className="block text-sm font-medium text-gray-700 mb-2">
                         Regulation *
                       </label>
-                      <input
-                        type="text"
+                      <select
                         id="editRegulation"
                         required
                         value={editData.regulation}
-                        onChange={(e) => setEditData({ ...editData, regulation: e.target.value.toUpperCase() })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="e.g. R20"
-                      />
+                        onChange={(e) => setEditData({ ...editData, regulation: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                      >
+                        <option value="">Select Regulation</option>
+                        {(studentRegulations.length > 0 ? studentRegulations : ["R24", "R23", "R22", "R20"]).map((reg) => (
+                          <option key={reg} value={reg}>
+                            {reg}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label htmlFor="editTotal" className="block text-sm font-medium text-gray-700 mb-2">

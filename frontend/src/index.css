@@ -1,14 +1,30 @@
-* {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Plus Jakarta Sans", "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+  scroll-behavior: smooth;
+}
+
+:root {
+  --primary-glow: rgba(99, 102, 241, 0.25);
+  --secondary-glow: rgba(6, 182, 212, 0.2);
+  --accent-glow: rgba(236, 72, 153, 0.2);
+  --card-border: rgba(226, 232, 240, 0.8);
+}
+
+body {
+  background-color: #f8fafc;
+  color: #0f172a;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
 
 @layer base {
   input[type="number"]::-webkit-inner-spin-button,
@@ -16,90 +32,217 @@
     -webkit-appearance: none;
     margin: 0;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  /* Perfect form control alignment */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  select {
+    height: 2.625rem !important; /* 42px uniform height */
+    font-size: 0.875rem !important;
+    border-radius: 0.75rem !important;
+    border: 1px solid #cbd5e1;
+    padding: 0 0.875rem !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+  }
+
+  /* Webkit Autofill Override for Dark Login Inputs */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px #020617 inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+    border-color: #4f46e5 !important;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  input[type="date"]:focus,
+  select:focus {
+    outline: none !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+  }
 }
+
+/* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  display: block !important; /* Ensure scrollbars are visible */
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8fafc;
-  border-radius: 10px;
+  background: #f1f5f9;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 10px;
-  border: 2px solid #f8fafc;
+  border-radius: 9999px;
+  transition: background 0.2s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Global table container styling for horizontal scroll */
-.overflow-x-auto {
+/* For Firefox */
+* {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f8fafc;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Global Table Overflow Rules with Viewport-Height Lock */
+.overflow-x-auto {
+  scrollbar-width: auto;
+  scrollbar-color: #cbd5e1 #f1f5f9;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 5px;
   width: 100%;
-  max-height: 70vh; /* Constrain height so scrollbar is always visible */
-  overflow-y: auto;
-  border-radius: 8px;
+  max-width: 100%;
+  max-height: calc(100vh - 220px) !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  display: block;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
 }
 
 .overflow-x-auto table {
-  min-width: 1200px !important; /* Force minimum width */
+  min-width: 1200px !important;
   width: 100% !important;
-  border-collapse: separate !important; /* REQUIRED for sticky headers */
+  border-collapse: separate !important;
   border-spacing: 0 !important;
 }
 
-/* Sticky Header */
-.overflow-x-auto thead th {
+/* High-Contrast Sticky Table Header Styling */
+.overflow-x-auto thead th,
+table thead th {
   position: sticky !important;
   top: 0 !important;
-  z-index: 10 !important;
-  background-color: #2563eb !important; /* Blue-600 */
-  color: white !important;
+  z-index: 20 !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  padding: 0.875rem 1.25rem !important;
+  border-bottom: 2px solid #334155 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* Fix alignment and borders in scrollable tables */
+/* Table rows & cell styling */
 .overflow-x-auto th, 
 .overflow-x-auto td {
   white-space: nowrap;
   text-overflow: ellipsis;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  color: #334155;
+  transition: background-color 0.15s ease;
 }
 
-/* Ensure background color for sticky header matches the theme */
-.overflow-x-auto thead tr {
-  background: #2563eb !important; /* Standard blue-600 */
+.overflow-x-auto tbody tr:hover {
+  background-color: #f8fafc;
 }
 
-/* For Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f8fafc;
+.overflow-x-auto tbody tr:last-child td {
+  border-bottom: none;
 }
 
-/* Animation utilities for 3D Commercial Portfolio */
+/* 🌟 Dedicated Clean White Bento Header Banner */
+.bento-header-banner {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 1.25rem !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.02) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-header-banner h1,
+.bento-header-banner h2,
+.bento-header-banner h3 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+.bento-header-banner p,
+.bento-header-banner span {
+  color: #64748b !important;
+}
+
+/* Bento Card & UI Utilities */
+.bento-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bento-card:hover {
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.glass-panel-dark {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Gradient text utilities */
+.gradient-text-indigo {
+  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animation utilities */
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.25); }
-  50% { box-shadow: 0 0 35px rgba(14, 165, 233, 0.5); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(14, 165, 233, 0.4); }
 }
 
 .animate-float-slow {
@@ -109,19 +252,3 @@
 .animate-pulse-glow {
   animation: pulseGlow 3.5s ease-in-out infinite;
 }
-
-.animate-shimmer-bg {
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite;
-}
-
-.glow-card-hover {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glow-card-hover:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.35);
-}
-

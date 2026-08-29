@@ -753,26 +753,23 @@ const MyFacultyTimeTable = ({ facultyId, isHODView = false }) => {
           </button>
         </div>
       )}
-      <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+      <div className="bento-card bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              {facultyData?.profile && (
-                <img
-                  src={facultyData.profile}
-                  alt="Faculty profile"
-                  className="h-16 w-16 rounded-full border-2 border-white mr-4 object-cover"
-                />
-              )}
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  {getFacultyFullName(facultyData)}
-                </h1>
-                <p className="text-blue-100">Employee ID: {facultyData.employeeId}</p>
-                <p className="text-blue-100 text-sm mt-1">Department: {facultyData.department}</p>
-              </div>
+        <div className="bento-header-banner flex items-center justify-between">
+          <div className="flex items-center">
+            {facultyData?.profile && (
+              <img
+                src={facultyData.profile}
+                alt="Faculty profile"
+                className="h-14 w-14 rounded-2xl border-2 border-indigo-100 mr-4 object-cover shadow-sm"
+              />
+            )}
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-slate-900">
+                {getFacultyFullName(facultyData)}
+              </h1>
             </div>
+          </div>
             
             <div className="flex space-x-3">
               <button
@@ -966,7 +963,6 @@ const MyFacultyTimeTable = ({ facultyId, isHODView = false }) => {
             )}
           </div>
         </div>
-      </div>
 
       {/* Substitution Modal */}
       {showSubstitutionModal && selectedPeriodForSubstitution && (

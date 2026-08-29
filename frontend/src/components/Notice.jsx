@@ -151,24 +151,22 @@ const Notice = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Notice Board</h1>
-            <p className="text-gray-600 mt-2">Stay updated with important announcements</p>
-          </div>
-          {(router.pathname === "/faculty" || router.pathname === "/admin") && (
-            <button
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
-              onClick={openHandler}
-            >
-              <IoAddOutline className="text-xl" />
-              <span>Add Notice</span>
-            </button>
-          )}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Notice Board</h1>
+          <p className="text-xs md:text-sm mt-1">Stay updated with official announcements & notices</p>
         </div>
+        {(router.pathname === "/faculty" || router.pathname === "/admin") && (
+          <button
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all shadow-md flex items-center space-x-1.5"
+            onClick={openHandler}
+          >
+            <IoAddOutline className="text-lg" />
+            <span>Add Notice</span>
+          </button>
+        )}
       </div>
 
       {/* Notice Form */}

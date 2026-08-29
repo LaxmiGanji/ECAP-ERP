@@ -24,6 +24,24 @@ const TimetableImport = ({ onSuccess }) => {
   const [theorySubjects, setTheorySubjects] = useState([]);
   const [existingTimetable, setExistingTimetable] = useState(null);
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
+  const [sectionsList, setSectionsList] = useState(["A", "B", "C", "D"]);
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selected.branch) params.branch = selected.branch;
+        if (selected.semester) params.semester = selected.semester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSectionsList(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selected.branch, selected.semester]);
   
   // Create a ref for the file input
   const fileInputRef = useRef(null);
@@ -625,7 +643,7 @@ const TimetableImport = ({ onSuccess }) => {
             onChange={(e) => setSelected({ ...selected, section: e.target.value })}
           >
             <option value="">Select Section</option>
-            {["A", "B", "C", "D", "SOC", "WIPRO TRAINING", "ATT"].map((sec) => (
+            {sectionsList.map((sec) => (
               <option key={sec} value={sec}>Section {sec}</option>
             ))}
           </select>
@@ -660,7 +678,7 @@ const TimetableImport = ({ onSuccess }) => {
             <option value="">Select Class Incharge</option>
             {faculties.map((f) => (
               <option key={f._id} value={f._id}>
-                {f.firstName} {f.lastName} ({f.employeeId})
+                {[f.firstName, f.middleName, f.lastName].filter(Boolean).join(" ")} ({f.employeeId})
               </option>
             ))}
           </select>
@@ -851,7 +869,7 @@ const TimetableImport = ({ onSuccess }) => {
                         <option value="">Select Faculty</option>
                         {faculties.map((f) => (
                           <option key={f._id} value={f._id}>
-                            {f.firstName} {f.lastName} ({f.employeeId})
+                            {[f.firstName, f.middleName, f.lastName].filter(Boolean).join(" ")} ({f.employeeId})
                           </option>
                         ))}
                       </select>

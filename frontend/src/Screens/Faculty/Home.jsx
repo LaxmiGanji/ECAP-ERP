@@ -1,4 +1,3 @@
-
 // Home.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -22,6 +21,8 @@ import DailyAttendance from "./DailyAttendance";
 import AIAssistant from "../Student/AIAssistant";
 import AIAnalytics from "./AIAnalytics";
 import MessageParent from "../../components/MessageParent";
+import FacultyOBEConfig from "./FacultyOBEConfig";
+import PredictiveAnalytics from "../Admin/PredictiveAnalytics";
 
 const Home = () => {
   const router = useLocation();
@@ -34,11 +35,12 @@ const Home = () => {
   const [analyticsData, setAnalyticsData] = useState({ stats: [], optionalLeave: { used: 0, available: 0 } });
 
   useEffect(() => {
-    if (router.state === null) {
+    const activeToken = localStorage.getItem("token");
+    if (router.state === null && !activeToken) {
       navigate("/");
     }
     setLoad(true);
-    if (router.state?.loginid) {
+    if (router.state?.loginid || localStorage.getItem("loginid")) {
       fetchAnalytics();
     }
   }, [navigate, router.state]);
@@ -51,8 +53,8 @@ const Home = () => {
       });
       if (response.data.success) {
         setAnalyticsData({
-          stats: response.data.stats,
-          optionalLeave: response.data.optionalLeave
+          stats: response.data.stats || [],
+          optionalLeave: response.data.optionalLeave || { used: 0, available: 0 }
         });
       }
     } catch (error) {
@@ -81,9 +83,12 @@ const Home = () => {
       case "Attendence":
         return <Attendence />;
       case "Edit Faculty":
-        return <EditFaculty />; // ✅ Added case for EditFaculty
+        return <EditFaculty />;
       case "Final CO/PO Attainment":
         return <FinalCOPOAttainment />;
+      case "CO-PO Mapping":
+      case "OBE Config":
+        return <FacultyOBEConfig />;
       case "Leave Management":
         return <FacultyLeaveManagement setSelectedMenu={setSelectedMenu} />;
       case "DailyAttendance":
@@ -92,6 +97,8 @@ const Home = () => {
         return <AIAssistant />;
       case "AI Student Analytics":
         return <AIAnalytics />;
+      case "PredictiveAnalytics":
+        return <PredictiveAnalytics />;
       default:
         return <Profile />;
     }
@@ -100,7 +107,7 @@ const Home = () => {
   return (
     <>
       {load && (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+        <div className="min-h-screen bg-slate-50/70 text-slate-800">
           <Navbar />
           <Sidebar
             selectedMenu={selectedMenu}
@@ -111,173 +118,139 @@ const Home = () => {
           />
 
           {/* Main Content Area */}
-          <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16" : "md:ml-64"} ml-0`}>
-            <div className="p-4 md:p-8">
-              {/* Dashboard Header */}
+          <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16 w-full md:w-[calc(100%-4rem)]" : "md:ml-64 w-full md:w-[calc(100%-16rem)]"} ml-0 min-h-[calc(100vh-4rem)]`}>
+            <div className="p-4 md:p-6 lg:p-8 w-full space-y-6">
+
+              {/* Bento Dashboard Section on Profile */}
               {selectedMenu === "My Profile" && (
-                <div className="mb-8">
-                  <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-4 md:px-8 py-6">
-                      <h1 className="text-2xl md:text-3xl font-bold text-white">Faculty Dashboard</h1>
-                      <p className="text-purple-100 mt-2 text-sm md:text-base">
-                        Welcome to your academic management portal
-                      </p>
+                <div className="space-y-6 mb-8">
+                  {/* Hero Bento Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {/* Hero Banner (Spans 2 cols) */}
+                    <div className="md:col-span-2 lg:col-span-2 bento-card bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 p-6 text-white relative overflow-hidden flex flex-col justify-between min-h-[180px] border border-indigo-500/20 shadow-lg">
+                      <div className="absolute right-0 top-0 -mt-6 -mr-6 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                      <div>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 mb-3 shadow-xs">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+                          Faculty Academic Hub
+                        </span>
+                        <h1 className="text-xl md:text-2xl font-black text-white tracking-tight drop-shadow-sm">Sphoorthy Engineering College</h1>
+                        <p className="text-indigo-200 text-xs md:text-sm font-semibold mt-1">Teaching & Course Outcome Management Portal</p>
+                      </div>
+                      <div className="flex flex-wrap items-center space-x-3 pt-4 border-t border-slate-800/80 mt-4 text-xs font-semibold text-slate-300">
+                        <span className="text-slate-400">Quick Actions</span>
+                        <span className="text-slate-600">•</span>
+                        <button onClick={() => setSelectedMenu("Attendence")} className="text-indigo-300 hover:text-white transition-colors cursor-pointer font-bold">Attendance</button>
+                        <span className="text-slate-600">•</span>
+                        <button onClick={() => setSelectedMenu("Upload Marks")} className="text-indigo-300 hover:text-white transition-colors cursor-pointer font-bold">Upload Marks</button>
+                        <span className="text-slate-600">•</span>
+                        <button onClick={() => setSelectedMenu("OBE Config")} className="text-indigo-300 hover:text-white transition-colors cursor-pointer font-bold">OBE & CO-PO</button>
+                      </div>
                     </div>
 
-                    <div className="p-4 md:p-8">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                        {/* Quick Actions */}
-                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-blue-100 text-sm font-medium">Upload Marks</p>
-                              <p className="text-lg font-semibold">Manage Grades</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg
-                                className="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Attendance */}
-                        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-green-100 text-sm font-medium">Attendance</p>
-                              <p className="text-lg font-semibold">Track Students</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg
-                                className="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Materials */}
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-orange-100 text-sm font-medium">Materials</p>
-                              <p className="text-lg font-semibold">Share Resources</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Leave Management */}
-                        <div onClick={() => setSelectedMenu("Leave Management")} className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg cursor-pointer transform hover:scale-105 transition-all">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-indigo-100 text-sm font-medium">Leave Request</p>
-                              <p className="text-lg font-semibold">Track & Apply</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                          </div>
+                    {/* Quick Stat Card 1: Attendance */}
+                    <div 
+                      onClick={() => setSelectedMenu("Attendence")}
+                      className="bento-card p-5 flex flex-col justify-between bg-white border border-slate-200/80 shadow-sm hover:border-indigo-400 cursor-pointer transition-all hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Attendance</span>
+                        <div className="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
                         </div>
                       </div>
+                      <div className="mt-4">
+                        <p className="text-lg font-bold text-slate-900">Mark & Track</p>
+                        <p className="text-[11px] text-emerald-600 font-medium mt-1">✓ Student Attendance</p>
+                      </div>
+                    </div>
 
-                      {/* Attendance Analytics Section */}
-                      <div className="mt-12">
-                        <h2 className="text-xl font-bold text-gray-800 mb-6">Attendance Analytics</h2>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                          {/* Monthly Trend */}
-                          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                             <h3 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">Last 6 Months Presence %</h3>
-                             <div className="h-48 flex items-end justify-between px-4">
-                                {analyticsData.stats.length === 0 ? (
-                                  <div className="w-full text-center text-gray-400 text-sm py-10 italic">No attendance data recorded yet.</div>
-                                ) : (
-                                  analyticsData.stats.map((s, i) => (
-                                    <div key={i} className="flex flex-col items-center group flex-1 h-full justify-end px-1">
-                                       <div className="w-full h-full flex items-end justify-center relative min-h-[160px]">
-                                          {/* Background bar track */}
-                                          <div className="w-full max-w-[32px] bg-gray-100 rounded-t-lg h-full absolute bottom-0 opacity-40"></div>
-                                          {/* Active bar */}
-                                          <div 
-                                            className="w-full max-w-[32px] bg-indigo-500 rounded-t-lg transition-all group-hover:bg-indigo-600 relative z-10 shadow-sm" 
-                                            style={{ height: `${Math.max(s.percentage, 5)}%` }}
-                                          >
-                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap z-30 pointer-events-none">
-                                              <div className="font-bold">{s.month}: {s.percentage}%</div>
-                                              <div className="text-[9px] opacity-80">{s.presentDays}/{s.totalDays} Days</div>
-                                            </div>
-                                          </div>
-                                       </div>
-                                       <span className="text-[10px] mt-3 font-bold text-gray-500 uppercase tracking-tighter">{s.month}</span>
-                                    </div>
-                                  ))
-                                )}
-                             </div>
-                          </div>
-                          
-                          {/* Optional Leave Pie Chart Simulation */}
-                          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex items-center justify-between">
-                             <div>
-                                <h3 className="text-sm font-bold text-gray-500 mb-1 uppercase tracking-wider">Optional Leaves</h3>
-                                <p className="text-2xl font-bold text-indigo-600">
-                                  {analyticsData.optionalLeave.used} / {analyticsData.optionalLeave.available}
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">Used vs Total Available</p>
-                             </div>
-                             <div className="w-32 h-32 rounded-full border-[12px] border-indigo-500 relative flex items-center justify-center">
-                                <div 
-                                  className="absolute inset-0 border-[12px] border-indigo-100 rounded-full" 
-                                  style={{ 
-                                    clipPath: `polygon(50% 50%, 50% 0, ${analyticsData.optionalLeave.used / analyticsData.optionalLeave.available > 0.5 ? '100% 0, 100% 100%, 0 100%, 0 50%' : '100% 0, 100% 50%'})` 
-                                  }}
-                                ></div>
-                                <span className="text-xs font-bold text-gray-700">
-                                  {analyticsData.optionalLeave.available > 0 ? Math.round((analyticsData.optionalLeave.used / analyticsData.optionalLeave.available) * 100) : 0}% Used
-                                </span>
-                             </div>
-                          </div>
+                    {/* Quick Stat Card 2: OBE & CO-PO */}
+                    <div 
+                      onClick={() => setSelectedMenu("OBE Config")}
+                      className="bento-card p-5 flex flex-col justify-between bg-white border border-slate-200/80 shadow-sm hover:border-purple-400 cursor-pointer transition-all hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">OBE & CO-PO</span>
+                        <div className="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
                         </div>
+                      </div>
+                      <div className="mt-4">
+                        <p className="text-lg font-bold text-slate-900">CO Outcomes</p>
+                        <p className="text-[11px] text-purple-600 font-medium mt-1">✓ Auto-Mapping Active</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Attendance Analytics Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                    <div className="lg:col-span-2 bento-card p-6 bg-white border border-slate-200/80 shadow-sm">
+                      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Monthly Attendance Trend</h3>
+                      <div className="h-44 flex items-end justify-between px-4">
+                        {analyticsData.stats.length === 0 ? (
+                          <div className="w-full text-center text-slate-400 text-sm py-10 italic">No attendance records found yet.</div>
+                        ) : (
+                          analyticsData.stats.map((s, i) => (
+                            <div key={i} className="flex flex-col items-center group flex-1 h-full justify-end px-1">
+                              <div className="w-full h-full flex items-end justify-center relative min-h-[140px]">
+                                <div className="w-full max-w-[28px] bg-slate-100 rounded-t-lg h-full absolute bottom-0 opacity-50"></div>
+                                <div 
+                                  className="w-full max-w-[28px] bg-indigo-600 rounded-t-lg transition-all group-hover:bg-indigo-700 relative z-10 shadow-sm" 
+                                  style={{ height: `${Math.max(s.percentage, 5)}%` }}
+                                >
+                                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap z-30 pointer-events-none">
+                                    <div className="font-bold">{s.month}: {s.percentage}%</div>
+                                    <div className="text-[9px] opacity-80">{s.presentDays}/{s.totalDays} Days</div>
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-[10px] mt-2 font-bold text-slate-500 uppercase">{s.month}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Optional Leaves Card */}
+                    <div className="bento-card p-6 bg-white border border-slate-200/80 shadow-sm flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Optional Leaves</h3>
+                        <p className="text-3xl font-extrabold text-indigo-600">
+                          {analyticsData.optionalLeave.used} / {analyticsData.optionalLeave.available}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">Used vs Available</p>
+                        <button 
+                          onClick={() => setSelectedMenu("Leave Management")} 
+                          className="mt-4 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-200"
+                        >
+                          Apply Leave
+                        </button>
+                      </div>
+                      <div className="w-28 h-28 rounded-full border-[10px] border-indigo-600 relative flex items-center justify-center shadow-inner">
+                        <span className="text-xs font-bold text-slate-800">
+                          {analyticsData.optionalLeave.available > 0 ? Math.round((analyticsData.optionalLeave.used / analyticsData.optionalLeave.available) * 100) : 0}%
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Content Area */}
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              {/* Main Active Menu Content */}
+              <div className="w-full">
                 {renderContent()}
               </div>
+
             </div>
           </div>
         </div>
       )}
-      <Toaster position="bottom-center" />
+      <Toaster position="top-center" />
     </>
   );
 };

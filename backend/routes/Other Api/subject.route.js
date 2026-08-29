@@ -11,6 +11,7 @@ const {
   getSectionTotal, 
   incrementSectionTotalByOne,
   addCourseOutcome,
+  autoMapSubjectCoPo,
   deleteCourseOutcome,
   updateCoPoMapping,
   getCoPoMappings,
@@ -33,6 +34,7 @@ router.put("/incrementSectionTotalByOne/:subjectId", incrementSectionTotalByOne)
 
 // Course Outcome routes
 router.post("/addCourseOutcome/:subjectId", addCourseOutcome);
+router.post("/autoMapCoPo/:subjectId", autoMapSubjectCoPo);
 router.delete("/deleteCourseOutcome/:subjectId/:coNumber", deleteCourseOutcome);
 
 // CO-PO Mapping routes

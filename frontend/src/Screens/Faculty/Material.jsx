@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { FiUpload, FiEye, FiDownload, FiTrash2 } from "react-icons/fi";
+import { FiUpload, FiEye, FiDownload, FiTrash2, FiAlertCircle } from "react-icons/fi";
 import { HiOutlineCalendar } from "react-icons/hi";
 import Heading from "../../components/Heading";
 import { AiOutlineClose } from "react-icons/ai";
@@ -13,6 +13,8 @@ const Material = ({ branch: lockedBranch }) => {
   const [allSubjects, setAllSubjects] = useState([]);
   const [branches, setBranches] = useState([]);
   const [file, setFile] = useState();
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
+  const [studentRegulations, setStudentRegulations] = useState([]);
   const [selected, setSelected] = useState({
     title: "",
     subject: "",
@@ -20,6 +22,39 @@ const Material = ({ branch: lockedBranch }) => {
     semester: "",
     faculty: fullname?.split(" ")[0] + " " + fullname?.split(" ")[2] || fullname,
   });
+
+  useEffect(() => {
+    checkStudentPresence();
+  }, [selected.semester, selected.branch]);
+
+  const checkStudentPresence = async () => {
+    if (!selected.semester) {
+      setNoStudentsMessage("");
+      return;
+    }
+
+    try {
+      const payload = { semester: Number(selected.semester) };
+      if (selected.branch) {
+        payload.branch = selected.branch;
+      }
+
+      const response = await axios.post(`${baseApiURL()}/student/details/getDetails`, payload);
+      if (response.data.success && response.data.user && response.data.user.length > 0) {
+        const studentReg = response.data.user[0].regulation;
+        if (studentReg && (!selected.regulation || selected.regulation === "")) {
+          setSelected(prev => ({ ...prev, regulation: studentReg }));
+        }
+        setNoStudentsMessage("");
+      } else {
+        setNoStudentsMessage("no students are there for that semester");
+        setSelected(prev => ({ ...prev, regulation: "" }));
+      }
+    } catch (error) {
+      setNoStudentsMessage("no students are there for that semester");
+      setSelected(prev => ({ ...prev, regulation: "" }));
+    }
+  };
   
   // State for viewing materials
   const [viewMode, setViewMode] = useState("upload"); // "upload" or "view"
@@ -295,39 +330,46 @@ const Material = ({ branch: lockedBranch }) => {
   };
 
   return (
-    <div className="w-full mx-auto mt-10 flex justify-center items-start flex-col mb-10 px-4">
-      {/* Header */}
-      <div className="flex justify-between items-center w-full mb-6">
-        <Heading title="Material Management" />
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Study Material Management</h1>
+          <p className="text-slate-500 font-medium text-xs md:text-sm mt-1">Upload study materials, syllabus documents & notes for enrolled students</p>
+        </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="w-full flex justify-center mb-8">
-        <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+      {/* Sub-tab Navigation */}
+      <div className="bento-card p-2 bg-slate-100/80 border border-slate-200">
+        <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setViewMode("upload")}
-            className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 ${
               viewMode === "upload"
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-indigo-600 shadow-sm font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
           >
-            <FiUpload className="inline mr-2" />
-            Upload Material
+            <div className="flex items-center justify-center space-x-2">
+              <FiUpload className="w-4 h-4" />
+              <span>Upload Material</span>
+            </div>
           </button>
           <button
             onClick={() => {
               setViewMode("view");
               getFacultyMaterials();
             }}
-            className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 ${
               viewMode === "view"
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-indigo-600 shadow-sm font-semibold"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
           >
-            <FiEye className="inline mr-2" />
-            {lockedBranch ? "Department Materials" : "My Materials"}
+            <div className="flex items-center justify-center space-x-2">
+              <FiEye className="w-4 h-4" />
+              <span>View & Manage Uploads</span>
+            </div>
           </button>
         </div>
       </div>
@@ -396,6 +438,34 @@ const Material = ({ branch: lockedBranch }) => {
                   </option>
                 ))}
               </select>
+              {noStudentsMessage && (
+                <div className="w-full mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center space-x-2">
+                  <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span className="font-medium">{noStudentsMessage}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Select Regulation */}
+            <div className="w-full mt-4">
+              <label htmlFor="regulation" className="block text-sm font-medium text-gray-700 mb-2">
+                Select Regulation
+              </label>
+              <select
+                value={selected.regulation || ""}
+                id="regulation"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                onChange={(e) =>
+                  setSelected({ ...selected, regulation: e.target.value })
+                }
+              >
+                <option value="">-- All Regulations --</option>
+                {(studentRegulations.length > 0 ? studentRegulations : Array.from(new Set(allSubjects.map(s => s.regulation).filter(Boolean)))).map((reg) => (
+                  <option key={reg} value={reg}>
+                    {reg}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Select Subject */}
@@ -412,9 +482,13 @@ const Material = ({ branch: lockedBranch }) => {
                 }
               >
                 <option value="">-- Select Subject --</option>
-                {allSubjects.map((item) => (
+                {(noStudentsMessage ? [] : allSubjects
+                  .filter(item => !selected.branch || item.branch?.name === selected.branch || item.branch === selected.branch)
+                  .filter(item => !selected.semester || String(item.semester) === String(selected.semester))
+                  .filter(item => !selected.regulation || item.regulation?.toUpperCase() === selected.regulation.toUpperCase())
+                ).map((item) => (
                   <option key={item._id} value={item.name}>
-                    {item.name}
+                    {item.name} {item.code ? `(${item.code})` : ''} {item.regulation ? `[${item.regulation}]` : ''}
                   </option>
                 ))}
               </select>

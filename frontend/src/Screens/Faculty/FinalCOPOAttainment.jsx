@@ -4,7 +4,9 @@ import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { baseApiURL } from "../../baseUrl";
 import Heading from "../../components/Heading";
-import { FiPlus, FiTrash2, FiBarChart2, FiDownload, FiUpload, FiSettings, FiCheckCircle } from "react-icons/fi";
+import { 
+  FiPlus, FiTrash2, FiBarChart2, FiDownload, FiUpload, FiSettings, FiCheckCircle, FiAlertCircle, FiMenu 
+} from "react-icons/fi";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell 
 } from 'recharts';
@@ -55,9 +57,26 @@ const FinalCOPOAttainment = () => {
     Array.from({ length: 7 }, (_, i) => ({ action: "", change: "" }))
   );
   const [poActionPlan, setPoActionPlan] = useState({});
+  const [dragInfo, setDragInfo] = useState(null);
+
+  const getQuestionName = (index) => {
+    const num = Math.floor(index / 2) + 1;
+    const letter = index % 2 === 0 ? "a" : "b";
+    return `${num}${letter}`;
+  };
 
   const addQuestion = (type) => {
-    const newQ = { qName: "", co: "", maxMarks: 0 };
+    let list;
+    if (type === "IA") list = iaQuestions;
+    else if (type === "SEE") list = seeQuestions;
+    else list = assignmentQuestions;
+
+    const nextIndex = list.length;
+    const qName = type === "Assignment" ? `CIA${nextIndex + 1}` : getQuestionName(nextIndex);
+    const defaultCo = subjectCOs.length > 0 ? subjectCOs[nextIndex % subjectCOs.length]?.coNumber : "";
+    const defaultMaxMarks = type === "IA" ? 5 : 10;
+
+    const newQ = { qName, co: defaultCo, maxMarks: defaultMaxMarks };
     if (type === "IA") setIaQuestions([...iaQuestions, newQ]);
     else if (type === "SEE") setSeeQuestions([...seeQuestions, newQ]);
     else setAssignmentQuestions([...assignmentQuestions, newQ]);
@@ -89,6 +108,61 @@ const FinalCOPOAttainment = () => {
     }
   };
 
+  const handleDragStart = (type, index) => {
+    setDragInfo({ type, index });
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (type, dropIndex) => {
+    if (!dragInfo || dragInfo.type !== type) return;
+    const startIndex = dragInfo.index;
+    if (startIndex === dropIndex) return;
+
+    let list;
+    let setList;
+    if (type === "IA") {
+      list = [...iaQuestions];
+      setList = setIaQuestions;
+    } else if (type === "SEE") {
+      list = [...seeQuestions];
+      setList = setSeeQuestions;
+    } else {
+      list = [...assignmentQuestions];
+      setList = setAssignmentQuestions;
+    }
+
+    const [movedItem] = list.splice(startIndex, 1);
+    list.splice(dropIndex, 0, movedItem);
+    setList(list);
+    setDragInfo(null);
+  };
+
+  const moveQuestion = (type, index, direction) => {
+    let list;
+    let setList;
+    if (type === "IA") {
+      list = [...iaQuestions];
+      setList = setIaQuestions;
+    } else if (type === "SEE") {
+      list = [...seeQuestions];
+      setList = setSeeQuestions;
+    } else {
+      list = [...assignmentQuestions];
+      setList = setAssignmentQuestions;
+    }
+
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+    setList(list);
+  };
+
   useEffect(() => {
     fetchSubjectsAndBranches();
   }, []);
@@ -107,14 +181,90 @@ const FinalCOPOAttainment = () => {
     }
   };
 
-  const filteredSubjects = subjects.filter(
-    (sub) =>
-      sub.semester === parseInt(selectedSemester) &&
-      (sub.branch?.name === selectedBranch || sub.branch === selectedBranch)
-  );
+  const [detectedRegulations, setDetectedRegulations] = useState([]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
+
+  useEffect(() => {
+    detectCohortRegulation();
+  }, [selectedBranch, selectedSemester]);
+
+  const detectCohortRegulation = async () => {
+    setSelectedSubject("");
+    if (!selectedBranch || !selectedSemester) {
+      setDetectedRegulations([]);
+      setNoStudentsMessage("");
+      return;
+    }
+
+    try {
+      const res = await axios.post(`${baseApiURL()}/student/details/getCohortRegulation`, {
+        branch: selectedBranch,
+        semester: Number(selectedSemester)
+      });
+
+      if (res.data.success && res.data.count > 0 && res.data.regulations?.length > 0) {
+        setDetectedRegulations(res.data.regulations);
+        if (res.data.academicYear) {
+          setAcademicYear(res.data.academicYear);
+        }
+        setNoStudentsMessage("");
+      } else {
+        setDetectedRegulations([]);
+        setNoStudentsMessage("no student in that semester");
+      }
+    } catch (error) {
+      console.error("Cohort regulation detection error:", error);
+      setDetectedRegulations([]);
+      setNoStudentsMessage("no student in that semester");
+    }
+  };
+
+  const filteredSubjects = noStudentsMessage
+    ? []
+    : subjects.filter((sub) => {
+        const semMatch = sub.semester === parseInt(selectedSemester);
+        const branchMatch =
+          sub.branch?.name === selectedBranch ||
+          sub.branch === selectedBranch ||
+          (sub.branch?.name && selectedBranch && sub.branch.name.toLowerCase() === selectedBranch.toLowerCase());
+
+        const regMatch =
+          detectedRegulations.length > 0
+            ? detectedRegulations.some((r) => r.toUpperCase() === sub.regulation?.toUpperCase())
+            : true;
+
+        return semMatch && branchMatch && regMatch;
+      });
 
   const selectedSubjectData = subjects.find(s => s._id === selectedSubject);
   const subjectCOs = selectedSubjectData?.courseOutcomes || [];
+
+  useEffect(() => {
+    if (!selectedSubject) return;
+    const cos = selectedSubjectData?.courseOutcomes || [];
+    if (cos && cos.length > 0) {
+      const autoIa = cos.map((cItem, i) => ({
+        qName: getQuestionName(i),
+        co: cItem.coNumber,
+        maxMarks: 5
+      }));
+      setIaQuestions(autoIa);
+
+      const autoSee = cos.map((cItem, i) => ({
+        qName: getQuestionName(i),
+        co: cItem.coNumber,
+        maxMarks: 10
+      }));
+      setSeeQuestions(autoSee);
+
+      const autoAss = cos.map((cItem, i) => ({
+        qName: `CIA${i + 1}`,
+        co: cItem.coNumber,
+        maxMarks: 10
+      }));
+      setAssignmentQuestions(autoAss);
+    }
+  }, [selectedSubject]);
 
   // Generate IA/SEE Templates
   const handleDownloadTemplate = async (templateType) => {
@@ -429,10 +579,17 @@ const FinalCOPOAttainment = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Academic Year</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Academic Year</label>
+              {academicYear && (
+                <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-semibold border border-blue-100">
+                  Auto-fetched
+                </span>
+              )}
+            </div>
             <input
               type="text"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-semibold text-blue-900"
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
               placeholder="e.g. 2024-2025"
@@ -441,7 +598,7 @@ const FinalCOPOAttainment = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Branch</label>
             <select
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium"
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
             >
@@ -454,7 +611,7 @@ const FinalCOPOAttainment = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Semester</label>
             <select
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium"
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(e.target.value)}
             >
@@ -465,18 +622,52 @@ const FinalCOPOAttainment = () => {
             </select>
           </div>
           <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Student Regulation</label>
+              {detectedRegulations.length > 0 && (
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-semibold border border-emerald-100">
+                  Auto-fetched
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              readOnly
+              value={detectedRegulations.length > 0 ? detectedRegulations.join(", ") : "Auto-detecting..."}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg font-semibold text-emerald-800 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
             <select
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                noStudentsMessage ? "border-red-300 bg-red-50 text-red-700 font-medium" : "border-gray-300"
+              }`}
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              disabled={!selectedBranch || !selectedSemester}
+              disabled={!selectedBranch || !selectedSemester || !!noStudentsMessage}
             >
-              <option value="">-- Select Subject --</option>
+              <option value="">
+                {!selectedBranch || !selectedSemester
+                  ? "-- Select Subject --"
+                  : noStudentsMessage
+                  ? "no student in that semester"
+                  : filteredSubjects.length === 0
+                  ? "No subjects available for detected regulation"
+                  : "-- Select Subject --"}
+              </option>
               {filteredSubjects.map((s) => (
-                <option key={s._id} value={s._id}>{s.name} ({s.code})</option>
+                <option key={s._id} value={s._id}>
+                  {s.name} ({s.code}) - {s.regulation}
+                </option>
               ))}
             </select>
+            {noStudentsMessage && (
+              <p className="text-xs text-red-500 mt-1 font-semibold flex items-center gap-1">
+                <FiAlertCircle /> {noStudentsMessage}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Faculty Name</label>
@@ -508,7 +699,38 @@ const FinalCOPOAttainment = () => {
               </div>
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                 {iaQuestions.map((q, idx) => (
-                  <div key={idx} className="flex gap-2 items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={() => handleDragStart("IA", idx)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop("IA", idx)}
+                    className="flex gap-2 items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition-colors"
+                  >
+                    <div className="flex flex-col justify-center items-center text-gray-400 hover:text-gray-600 px-1 select-none">
+                      <FiMenu className="text-base cursor-grab active:cursor-grabbing" title="Drag to reorder" />
+                      <div className="flex gap-0.5 mt-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => moveQuestion("IA", idx, -1)}
+                          className="text-[9px] px-1 py-0.5 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30"
+                          title="Move Up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === iaQuestions.length - 1}
+                          onClick={() => moveQuestion("IA", idx, 1)}
+                          className="text-[9px] px-1 py-0.5 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30"
+                          title="Move Down"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="w-1/3">
                       <label className="block text-[10px] font-medium text-gray-500 mb-1">Q. No.</label>
                       <input
@@ -568,7 +790,38 @@ const FinalCOPOAttainment = () => {
               </div>
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                 {seeQuestions.map((q, idx) => (
-                  <div key={idx} className="flex gap-2 items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={() => handleDragStart("SEE", idx)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop("SEE", idx)}
+                    className="flex gap-2 items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition-colors"
+                  >
+                    <div className="flex flex-col justify-center items-center text-gray-400 hover:text-gray-600 px-1 select-none">
+                      <FiMenu className="text-base cursor-grab active:cursor-grabbing" title="Drag to reorder" />
+                      <div className="flex gap-0.5 mt-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => moveQuestion("SEE", idx, -1)}
+                          className="text-[9px] px-1 py-0.5 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30"
+                          title="Move Up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === seeQuestions.length - 1}
+                          onClick={() => moveQuestion("SEE", idx, 1)}
+                          className="text-[9px] px-1 py-0.5 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30"
+                          title="Move Down"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="w-1/3">
                       <label className="block text-[10px] font-medium text-gray-500 mb-1">Q. No.</label>
                       <input
@@ -633,7 +886,17 @@ const FinalCOPOAttainment = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[250px] overflow-y-auto pr-2">
                 {assignmentQuestions.map((q, idx) => (
-                  <div key={idx} className="flex gap-2 items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={() => handleDragStart("Assignment", idx)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop("Assignment", idx)}
+                    className="flex gap-2 items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition-colors"
+                  >
+                    <div className="flex flex-col justify-center items-center text-gray-400 select-none pr-1">
+                      <FiMenu className="text-sm cursor-grab active:cursor-grabbing" title="Drag to reorder" />
+                    </div>
                     <div className="flex-1">
                       <input
                         type="text"

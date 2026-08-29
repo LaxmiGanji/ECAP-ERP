@@ -166,36 +166,40 @@ How can I help you today? You can type a question, upload a file, or select one 
   };
 
   return (
-    <div className="flex flex-col h-[75vh] md:h-[80vh] bg-gradient-to-br from-slate-900 to-indigo-950 text-slate-100 rounded-2xl shadow-2xl overflow-hidden border border-slate-800">
-      
-      {/* Upper header */}
-      <div className="flex items-center justify-between px-6 py-4 bg-slate-950/70 border-b border-slate-800 backdrop-blur-md">
-        <div className="flex items-center space-x-3">
+    <div className="w-full space-y-6">
+      {/* 🌟 Header Banner */}
+      <div className="bento-header-banner flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center space-x-3.5">
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+            <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shadow-sm">
               <FiCpu className="w-5 h-5 animate-pulse" />
             </div>
-            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-950 animate-ping" />
-            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-950" />
+            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-ping" />
+            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
           </div>
           <div>
-            <h2 className="font-bold text-sm md:text-base bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              ECAP Campus AI Assistant
-            </h2>
-            <div className="flex items-center space-x-1.5">
-              <span className="text-[10px] text-slate-400">Status: Active</span>
-              <span className="text-[8px] px-1.5 py-0.5 rounded bg-slate-800 text-cyan-400 font-semibold border border-slate-700">
-                {isAiMode ? "LLM Powered" : "Standard Engine"}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+                ECAP Campus AI Assistant
+              </h1>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-bold border border-indigo-100">
+                {isAiMode ? "LLM Powered Engine" : "Active Standard Engine"}
               </span>
             </div>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Ask about timetables, attendance, leave application formats & campus guidelines
+            </p>
           </div>
         </div>
-        
-        <div className="hidden sm:flex items-center text-xs text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
-          <FiInfo className="mr-1 text-cyan-400" />
-          <span>Supports uploading Images & PDF/Text documents directly.</span>
+
+        <div className="hidden sm:flex items-center text-xs text-slate-600 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 font-medium">
+          <FiInfo className="mr-1.5 text-indigo-600 w-4 h-4" />
+          <span>Supports uploading Images & PDF/Text documents</span>
         </div>
       </div>
+
+      {/* Main Glassmorphic Dark Content Box */}
+      <div className="bg-slate-900 border border-slate-800 text-slate-100 rounded-2xl overflow-hidden shadow-xl h-[620px] flex flex-col">
 
       {/* Messages area */}
       <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
@@ -278,12 +282,12 @@ How can I help you today? You can type a question, upload a file, or select one 
 
       {/* Suggestion Chips */}
       {messages.length <= 2 && !selectedFile && (
-        <div className="px-4 md:px-6 py-2 bg-slate-950/20 border-t border-slate-900 overflow-x-auto whitespace-nowrap scrollbar-none flex gap-2">
+        <div className="px-4 md:px-6 py-3 bg-slate-900 border-t border-slate-800 overflow-x-auto whitespace-nowrap scrollbar-none flex gap-2">
           {suggestions.map((s, idx) => (
             <button
               key={idx}
               onClick={() => handleSendMessage(s.text)}
-              className="inline-flex items-center text-xs bg-slate-900 hover:bg-slate-850 text-slate-300 px-3.5 py-1.5 rounded-full border border-slate-800 hover:border-cyan-500/50 transition-all duration-300 shadow-sm"
+              className="inline-flex items-center text-xs bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white px-3.5 py-1.5 rounded-full border border-slate-700 hover:border-indigo-500 transition-all duration-200 shadow-sm font-medium"
             >
               {s.label}
             </button>
@@ -356,6 +360,7 @@ How can I help you today? You can type a question, upload a file, or select one 
           <FiSend className="w-5 h-5" />
         </button>
       </div>
+    </div>
     </div>
   );
 };

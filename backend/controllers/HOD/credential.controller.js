@@ -49,4 +49,26 @@ const registerHandler = async (req, res) => {
     }
 }
 
-module.exports = { loginHandler, registerHandler }
+const updatePasswordHandler = async (req, res) => {
+    let { loginid, password } = req.body;
+    if (!loginid || !password) {
+        return res.status(400).json({ success: false, message: "Login ID and password are required" });
+    }
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        let user = await HODCredential.findOneAndUpdate({ loginid }, { password: hashedPassword });
+        if (!user) {
+            const FacultyCredential = require("../../models/Faculty/credential.model.js");
+            user = await FacultyCredential.findOneAndUpdate({ loginid }, { password: hashedPassword });
+        }
+        if (!user) {
+            return res.status(400).json({ success: false, message: "HOD account not found" });
+        }
+        res.json({ success: true, message: "Password updated successfully!" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+module.exports = { loginHandler, registerHandler, updatePasswordHandler }

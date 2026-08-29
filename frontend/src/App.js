@@ -19,6 +19,8 @@ import ParentPortal from "./Screens/Common/ParentPortal";
 import Portfolio3D from "./Screens/Common/Portfolio3D";
 import AlumniHome from "./Screens/Alumni/AlumniHome";
 
+import CustomCreativeCursor from "./components/CustomCreativeCursor";
+
 const HashRedirect = () => {
   useEffect(() => {
     if (window.location.hash && window.location.hash.includes("portfolio")) {

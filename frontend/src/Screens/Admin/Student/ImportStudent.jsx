@@ -187,9 +187,21 @@ const ImportStudent = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100 p-6">
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Bulk Student Import</h2>
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Top Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl">
+            <FiUpload className="text-indigo-600 text-xl" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Bulk Student Import</h1>
+            <p className="text-slate-500 font-medium text-xs mt-0.5">Upload Excel spreadsheets to register multiple student records</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bento-card p-8 bg-white">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <button

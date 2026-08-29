@@ -83,6 +83,7 @@ app.use("/api/notice", require("./routes/Other Api/notice.route"));
 app.use("/api/subject", require("./routes/Other Api/subject.route"));
 app.use("/api/marks", require("./routes/Other Api/marks.route"));
 app.use("/api/branch", require("./routes/Other Api/branch.route"));
+app.use("/api/section", require("./routes/Other Api/section.route"));
 app.use("/api/library", require("./routes/Other Api/library.route"));
 app.use("/api/library/rag", require("./routes/Other Api/rag.route"));
 app.use("/api/rag", require("./routes/Other Api/rag.route"));
@@ -97,6 +98,8 @@ app.use('/api/obe/template/final-copo', require("./routes/Other Api/finalAttainm
 app.use('/api/coattainment', require("./routes/Other Api/coattainment.routes"));
 app.use("/api/accounts/attendance", require("./routes/Accounts Api/attendance.route"));
 app.use("/api/biometric-attendance", require("./routes/Other Api/biometricAttendance.route"));
+app.use("/api/reports", require("./routes/Other Api/reports.route"));
+app.use("/api/predictive", require("./routes/Other Api/predictive.route"));
 app.use("/api/faculty/leave", require("./routes/Faculty Api/leave.route"));
 app.use("/api/placement/companies", require("./routes/Placement Api/company.route"));
 app.use("/api/placement/drives", require("./routes/Placement Api/drive.route"));

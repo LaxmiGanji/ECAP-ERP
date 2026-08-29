@@ -4,7 +4,7 @@ import { baseApiURL } from '../../baseUrl';
 import MyFacultyTimeTable from '../Faculty/MyFacultyTimeTable';
 import { FiSearch, FiUser } from 'react-icons/fi';
 
-const FacultySubstitution = () => {
+const FacultySubstitution = ({ branch }) => {
   const [faculties, setFaculties] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFaculty, setSelectedFaculty] = useState(null);
@@ -19,7 +19,7 @@ const FacultySubstitution = () => {
     try {
       const response = await axios.get(`${baseApiURL()}/faculty/details/getDetails2`);
       if (response.data.success) {
-        setFaculties(response.data.faculties);
+        setFaculties(response.data.faculties || []);
       }
     } catch (error) {
       console.error("Error fetching faculties:", error);
@@ -28,11 +28,14 @@ const FacultySubstitution = () => {
     }
   };
 
-  const filteredFaculties = faculties.filter(f => 
-    f.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    f.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    f.employeeId?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredFaculties = faculties.filter(f => {
+    const matchesBranch = !branch || f.department === branch || f.branch === branch;
+    const fullName = `${f.firstName || ''} ${f.middleName || ''} ${f.lastName || ''}`.toLowerCase();
+    const empId = (f.employeeId || '').toLowerCase();
+    const query = searchTerm.toLowerCase();
+    const matchesSearch = fullName.includes(query) || empId.includes(query);
+    return matchesBranch && matchesSearch;
+  });
 
   return (
     <div className="p-4 md:p-8">

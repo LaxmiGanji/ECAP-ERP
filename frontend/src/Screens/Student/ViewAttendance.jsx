@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { baseApiURL } from "../../baseUrl";
+import { FiCheckCircle, FiUser, FiPercent, FiBookOpen } from "react-icons/fi";
 
 const ViewAttendance = () => {
   const [enrollmentNo, setEnrollmentNo] = useState("");
@@ -37,7 +38,6 @@ const ViewAttendance = () => {
       try {
         const response = await axios.get(`${baseApiURL()}/subject/getSubject`);
         if (response.data?.success) {
-          // Store the entire subject data for section-specific calculations
           setSubjectTotals(response.data.subject);
         }
       } catch (error) {
@@ -58,21 +58,36 @@ const ViewAttendance = () => {
           `${baseApiURL()}/attendence/getStudentAttendance/${enrollmentNo}?semester=${studentData.semester}`
         );
         if (response.data?.success) {
-          const sortedRecords = response.data.attendanceRecords.sort(
-            (a, b) => new Date(b.date) - new Date(a.date)
-          );
+          const attendanceData = response.data.attendance;
 
           // Group attendance by subject
-          const attendanceGrouped = sortedRecords.reduce((acc, record) => {
-            if (!acc[record.subject]) acc[record.subject] = [];
-            acc[record.subject].push(record);
+          const groupedBySubject = attendanceData.reduce((acc, curr) => {
+            const subjectName = curr.subjectId?.name || "Unknown";
+            if (!acc[subjectName]) acc[subjectName] = [];
+            acc[subjectName].push(curr);
             return acc;
           }, {});
-          setAttendanceBySubject(attendanceGrouped);
 
-          // Calculate overall attendance percentage after subject totals are fetched
-          if (subjectTotals.length > 0) {
-            calculateOverallAttendance(attendanceGrouped, subjectTotals, studentData.section);
+          setAttendanceBySubject(groupedBySubject);
+
+          // Calculate overall attendance with section-specific totals
+          let totalClassesOverall = 0;
+          let totalAttendedOverall = 0;
+
+          Object.keys(groupedBySubject).forEach((subjName) => {
+            const attendedCount = groupedBySubject[subjName].length;
+            const subjectTotal = getSectionTotal(subjName, studentData.section);
+
+            totalAttendedOverall += attendedCount;
+            totalClassesOverall += subjectTotal;
+          });
+
+          if (totalClassesOverall > 0) {
+            setOverallAttendancePercentage(
+              ((totalAttendedOverall / totalClassesOverall) * 100).toFixed(2)
+            );
+          } else {
+            setOverallAttendancePercentage("N/A");
           }
         }
       } catch (error) {
@@ -83,39 +98,19 @@ const ViewAttendance = () => {
     fetchAttendance();
   }, [enrollmentNo, studentData, subjectTotals]);
 
-  // Function to get section-specific total for a subject
+  // Function to get section-specific total classes for a subject
   const getSectionTotal = (subjectName, studentSection) => {
     if (!subjectTotals || !Array.isArray(subjectTotals)) return 0;
     
-    const subject = subjectTotals.find(sub => 
-      sub.name === subjectName
-    );
+    const subject = subjectTotals.find(s => s.name === subjectName);
+    if (!subject) return 0;
+
+    if (subject.sectionTotals && typeof subject.sectionTotals === 'object') {
+      const sectionKey = studentSection || 'A';
+      return subject.sectionTotals[sectionKey] || subject.totalClasses || 0;
+    }
     
-    if (!subject || !subject.sectionTotals) return 0;
-    
-    const sectionData = subject.sectionTotals.find(s => s.section === studentSection);
-    return sectionData ? sectionData.total : 0;
-  };
-
-  // Function to calculate overall attendance percentage with section-specific totals
-  const calculateOverallAttendance = (attendanceGrouped, subjects, studentSection) => {
-    let totalClassesAttended = 0;
-    let totalClassesAvailable = 0;
-
-    Object.keys(attendanceGrouped).forEach((subjectName) => {
-      const sectionTotal = getSectionTotal(subjectName, studentSection);
-      if (sectionTotal > 0) {
-        totalClassesAttended += attendanceGrouped[subjectName].length;
-        totalClassesAvailable += sectionTotal;
-      }
-    });
-
-    const overallPercentage =
-      totalClassesAvailable > 0
-        ? ((totalClassesAttended / totalClassesAvailable) * 100).toFixed(2)
-        : "N/A";
-
-    setOverallAttendancePercentage(overallPercentage);
+    return subject.totalClasses || 0;
   };
 
   // Function to calculate subject-specific attendance percentage with section-specific totals
@@ -127,136 +122,127 @@ const ViewAttendance = () => {
     return totalClasses > 0 ? ((attendedClasses / totalClasses) * 100).toFixed(2) : "N/A";
   };
 
-  // Function to get total classes for a subject (section-specific)
   const getTotalClasses = (subjectName) => {
     if (!studentData) return 0;
     return getSectionTotal(subjectName, studentData.section);
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center mb-6">Your Attendance</h2>
-      
-      {/* Student Information */}
-      {studentData && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Student Information</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="font-medium">Enrollment No:</span> {studentData.enrollmentNo}
-            </div>
-            <div>
-              <span className="font-medium">Name:</span> {studentData.firstName} {studentData.middleName} {studentData.lastName}
-            </div>
-            <div>
-              <span className="font-medium">Branch:</span> {studentData.branch}
-            </div>
-            <div>
-              <span className="font-medium">Section:</span> {studentData.section}
-            </div>
-            <div>
-              <span className="font-medium">Semester:</span> {studentData.semester}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Attendance Summary */}
-      <div className="mb-6 p-4 bg-green-50 rounded-lg">
-        <h3 className="text-lg font-semibold mb-2">Overall Attendance Summary</h3>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Overall Attendance Percentage</p>
-            <p className="text-3xl font-bold text-green-600">
-              {overallAttendancePercentage}%
-            </p>
-          </div>
-          {overallAttendancePercentage !== "N/A" && (
-            <div className="text-right">
-              <p className="text-sm text-gray-600">
-                Based on section-specific totals for {studentData?.section || 'your section'}
-              </p>
-            </div>
-          )}
+    <div className="w-full space-y-6">
+      {/* 🌟 Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2 text-slate-900">
+            <FiCheckCircle className="text-emerald-600" />
+            <span>Attendance Records</span>
+          </h1>
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Section-specific attendance tracking and class percentage summary</p>
         </div>
       </div>
 
-      {/* Subject-wise Attendance */}
-      <h3 className="text-xl font-semibold mb-4">Subject-wise Attendance</h3>
-      {Object.keys(attendanceBySubject).length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-blue-100">
-                <th className="border border-gray-300 px-4 py-3 text-left">Subject</th>
-                <th className="border border-gray-300 px-4 py-3 text-center">Attended Classes</th>
-                <th className="border border-gray-300 px-4 py-3 text-center">Total Classes</th>
-                <th className="border border-gray-300 px-4 py-3 text-center">Percentage</th>
-                <th className="border border-gray-300 px-4 py-3 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.keys(attendanceBySubject).map((subject, index) => {
-                const attendedClasses = attendanceBySubject[subject]?.length || 0;
-                const totalClasses = getTotalClasses(subject);
-                const percentage = calculatePercentage(subject);
-                const percentageValue = parseFloat(percentage);
-                
-                // Determine status based on percentage
-                let status = "Unknown";
-                let statusColor = "gray";
-                
-                if (!isNaN(percentageValue)) {
-                  if (percentageValue >= 75) {
-                    status = "Good";
-                    statusColor = "green";
-                  } else if (percentageValue >= 65) {
-                    status = "Average";
-                    statusColor = "orange";
-                  } else {
-                    status = "Low";
-                    statusColor = "red";
-                  }
-                }
+      {/* 📊 Summary Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Student Info Card */}
+        {studentData && (
+          <div className="bento-card p-6 bg-white border border-slate-200 shadow-sm md:col-span-2 space-y-3">
+            <div className="flex items-center space-x-2 text-indigo-600">
+              <FiUser className="w-5 h-5" />
+              <h3 className="text-base font-bold text-slate-900">Student Profile</h3>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs pt-1">
+              <div>
+                <span className="text-slate-500 font-medium block">Enrollment No</span>
+                <span className="font-bold text-slate-900 text-sm">{studentData.enrollmentNo}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium block">Branch</span>
+                <span className="font-bold text-slate-900 text-sm">{studentData.branch}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium block">Semester</span>
+                <span className="font-bold text-slate-900 text-sm">Sem {studentData.semester}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium block">Section</span>
+                <span className="font-bold text-slate-900 text-sm">Section {studentData.section || 'A'}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
+        {/* Overall Percentage Card */}
+        <div className="bento-card p-6 bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Overall Attendance</span>
+            <p className={`text-3xl font-black mt-1 ${
+              overallAttendancePercentage !== "N/A" && parseFloat(overallAttendancePercentage) >= 75
+                ? "text-emerald-600"
+                : "text-rose-600"
+            }`}>
+              {overallAttendancePercentage}%
+            </p>
+            <span className="text-[11px] text-slate-400 font-medium mt-1 block">Min 75% required for exams</span>
+          </div>
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${
+            overallAttendancePercentage !== "N/A" && parseFloat(overallAttendancePercentage) >= 75
+              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+              : "bg-rose-50 text-rose-600 border-rose-100"
+          }`}>
+            <FiPercent className="w-7 h-7" />
+          </div>
+        </div>
+      </div>
+
+      {/* 📋 Subject-Wise Attendance Breakdown Table */}
+      <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-sm bg-white">
+        <table className="min-w-[900px] w-full text-left">
+          <thead>
+            <tr>
+              <th className="py-3 px-4">Subject</th>
+              <th className="py-3 px-4">Attended Classes</th>
+              <th className="py-3 px-4">Total Classes Held</th>
+              <th className="py-3 px-4">Attendance Percentage</th>
+              <th className="py-3 px-4">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.keys(attendanceBySubject).length > 0 ? (
+              Object.keys(attendanceBySubject).map((subject, index) => {
+                const pct = calculatePercentage(subject);
+                const isShortage = pct !== "N/A" && parseFloat(pct) < 75;
                 return (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-3 font-medium">{subject}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-center">{attendedClasses}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-center">{totalClasses}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-center">
-                      {percentage}%
+                  <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                    <td className="font-bold text-sm text-slate-900 py-3.5 px-4">{subject}</td>
+                    <td className="text-sm font-semibold text-slate-700 py-3.5 px-4">
+                      {attendanceBySubject[subject].length}
                     </td>
-                    <td className="border border-gray-300 px-4 py-3 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
-                        {status}
+                    <td className="text-sm font-semibold text-slate-700 py-3.5 px-4">
+                      {getTotalClasses(subject)}
+                    </td>
+                    <td className="text-sm font-bold text-slate-900 py-3.5 px-4">
+                      {pct}%
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        isShortage
+                          ? "bg-rose-50 text-rose-700 border border-rose-100"
+                          : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                      }`}>
+                        {isShortage ? "Shortage (<75%)" : "Sufficient"}
                       </span>
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-500 text-lg">No attendance records found.</p>
-          <p className="text-gray-400 text-sm mt-2">
-            Your attendance will appear here once your faculty marks it.
-          </p>
-        </div>
-      )}
-
-      {/* Important Notes */}
-      <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-        <h4 className="font-semibold text-yellow-800 mb-2">Important Notes:</h4>
-        <ul className="text-sm text-yellow-700 list-disc list-inside space-y-1">
-          <li>Attendance percentages are calculated using section-specific total classes</li>
-          <li>Total classes shown are specific to your section ({studentData?.section || 'current section'})</li>
-          <li>75% or above: Good attendance</li>
-          <li>65% to 74%: Average attendance (needs improvement)</li>
-          <li>Below 65%: Low attendance (requires immediate attention)</li>
-        </ul>
+              })
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center py-8 text-slate-500 text-sm">
+                  No attendance records logged for your current semester yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

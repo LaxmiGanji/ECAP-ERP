@@ -25,7 +25,24 @@ const AIAnalytics = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [modalAiReport, setModalAiReport] = useState(null);
 
-  const sections = ["A", "B", "C", "D", "SOC", "WIPRO TRAINING"];
+  const [sections, setSections] = useState(["A", "B", "C", "D"]);
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selectedBranch) params.branch = selectedBranch;
+        if (selectedSemester) params.semester = selectedSemester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSections(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selectedBranch, selectedSemester]);
 
   // Fetch branches on mount
   useEffect(() => {

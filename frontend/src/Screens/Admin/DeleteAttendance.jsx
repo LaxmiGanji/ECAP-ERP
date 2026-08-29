@@ -1,18 +1,23 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { baseApiURL } from "../../baseUrl";
+import { sortEnrollmentNo } from "../../utils/enrollmentSorter";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-toastify";
+import { FiAlertCircle } from "react-icons/fi";
 
 const DeleteAttendance = ({ branch: lockedBranch }) => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [filteredSubjectObjs, setFilteredSubjectObjs] = useState([]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
   const [branches, setBranches] = useState([]);
-  const [sections, setSections] = useState(["A", "B", "C", "D","SOC","WIPRO TRAINING","ATT"]);
+  const [sections, setSections] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedBranch, setSelectedBranch] = useState(lockedBranch || "");
   const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedRegulation, setSelectedRegulation] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -28,8 +33,34 @@ const DeleteAttendance = ({ branch: lockedBranch }) => {
     date: null,
     period: "",
   });
+  const [allSubjects, setAllSubjects] = useState([]);
 
-  const [allSubjects, setAllSubjects] = useState([]); // Store all subjects
+  useEffect(() => {
+    const fetchDynamicSections = async () => {
+      if (selectedBranch && selectedSemester) {
+        try {
+          const response = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, {
+            params: {
+              branch: selectedBranch,
+              semester: selectedSemester,
+            },
+          });
+          if (response.data.success && response.data.sections) {
+            setSections(response.data.sections);
+            if (selectedSection && !response.data.sections.includes(selectedSection)) {
+              setSelectedSection("");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching dynamic sections:", error);
+        }
+      } else {
+        setSections([]);
+        setSelectedSection("");
+      }
+    };
+    fetchDynamicSections();
+  }, [selectedBranch, selectedSemester]);
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -59,16 +90,51 @@ const DeleteAttendance = ({ branch: lockedBranch }) => {
   }, []);
 
   useEffect(() => {
-    if (selectedBranch && selectedSemester) {
-      const filtered = allSubjects.filter(
-        (subject) =>
-          subject.branch?.name === selectedBranch &&
-          String(subject.semester) === String(selectedSemester)
-      );
-      setSubjects(filtered.map(sub => sub.name));
-    } else {
-      setSubjects(allSubjects.map(sub => sub.name));
-    }
+    const filterSubjectsByStudentRegulation = async () => {
+      if (selectedBranch && selectedSemester) {
+        let studentReg = null;
+        let hasStudents = false;
+        try {
+          const studentRes = await axios.post(`${baseApiURL()}/student/details/getDetails`, {
+            branch: selectedBranch,
+            semester: Number(selectedSemester)
+          });
+          if (studentRes.data.success && studentRes.data.user && studentRes.data.user.length > 0) {
+            hasStudents = true;
+            studentReg = studentRes.data.user[0].regulation;
+            setSelectedRegulation(studentReg ? studentReg.toUpperCase() : "");
+          }
+        } catch (err) {
+          console.warn("Could not fetch students for regulation check:", err);
+        }
+
+        if (!hasStudents) {
+          setSubjects([]);
+          setFilteredSubjectObjs([]);
+          setSelectedRegulation("");
+          setNoStudentsMessage("no students are there for that semester");
+          setSelectedSubject("");
+          return;
+        }
+
+        setNoStudentsMessage("");
+
+        const filtered = allSubjects.filter(
+          (subject) =>
+            (subject.branch?.name === selectedBranch || subject.branch === selectedBranch) &&
+            String(subject.semester) === String(selectedSemester) &&
+            (!studentReg || subject.regulation?.toUpperCase() === studentReg.toUpperCase())
+        );
+        setFilteredSubjectObjs(filtered);
+        setSubjects(filtered.map(sub => sub.name));
+      } else {
+        setFilteredSubjectObjs(allSubjects);
+        setSubjects(allSubjects.map(sub => sub.name));
+        setSelectedRegulation("");
+        setNoStudentsMessage("");
+      }
+    };
+    filterSubjectsByStudentRegulation();
   }, [selectedBranch, selectedSemester, allSubjects]);
 
   const fetchAttendanceByDate = useCallback(async () => {
@@ -225,179 +291,208 @@ const DeleteAttendance = ({ branch: lockedBranch }) => {
 
   if (loading) {
     return (
-      <div className="text-center mt-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Loading attendance records...</p>
+      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        <p className="mt-4 font-bold text-slate-700 text-sm">Loading attendance records...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="alert alert-danger text-center mt-5" role="alert">
-        {error}
+      <div className="p-6 bg-rose-50 border border-rose-200 rounded-2xl text-center">
+        <FiAlertCircle className="mx-auto text-rose-500 text-3xl mb-2" />
+        <p className="font-bold text-rose-800 text-sm">{error}</p>
       </div>
     );
   }
 
+  const filteredRecords = attendanceRecords
+    .filter(record =>
+      (!selectedBranch || record.branch === selectedBranch) &&
+      (!selectedSemester || String(record.semester) === String(selectedSemester)) &&
+      (!selectedSection || record.section === selectedSection) &&
+      (!selectedSubject || record.subject === selectedSubject)
+    )
+    .sort(sortEnrollmentNo);
+
   return (
-    <div className="overflow-x-auto">
-      <div className="flex flex-col sm:flex-row justify-start gap-4 mb-4 flex-wrap">
-        <div>
-          <label className="mr-2">Branch:</label>
-          <select
-            value={selectedBranch}
-            onChange={handleBranchChange}
-            disabled={!!lockedBranch}
-            className={`border rounded px-2 py-1 ${lockedBranch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+    <div className="space-y-6">
+      {/* Bento Filter Card */}
+      <div className="bento-card p-6 bg-white border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+            <h3 className="font-bold text-slate-900 text-base">Filter Attendance Records</h3>
+          </div>
+          <button
+            onClick={clearFilters}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-2xs"
           >
-            <option value="">All Branches</option>
-            {branches.map((branch) => (
-              <option key={branch} value={branch}>
-                {branch}
+            Clear All Filters
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-600 mb-1">Branch</label>
+            <select
+              value={selectedBranch}
+              onChange={handleBranchChange}
+              disabled={!!lockedBranch}
+              className={`w-full ${lockedBranch ? 'bg-slate-100 cursor-not-allowed' : ''}`}
+            >
+              <option value="">All Branches</option>
+              {branches.map((branch) => (
+                <option key={branch} value={branch}>
+                  {branch}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-600 mb-1">Semester</label>
+            <select
+              value={selectedSemester}
+              onChange={handleSemesterChange}
+              className="w-full"
+            >
+              <option value="">All Semesters</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                <option key={sem} value={sem}>Semester {sem}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-600 mb-1">Regulation</label>
+            <input
+              type="text"
+              value={selectedRegulation}
+              readOnly
+              placeholder="Auto-fetched..."
+              className="w-full bg-slate-50 font-bold text-indigo-600 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-600 mb-1">Section</label>
+            <select
+              value={selectedSection}
+              onChange={handleSectionChange}
+              disabled={!selectedBranch || !selectedSemester}
+              className={`w-full ${!selectedBranch || !selectedSemester ? 'bg-slate-100 cursor-not-allowed' : ''}`}
+            >
+              <option value="">
+                {!selectedBranch || !selectedSemester
+                  ? "Select Branch & Sem First"
+                  : sections.length > 0
+                  ? "All Sections"
+                  : "No Sections Found"}
               </option>
-            ))}
-          </select>
+              {sections.map((section) => (
+                <option key={section} value={section}>Section {section}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-xs font-bold text-slate-600 mb-1">Subject</label>
+            <select
+              value={selectedSubject}
+              onChange={handleSubjectChange}
+              className="w-full"
+            >
+              <option value="">All Subjects</option>
+              {filteredSubjectObjs.map((subjectObj) => (
+                <option key={subjectObj._id} value={subjectObj.name}>
+                  {subjectObj.name} {subjectObj.code ? `(${subjectObj.code})` : ''} {subjectObj.regulation ? `[${subjectObj.regulation}]` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-600 mb-1">From Date</label>
+            <DatePicker
+              selected={startDate}
+              onChange={handleStartDateChange}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              placeholderText="Select start date"
+              className="w-full"
+              maxDate={new Date()}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-600 mb-1">To Date</label>
+            <DatePicker
+              selected={endDate}
+              onChange={handleEndDateChange}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              maxDate={new Date()}
+              placeholderText="Select end date"
+              className="w-full"
+            />
+          </div>
         </div>
-        <div>
-          <label className="mr-2">Semester:</label>
-          <select
-            value={selectedSemester}
-            onChange={handleSemesterChange}
-            className="border rounded px-2 py-1"
-          >
-            <option value="">All Semesters</option>
-            {[1,2,3,4,5,6,7,8].map((sem) => (
-              <option key={sem} value={sem}>{sem}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mr-2">Section:</label>
-          <select
-            value={selectedSection}
-            onChange={handleSectionChange}
-            className="border rounded px-2 py-1"
-          >
-            <option value="">All Sections</option>
-            {sections.map((section) => (
-              <option key={section} value={section}>{section}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mr-2">Subject:</label>
-          <select
-            value={selectedSubject}
-            onChange={handleSubjectChange}
-            className="border rounded px-2 py-1"
-          >
-            <option value="">All Subjects</option>
-            {subjects.map((subject) => (
-              <option key={subject} value={subject}>
-                {subject}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mr-2">From Date:</label>
-          <DatePicker
-            selected={startDate}
-            onChange={handleStartDateChange}
-            selectsStart
-            startDate={startDate}
-            endDate={endDate}
-            placeholderText="Select start date"
-            className="border rounded px-2 py-1"
-            maxDate={new Date()}
-          />
-        </div>
-        <div>
-          <label className="mr-2">To Date:</label>
-          <DatePicker
-            selected={endDate}
-            onChange={handleEndDateChange}
-            selectsEnd
-            startDate={startDate}
-            endDate={endDate}
-            minDate={startDate}
-            maxDate={new Date()}
-            placeholderText="Select end date"
-            className="border rounded px-2 py-1"
-          />
-        </div>
-        <button
-          onClick={clearFilters}
-          className="bg-gray-500 text-white px-4 py-2 rounded"
-        >
-          Clear Filters
-        </button>
       </div>
 
-
-      {attendanceRecords.length === 0 ? (
-        <div className="text-center mt-5">
-          <p>No attendance records found for the selected filters.</p>
+      {/* Attendance Records Table */}
+      {filteredRecords.length === 0 ? (
+        <div className="bento-card p-12 text-center bg-white border border-slate-200">
+          <FiAlertCircle className="mx-auto text-slate-300 text-4xl mb-3" />
+          <h3 className="text-base font-bold text-slate-800">No Attendance Records Found</h3>
+          <p className="text-xs text-slate-500 font-medium mt-1">Try adjusting your filters above to display attendance logs.</p>
         </div>
       ) : (
-        <table className="min-w-full table-auto">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="py-2 px-4 text-left">Enrollment No</th>
-              <th className="py-2 px-4 text-left">Name</th>
-              <th className="py-2 px-4 text-left">Branch</th>
-              <th className="py-2 px-4 text-left">Semester</th>
-              <th className="py-2 px-4 text-left">Section</th>
-              <th className="py-2 px-4 text-left">Subject</th>
-              <th className="py-2 px-4 text-left">Period</th>
-              <th className="py-2 px-4 text-left">Date</th>
-              <th className="py-2 px-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendanceRecords
-              .filter(record =>
-                (!selectedBranch || record.branch === selectedBranch) &&
-                (!selectedSemester || String(record.semester) === String(selectedSemester)) &&
-                (!selectedSection || record.section === selectedSection) &&
-                (!selectedSubject || record.subject === selectedSubject)
-              )
-              // Sort enrollment numbers in ascending order
-              .sort((a, b) => {
-                const aNum = Number(a.enrollmentNo);
-                const bNum = Number(b.enrollmentNo);
-                if (!isNaN(aNum) && !isNaN(bNum)) {
-                  return aNum - bNum;
-                }
-                return String(a.enrollmentNo).localeCompare(String(b.enrollmentNo));
-              })
-              .map((record) => (
-                <tr key={record._id} className="border-b">
-                  <td className="py-2 px-4">{record.enrollmentNo}</td>
-                  <td className="py-2 px-4">{record.name}</td>
-                  <td className="py-2 px-4">{record.branch}</td>
-                  <td className="py-2 px-4">{record.semester}</td>
-                  <td className="py-2 px-4">{record.section}</td>
-                  <td className="py-2 px-4">{record.subject}</td>
-                  <td className="py-2 px-4">{record.period}</td>
-                  <td className="py-2 px-4">
+        <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-sm bg-white">
+          <table className="min-w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="py-3.5 px-4 text-xs font-bold">Enrollment No</th>
+                <th className="py-3.5 px-4 text-xs font-bold">Student Name</th>
+                <th className="py-3.5 px-4 text-xs font-bold">Branch</th>
+                <th className="py-3.5 px-4 text-xs font-bold">Sem</th>
+                <th className="py-3.5 px-4 text-xs font-bold">Sec</th>
+                <th className="py-3.5 px-4 text-xs font-bold">Subject</th>
+                <th className="py-3.5 px-4 text-xs font-bold">Period</th>
+                <th className="py-3.5 px-4 text-xs font-bold">Date</th>
+                <th className="py-3.5 px-4 text-xs font-bold text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRecords.map((record, index) => (
+                <tr key={record._id} className={index % 2 === 0 ? "bg-white" : "bg-slate-50/60"}>
+                  <td className="py-3 px-4 font-bold text-xs text-indigo-600">{record.enrollmentNo}</td>
+                  <td className="py-3 px-4 font-bold text-xs text-slate-800">{record.name}</td>
+                  <td className="py-3 px-4 text-xs font-semibold text-slate-700">{record.branch}</td>
+                  <td className="py-3 px-4 text-xs font-semibold text-slate-700">{record.semester}</td>
+                  <td className="py-3 px-4 text-xs font-bold text-slate-800">{record.section}</td>
+                  <td className="py-3 px-4 text-xs font-medium text-slate-700">{record.subject}</td>
+                  <td className="py-3 px-4 text-xs font-bold text-purple-700">{record.period}</td>
+                  <td className="py-3 px-4 text-xs font-medium text-slate-600">
                     {new Date(record.date).toLocaleDateString()}
                   </td>
-                  <td className="py-2 px-4 flex gap-2">
+                  <td className="py-3 px-4 text-center">
                     <button
                       onClick={() => handleDeleteAttendance(record._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                      className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs rounded-lg transition-all cursor-pointer"
                     >
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       )}
 
 

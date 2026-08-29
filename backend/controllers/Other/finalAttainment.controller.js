@@ -7,6 +7,34 @@ const Branch = require('../../models/Other/branch.model');
 
 const TEMPLATE_PATH = path.join(__dirname, '../../templates/COPO_TEMPLATE.xlsx');
 
+const getJntuRank = (s) => {
+  const str = (typeof s === "object" ? (s?.enrollmentNo || s?.enrollment || s?.rollNo || s?.loginid || "") : (s || "")).toString().trim().toUpperCase();
+  if (!str) return { prefix: "", rank: 0 };
+  if (str.length < 3) return { prefix: str, rank: 0 };
+
+  const prefix = str.substring(0, str.length - 2);
+  const suff = str.substring(str.length - 2);
+
+  if (/^\d{2}$/.test(suff)) return { prefix, rank: parseInt(suff, 10) };
+  if (/^[A-Z]\d$/.test(suff)) {
+    const charCode = suff.charCodeAt(0) - 65;
+    const digit = parseInt(suff[1], 10);
+    return { prefix, rank: 100 + charCode * 10 + digit };
+  }
+  return { prefix, rank: 9999 };
+};
+
+const sortEnrollmentNo = (a, b) => {
+  const rA = getJntuRank(a);
+  const rB = getJntuRank(b);
+
+  if (rA.prefix !== rB.prefix) {
+    return rA.prefix.localeCompare(rB.prefix, undefined, { numeric: true, sensitivity: "base" });
+  }
+
+  return rA.rank - rB.rank;
+};
+
 const formatBranchName = (branchName) => {
   if (!branchName) return "";
   let formatted = branchName.trim();
@@ -34,8 +62,8 @@ exports.generateTemplate = async (req, res) => {
     const branchName = formatBranchName(subject?.branch?.name || branch);
 
     // 1. Fetch Students (Sorted by enrollmentNo using standard string sort for correct alphanumeric order)
-    const students = await StudentDetails.find({ branch, semester })
-      .sort({ enrollmentNo: 1 });
+    const students = await StudentDetails.find({ branch, semester });
+    students.sort(sortEnrollmentNo);
       
     if (!students || students.length === 0) {
       return res.status(404).json({ success: false, message: 'No students found for given branch and semester' });
@@ -76,82 +104,192 @@ exports.generateTemplate = async (req, res) => {
         iaSheet.getCell(9, c).value = null; // Max Marks
       }
 
-      // Inject IA Questions from UI (D-AZ, jumping over AK-AR (37-44))
-      if (iaQuestions && Array.isArray(iaQuestions)) {
-        let currentCol = 4; // Start at column D
-        for (const q of iaQuestions) {
-          if (currentCol === 37) {
-            currentCol = 45; // Jump AK-AR
-          }
-          if (currentCol > 52) break; // Limit IA to AZ
-          const coNum = String(q.co).replace(/co/i, '').trim();
-          iaSheet.getCell(7, currentCol).value = `CO${coNum}`;
-          iaSheet.getCell(8, currentCol).value = q.qName;
-          iaSheet.getCell(9, currentCol).value = Number(q.maxMarks) || 0;
-          currentCol++;
-        }
+      // Clear formula text notes and Kiran 200 in header area
+      try {
+        iaSheet.getCell('A3').value = null;
+        iaSheet.getCell('B3').value = null;
+        iaSheet.getCell('A4').value = null;
+        iaSheet.getCell('B4').value = null;
+      } catch (err) {}
+
+      // Set header row heights and column widths
+      iaSheet.getColumn('A').width = 8;
+      iaSheet.getColumn('B').width = 18;
+      iaSheet.getColumn('C').width = 32;
+
+      iaSheet.getColumn('AK').width = 14;
+      iaSheet.getColumn('AL').width = 14;
+      iaSheet.getColumn('AM').width = 18;
+      iaSheet.getColumn('AN').width = 20;
+      iaSheet.getColumn('AO').width = 14;
+      iaSheet.getColumn('AP').width = 14;
+      iaSheet.getColumn('AQ').width = 18;
+      iaSheet.getColumn('AR').width = 20;
+
+      for (let c = 53; c <= 59; c++) {
+        iaSheet.getColumn(c).width = 12;
       }
 
-      // Inject JNTU IA-1 / IA-2 DES, OBJ, ASSIGN, and TOTAL columns
-      // IA-1:
-      // AK (37): IA-1 DES
-      iaSheet.getCell(6, 37).value = "IA-1";
-      iaSheet.getCell(7, 37).value = "";
-      iaSheet.getCell(8, 37).value = "DES (20)";
+      iaSheet.getRow(6).height = 28;
+      iaSheet.getRow(7).height = 26;
+      iaSheet.getRow(8).height = 36;
+      iaSheet.getRow(9).height = 26;
+
+      // Inject IA Questions (using passed questions or subject.courseOutcomes fallback)
+      const subjectCos = subject.courseOutcomes || [];
+      const getQuestionName = (i) => `${Math.floor(i / 2) + 1}${i % 2 === 0 ? 'a' : 'b'}`;
+
+      const effectiveIaQuestions = (iaQuestions && Array.isArray(iaQuestions) && iaQuestions.length > 0)
+        ? iaQuestions
+        : (subjectCos.length > 0
+          ? subjectCos.map((c, i) => ({ qName: getQuestionName(i), co: c.coNumber, maxMarks: 5 }))
+          : [{ qName: "1a", co: "CO1", maxMarks: 5 }]);
+
+      let currentCol = 4; // Start at column D
+      for (const q of effectiveIaQuestions) {
+        if (currentCol === 37) {
+          currentCol = 45; // Jump AK-AR
+        }
+        if (currentCol > 52) break; // Limit IA to AZ
+        const coNum = String(q.co).replace(/co/i, '').trim();
+
+        const c7 = iaSheet.getCell(7, currentCol);
+        c7.value = `CO${coNum}`;
+        c7.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c7.alignment = { vertical: 'middle', horizontal: 'center' };
+        c7.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } }; // Soft Golden Yellow
+
+        const c8 = iaSheet.getCell(8, currentCol);
+        c8.value = q.qName;
+        c8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        c8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } }; // Soft Pastel Green
+
+        const c9 = iaSheet.getCell(9, currentCol);
+        c9.value = Number(q.maxMarks) || 0;
+        c9.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c9.alignment = { vertical: 'middle', horizontal: 'center' };
+        c9.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCE4D6' } }; // Soft Pastel Peach
+
+        currentCol++;
+      }
+
+      // Inject JNTU IA-1 / IA-2 DES, OBJ, ASSIGN, and TOTAL columns with merged headers and RED highlight for TOTAL
+      // IA-1 Header (AK6:AN6)
+      try { iaSheet.unMergeCells('AK6:AN6'); } catch (e) {}
+      iaSheet.mergeCells('AK6:AN6');
+      const ak6 = iaSheet.getCell('AK6');
+      ak6.value = "IA-1 Summary";
+      ak6.font = { name: 'Calibri', bold: true, size: 12, color: { argb: 'FF1F497D' } };
+      ak6.alignment = { vertical: 'middle', horizontal: 'center' };
+      ak6.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } };
+
+      // IA-2 Header (AO6:AR6)
+      try { iaSheet.unMergeCells('AO6:AR6'); } catch (e) {}
+      iaSheet.mergeCells('AO6:AR6');
+      const ao6 = iaSheet.getCell('AO6');
+      ao6.value = "IA-2 Summary";
+      ao6.font = { name: 'Calibri', bold: true, size: 12, color: { argb: 'FF1F497D' } };
+      ao6.alignment = { vertical: 'middle', horizontal: 'center' };
+      ao6.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } };
+
+      // IA-1 Columns (AK-AN)
+      const ak8 = iaSheet.getCell(8, 37);
+      ak8.value = "DES (20)";
+      ak8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+      ak8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      ak8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
       iaSheet.getCell(9, 37).value = 20;
 
-      // AL (38): IA-1 OBJ
-      iaSheet.getCell(6, 38).value = "IA-1";
-      iaSheet.getCell(7, 38).value = "";
-      iaSheet.getCell(8, 38).value = "OBJ (10)";
+      const al8 = iaSheet.getCell(8, 38);
+      al8.value = "OBJ (10)";
+      al8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+      al8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      al8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
       iaSheet.getCell(9, 38).value = 10;
 
-      // AM (39): IA-1 ASSIGN
-      iaSheet.getCell(6, 39).value = "IA-1";
-      iaSheet.getCell(7, 39).value = "";
-      iaSheet.getCell(8, 39).value = "ASSIGN/SPA (05)";
+      const am8 = iaSheet.getCell(8, 39);
+      am8.value = "ASSIGN/SPA (05)";
+      am8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+      am8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      am8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
       iaSheet.getCell(9, 39).value = 5;
 
-      // AN (40): IA-1 TOTAL
-      iaSheet.getCell(6, 40).value = "IA-1";
-      iaSheet.getCell(7, 40).value = "";
-      iaSheet.getCell(8, 40).value = "TOTAL MARKS (35)";
+      const an8 = iaSheet.getCell(8, 40);
+      an8.value = "TOTAL MARKS (35)";
+      an8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FFFF0000' } }; // RED Font
+      an8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      an8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE6E6' } }; // Light Red Highlight
       iaSheet.getCell(9, 40).value = 35;
 
-      // IA-2:
-      // AO (41): IA-2 DES
-      iaSheet.getCell(6, 41).value = "IA-2";
-      iaSheet.getCell(7, 41).value = "";
-      iaSheet.getCell(8, 41).value = "DES (20)";
+      // IA-2 Columns (AO-AR)
+      const ao8 = iaSheet.getCell(8, 41);
+      ao8.value = "DES (20)";
+      ao8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+      ao8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      ao8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
       iaSheet.getCell(9, 41).value = 20;
 
-      // AP (42): IA-2 OBJ
-      iaSheet.getCell(6, 42).value = "IA-2";
-      iaSheet.getCell(7, 42).value = "";
-      iaSheet.getCell(8, 42).value = "OBJ (10)";
+      const ap8 = iaSheet.getCell(8, 42);
+      ap8.value = "OBJ (10)";
+      ap8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+      ap8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      ap8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
       iaSheet.getCell(9, 42).value = 10;
 
-      // AQ (43): IA-2 ASSIGN
-      iaSheet.getCell(6, 43).value = "IA-2";
-      iaSheet.getCell(7, 43).value = "";
-      iaSheet.getCell(8, 43).value = "ASSIGN/SPA (05)";
+      const aq8 = iaSheet.getCell(8, 43);
+      aq8.value = "ASSIGN/SPA (05)";
+      aq8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+      aq8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      aq8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
       iaSheet.getCell(9, 43).value = 5;
 
-      // AR (44): IA-2 TOTAL
-      iaSheet.getCell(6, 44).value = "IA-2";
-      iaSheet.getCell(7, 44).value = "";
-      iaSheet.getCell(8, 44).value = "TOTAL MARKS (35)";
+      const ar8 = iaSheet.getCell(8, 44);
+      ar8.value = "TOTAL MARKS (35)";
+      ar8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FFFF0000' } }; // RED Font
+      ar8.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      ar8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE6E6' } }; // Light Red Highlight
       iaSheet.getCell(9, 44).value = 35;
 
+      // Format Assignment header BA6:BG6
+      try { iaSheet.unMergeCells('BA6:BG6'); } catch (e) {}
+      iaSheet.mergeCells('BA6:BG6');
+      const ba6 = iaSheet.getCell('BA6');
+      ba6.value = "Assignments / CIA";
+      ba6.font = { name: 'Calibri', bold: true, size: 12, color: { argb: 'FF1F497D' } };
+      ba6.alignment = { vertical: 'middle', horizontal: 'center' };
+      ba6.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } };
+
       // Inject Assignment (CIA) Questions from UI (BA-BG)
-      const safeAssQs = Array.isArray(assignmentQuestions) ? assignmentQuestions : [];
+      const safeAssQs = (assignmentQuestions && Array.isArray(assignmentQuestions) && assignmentQuestions.length > 0)
+        ? assignmentQuestions
+        : (subjectCos.length > 0
+          ? subjectCos.map((c, i) => ({ qName: `CIA${i + 1}`, co: c.coNumber, maxMarks: 10 }))
+          : []);
+
       let assCol = 53; // Start at column BA
       for (const q of safeAssQs) {
         if (assCol > 59) break; // Limit to BG
         const coStr = String(q.co).toUpperCase(); // e.g. "CO1"
-        iaSheet.getCell(7, assCol).value = coStr;
-        iaSheet.getCell(8, assCol).value = q.qName;
-        iaSheet.getCell(9, assCol).value = Number(q.maxMarks) || 0;
+
+        const c7 = iaSheet.getCell(7, assCol);
+        c7.value = coStr;
+        c7.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c7.alignment = { vertical: 'middle', horizontal: 'center' };
+        c7.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } };
+
+        const c8 = iaSheet.getCell(8, assCol);
+        c8.value = q.qName;
+        c8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c8.alignment = { vertical: 'middle', horizontal: 'center' };
+        c8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
+
+        const c9 = iaSheet.getCell(9, assCol);
+        c9.value = Number(q.maxMarks) || 0;
+        c9.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c9.alignment = { vertical: 'middle', horizontal: 'center' };
+        c9.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCE4D6' } };
+
         assCol++;
       }
     }
@@ -174,6 +312,28 @@ exports.generateTemplate = async (req, res) => {
       seeSheet.getCell('AY13').value = 80; // Level 3: 80% of max marks
       seeSheet.getCell('AY10').value = 60; // Target percentage for meeting criteria
 
+      // Clear formula text notes and Kiran 200 in header area
+      try {
+        seeSheet.getCell('A3').value = null;
+        seeSheet.getCell('B3').value = null;
+        seeSheet.getCell('A4').value = null;
+        seeSheet.getCell('B4').value = null;
+      } catch (err) {}
+
+      // Set header row heights and column widths
+      seeSheet.getColumn('A').width = 8;
+      seeSheet.getColumn('B').width = 18;
+      seeSheet.getColumn('C').width = 32;
+
+      for (let c = 4; c <= 34; c++) {
+        seeSheet.getColumn(c).width = 10;
+      }
+
+      seeSheet.getRow(6).height = 28;
+      seeSheet.getRow(7).height = 26;
+      seeSheet.getRow(8).height = 36;
+      seeSheet.getRow(9).height = 26;
+
       // Clear sample questions, CO mappings, and max marks
       for (let c = 4; c <= 34; c++) {
         seeSheet.getCell(7, c).value = null;
@@ -181,17 +341,39 @@ exports.generateTemplate = async (req, res) => {
         seeSheet.getCell(9, c).value = null;
       }
 
-      // Inject SEE Questions from UI
-      if (seeQuestions && Array.isArray(seeQuestions)) {
-        let currentCol = 4;
-        for (const q of seeQuestions) {
-          if (currentCol > 34) break;
-          const coNum = String(q.co).replace(/co/i, '').trim();
-          seeSheet.getCell(7, currentCol).value = `CO${coNum}`;
-          seeSheet.getCell(8, currentCol).value = q.qName;
-          seeSheet.getCell(9, currentCol).value = Number(q.maxMarks) || 0;
-          currentCol++;
-        }
+      // Inject SEE Questions (using passed questions or subject.courseOutcomes fallback)
+      const subjectCos = subject.courseOutcomes || [];
+      const getQuestionName = (i) => `${Math.floor(i / 2) + 1}${i % 2 === 0 ? 'a' : 'b'}`;
+      const effectiveSeeQuestions = (seeQuestions && Array.isArray(seeQuestions) && seeQuestions.length > 0)
+        ? seeQuestions
+        : (subjectCos.length > 0
+          ? subjectCos.map((c, i) => ({ qName: getQuestionName(i), co: c.coNumber, maxMarks: 10 }))
+          : [{ qName: "1a", co: "CO1", maxMarks: 10 }]);
+
+      let currentCol = 4;
+      for (const q of effectiveSeeQuestions) {
+        if (currentCol > 34) break;
+        const coNum = String(q.co).replace(/co/i, '').trim();
+
+        const c7 = seeSheet.getCell(7, currentCol);
+        c7.value = `CO${coNum}`;
+        c7.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c7.alignment = { vertical: 'middle', horizontal: 'center' };
+        c7.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } }; // Soft Golden Yellow
+
+        const c8 = seeSheet.getCell(8, currentCol);
+        c8.value = q.qName;
+        c8.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c8.alignment = { vertical: 'middle', horizontal: 'center' };
+        c8.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } }; // Soft Pastel Green
+
+        const c9 = seeSheet.getCell(9, currentCol);
+        c9.value = Number(q.maxMarks) || 0;
+        c9.font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } };
+        c9.alignment = { vertical: 'middle', horizontal: 'center' };
+        c9.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCE4D6' } }; // Soft Pastel Peach
+
+        currentCol++;
       }
     }
 
@@ -265,16 +447,44 @@ exports.generateTemplate = async (req, res) => {
       const maxCol = sheet.name === 'IA Marks' ? 59 : 34;
       const maxQCol = sheet.name === 'IA Marks' ? 'BG' : 'AH';
       
-      // Clear existing dummy data if any, and inject new data
+      const thinBorder = {
+        top: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+        left: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+        bottom: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+        right: { style: 'thin', color: { argb: 'FFD9D9D9' } }
+      };
+
+      // Clear existing dummy data if any, and inject new data with full styling
       for (const student of students) {
         const studentName = `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.trim();
-        sheet.getCell(`A${currentRow}`).value = index++;
-        sheet.getCell(`B${currentRow}`).value = student.enrollmentNo;
-        sheet.getCell(`C${currentRow}`).value = studentName;
-        
-        // Clear sample marks for this row
+        const row = sheet.getRow(currentRow);
+        row.height = 24; // Ensure ample height so student names do not squish or overlap
+
+        const cellA = sheet.getCell(`A${currentRow}`);
+        cellA.value = index++;
+        cellA.alignment = { vertical: 'middle', horizontal: 'center' };
+        cellA.font = { name: 'Calibri', size: 10, color: { argb: 'FF000000' } };
+        cellA.border = thinBorder;
+
+        const cellB = sheet.getCell(`B${currentRow}`);
+        cellB.value = student.enrollmentNo;
+        cellB.alignment = { vertical: 'middle', horizontal: 'left' };
+        cellB.font = { name: 'Calibri', size: 10, color: { argb: 'FF000000' } };
+        cellB.border = thinBorder;
+
+        const cellC = sheet.getCell(`C${currentRow}`);
+        cellC.value = studentName;
+        cellC.alignment = { vertical: 'middle', horizontal: 'left', wrapText: false };
+        cellC.font = { name: 'Calibri', size: 10, color: { argb: 'FF000000' } };
+        cellC.border = thinBorder;
+
+        // Apply borders, alignment, clean white fill, and font across all question/mark columns for this student
         for (let c = 4; c <= maxCol; c++) {
-          sheet.getCell(currentRow, c).value = null;
+          const cell = sheet.getCell(currentRow, c);
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF000000' } };
+          cell.border = thinBorder;
+          cell.fill = undefined;
         }
 
         // Dynamically inject CO calculation formulas for this student row
@@ -320,13 +530,17 @@ exports.generateTemplate = async (req, res) => {
       }
       
       // Clear rows below if any old data remains
-      const maxRow = sheet.rowCount > START_ROW + 300 ? sheet.rowCount : START_ROW + 300;
+      const maxRow = Math.max(sheet.rowCount, START_ROW + 300);
       for (let r = currentRow; r <= maxRow; r++) {
+        const row = sheet.getRow(r);
+        row.height = undefined;
         for (let c = 1; c <= 100; c++) {
           const cell = sheet.getCell(r, c);
           cell.value = null;
           cell.formula = undefined;
           cell.sharedFormula = undefined;
+          cell.border = undefined;
+          cell.fill = undefined;
         }
       }
 
@@ -432,8 +646,8 @@ exports.uploadAndCalculate = async (req, res) => {
 
     // Pre-populate student list in both sheets first from database
     const branchName = subject.branch?.name || "";
-    const students = await StudentDetails.find({ branch: branchName, semester: subject.semester })
-      .sort({ enrollmentNo: 1 });
+    const students = await StudentDetails.find({ branch: branchName, semester: subject.semester });
+    students.sort(sortEnrollmentNo);
 
     const START_ROW = 13;
     const branchNameFormatted = formatBranchName(branchName);
@@ -901,8 +1115,8 @@ exports.exportWithResults = async (req, res) => {
 
     // Pre-populate student list in both sheets first from database
     const branchName = branch || subject.branch?.name || "";
-    const students = await StudentDetails.find({ branch: branchName, semester: semester || subject.semester })
-      .sort({ enrollmentNo: 1 });
+    const students = await StudentDetails.find({ branch: branchName, semester: semester || subject.semester });
+    students.sort(sortEnrollmentNo);
 
     const START_ROW = 13;
     const branchNameFormatted = formatBranchName(branchName);

@@ -23,8 +23,6 @@ exports.getSubjectsWithCOs = async (req, res) => {
             .populate('branch', 'name')
             .select('code name semester courseOutcomes branch regulation');
 
-        subjects = await filterSubjectsByStudentRegulation(subjects);
-
         return res.status(200).json({
             success: true,
             message: 'Subjects fetched successfully',

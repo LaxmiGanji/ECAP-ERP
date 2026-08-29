@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { FiLogIn, FiEye, FiEyeOff, FiMail, FiX, FiKey } from "react-icons/fi";
+import { FiLogIn, FiEye, FiEyeOff, FiMail, FiX, FiKey, FiArrowLeft } from "react-icons/fi";
 import { FaUserGraduate, FaChalkboardTeacher, FaUserShield, FaBook, FaBusAlt, FaClipboardList, FaBriefcase, FaGraduationCap } from "react-icons/fa";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { baseApiURL } from "../baseUrl";
 import { motion, AnimatePresence } from "framer-motion";
 import { GoogleLogin } from '@react-oauth/google';
+import Interactive3DBackground from "./Interactive3DBackground";
+import sphnLogo from "./sphn.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,24 +25,24 @@ const Login = () => {
   const [forgotRequireEmail, setForgotRequireEmail] = useState(false);
 
   const roles = [
-    { name: "Student", icon: FaUserGraduate, path: "/student" },
-    { name: "Faculty", icon: FaChalkboardTeacher, path: "/faculty" },
-    { name: "Admin", icon: FaUserShield, path: "/admin" },
-    { name: "Examination", icon: FaClipboardList, path: "/examination" },
-    { name: "Library", icon: FaBook, path: "/library" },
-    { name: "Transport", icon: FaBusAlt, path: "/transport" },
-    { name: "Placement", icon: FaBriefcase, path: "/placement" },
-    { name: "HOD", icon: FaUserShield, path: "/hod" },
-    { name: "Principal", icon: FaUserShield, path: "/principal" },
-    { name: "Accounts", icon: FaClipboardList, path: "/accounts" },
-    { name: "Alumni", icon: FaGraduationCap, path: "/alumni" },
+    { name: "Student", icon: FaUserGraduate, path: "/student", color: "from-indigo-500 to-blue-600" },
+    { name: "Faculty", icon: FaChalkboardTeacher, path: "/faculty", color: "from-cyan-500 to-blue-600" },
+    { name: "Admin", icon: FaUserShield, path: "/admin", color: "from-violet-500 to-purple-600" },
+    { name: "Examination", icon: FaClipboardList, path: "/examination", color: "from-purple-500 to-pink-600" },
+    { name: "Library", icon: FaBook, path: "/library", color: "from-amber-500 to-orange-600" },
+    { name: "Transport", icon: FaBusAlt, path: "/transport", color: "from-lime-500 to-emerald-600" },
+    { name: "Placement", icon: FaBriefcase, path: "/placement", color: "from-blue-600 to-indigo-600" },
+    { name: "HOD", icon: FaUserShield, path: "/hod", color: "from-indigo-600 to-purple-600" },
+    { name: "Principal", icon: FaUserShield, path: "/principal", color: "from-slate-700 to-slate-900" },
+    { name: "Accounts", icon: FaClipboardList, path: "/accounts", color: "from-emerald-500 to-teal-600" },
+    { name: "Alumni", icon: FaGraduationCap, path: "/alumni", color: "from-pink-500 to-rose-600" },
   ];
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
-    hover: { scale: 1.05, boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)" },
-    tap: { scale: 0.95 }
+    hover: { y: -6, scale: 1.03, boxShadow: "0 15px 30px -10px rgba(99, 102, 241, 0.3)" },
+    tap: { scale: 0.97 }
   };
 
   const formVariants = {
@@ -53,375 +55,345 @@ const Login = () => {
     axios
       .post(`${baseApiURL()}/auth/google-login`, data)
       .then((response) => {
+        const userLoginId = response.data.loginid || "";
+        const role = response.data.role || "Student";
         if (response.data.token) {
           localStorage.setItem("token", response.data.token);
         }
-        toast.success(response.data.message);
-        navigate(`/${response.data.role.toLowerCase()}`, {
-          state: { type: response.data.role, ...response.data },
+        if (userLoginId) {
+          localStorage.setItem("loginid", userLoginId);
+        }
+        localStorage.setItem("userRole", role);
+
+        toast.success(response.data.message || "Google Login Successful!");
+        navigate(`/${role.toLowerCase()}`, {
+          state: { type: role, loginid: userLoginId },
+          replace: true,
         });
       })
       .catch((error) => {
-        toast.dismiss();
-        console.error("Google Auth error:", error);
-        if (error.response && error.response.data && error.response.data.message) {
-          toast.error(error.response.data.message);
-        } else {
-          toast.error("Internal Server Error");
-        }
+        toast.error(error.response?.data?.message || "Google Login Failed");
       });
   };
 
   const onSubmit = (data) => {
-    if (data.loginid !== "" && data.password !== "") {
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      axios
-        .post(`${baseApiURL()}/${selectedRole.toLowerCase()}/auth/login`, data, {
-          headers: headers,
-        })
-        .then((response) => {
-          if (response.data.token) {
-            localStorage.setItem("token", response.data.token);
-          }
-          navigate(`/${selectedRole.toLowerCase()}`, {
-            state: { type: selectedRole, ...response.data },
-          });
-        })
-        .catch((error) => {
-          toast.dismiss();
-          console.error(error);
-          if (error.response && error.response.data && error.response.data.message) {
-            toast.error(error.response.data.message);
-          } else {
-            toast.error("Unable to connect to server");
-          }
-        });
+    if (!selectedRole) {
+      toast.error("Please select your role first");
+      return;
     }
+    const loginData = { ...data, role: selectedRole };
+    const apiEndpoint = selectedRole === "Student" 
+      ? `${baseApiURL()}/student/auth/login`
+      : selectedRole === "Faculty"
+      ? `${baseApiURL()}/faculty/auth/login`
+      : selectedRole === "Admin"
+      ? `${baseApiURL()}/admin/auth/login`
+      : selectedRole === "Library"
+      ? `${baseApiURL()}/library/auth/login`
+      : selectedRole === "Transport"
+      ? `${baseApiURL()}/transport/auth/login`
+      : selectedRole === "Placement"
+      ? `${baseApiURL()}/placement/auth/login`
+      : selectedRole === "Examination"
+      ? `${baseApiURL()}/examination/auth/login`
+      : selectedRole === "HOD"
+      ? `${baseApiURL()}/hod/auth/login`
+      : selectedRole === "Principal"
+      ? `${baseApiURL()}/principal/auth/login`
+      : selectedRole === "Accounts"
+      ? `${baseApiURL()}/accounts/auth/login`
+      : selectedRole === "Alumni"
+      ? `${baseApiURL()}/alumni/auth/login`
+      : `${baseApiURL()}/auth/login`;
+
+    axios
+      .post(apiEndpoint, loginData)
+      .then((response) => {
+        const userLoginId = response.data.loginid || data.loginid || "";
+        const userToken = response.data.token || "";
+
+        if (userToken) {
+          localStorage.setItem("token", userToken);
+        }
+        if (userLoginId) {
+          localStorage.setItem("loginid", userLoginId);
+        }
+        localStorage.setItem("userRole", selectedRole);
+
+        toast.success(response.data.message || "Login Successful!");
+        const roleObj = roles.find(r => r.name === selectedRole);
+        const targetPath = roleObj ? roleObj.path : `/${selectedRole.toLowerCase()}`;
+
+        navigate(targetPath, {
+          state: {
+            type: selectedRole,
+            loginid: userLoginId,
+            branch: response.data.branch || response.data.department || "",
+          },
+          replace: true,
+        });
+      })
+      .catch((error) => {
+        toast.error(error.response?.data?.message || "Login Failed");
+      });
   };
 
   const handleRoleSelect = (roleName) => {
     setSelectedRole(roleName);
-    reset(); // Clear form fields when switching roles
+    reset();
   };
 
-  const handleBackToRoleSelection = () => {
-    setSelectedRole(null);
-    reset(); // Clear form fields when going back
-  };
-
-  const openForgotModal = () => {
-    const currentLoginId = getValues("loginid") || "";
-    setForgotLoginId(currentLoginId);
-    setForgotEmail("");
-    setForgotRequireEmail(false);
-    setShowForgotModal(true);
-  };
-
-  const handleForgotPasswordSubmit = (e) => {
+  const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
     if (!forgotLoginId.trim()) {
-      toast.error("Please enter your Login ID");
+      toast.error("Please enter your Login ID / Enrollment No.");
       return;
     }
     setSendingForgot(true);
-
-    axios
-      .post(`${baseApiURL()}/auth/forgot-password`, {
-        role: selectedRole,
+    try {
+      const res = await axios.post(`${baseApiURL()}/auth/forgot-password-request`, {
         loginid: forgotLoginId.trim(),
-        email: forgotEmail.trim() || undefined,
-      }, { timeout: 45000 })
-      .then((res) => {
-        if (res.data.success) {
-          toast.success(res.data.message || "Password reset link sent to your registered email!");
-          setShowForgotModal(false);
-          setForgotLoginId("");
-          setForgotEmail("");
-          setForgotRequireEmail(false);
-        } else {
-          toast.error(res.data.message || "Failed to send reset email.");
-        }
-      })
-      .catch((err) => {
-        if (err.response?.data?.requireEmail) {
-          setForgotRequireEmail(true);
-          toast.error(err.response.data.message);
-        } else if (err.response?.data?.message) {
-          toast.error(err.response.data.message);
-        } else {
-          toast.error("Failed to request password reset.");
-        }
-      })
-      .finally(() => {
-        setSendingForgot(false);
+        email: forgotEmail.trim(),
+        role: selectedRole || ""
       });
+      if (res.data.success) {
+        toast.success(res.data.message);
+        setShowForgotModal(false);
+        setForgotLoginId("");
+        setForgotEmail("");
+        setForgotRequireEmail(false);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (err) {
+      if (err.response?.data?.requireEmail) {
+        setForgotRequireEmail(true);
+        toast.error("Email not found in system. Please enter your email address below.");
+      } else {
+        toast.error(err.response?.data?.message || "Failed to process forgot password request");
+      }
+    } finally {
+      setSendingForgot(false);
+    }
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 justify-center items-center p-4 sm:p-8 relative">
-      {/* Animated background elements */}
-      <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse delay-1000" />
+    <div className="relative min-h-screen w-full flex flex-col justify-center items-center p-4 sm:p-8 bg-slate-950 overflow-hidden">
+      {/* 3D WebGL Background Visual */}
+      <Interactive3DBackground />
 
-      <div className="relative z-10 w-full max-w-4xl">
+      <div className="relative z-10 w-full max-w-6xl my-auto py-6">
         {!selectedRole ? (
           <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={formVariants}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVSz_mfjID4esb-MR0jWO584NqYdriBbzBfg&s"
-              alt="College Logo"
-              className="h-24 md:h-32 w-auto mx-auto mb-6 md:mb-8 transform hover:scale-105 transition-transform duration-300"
-            />
-            <motion.h1
-              className="text-3xl md:text-5xl font-extrabold text-center mb-8 md:mb-12 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-white drop-shadow-lg px-2"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              Welcome to Sphoorthy Engineering College
-            </motion.h1>
-            <motion.p
-              className="text-lg md:text-xl text-blue-100 text-center mb-4 md:mb-6"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-            >
-              Please select your role to continue
-            </motion.p>
+            <div className="flex flex-col items-center mb-8">
+              <img src={sphnLogo} alt="Sphoorthy Logo" className="w-16 h-16 rounded-2xl object-cover ring-4 ring-indigo-500/30 shadow-2xl mb-4 bg-slate-900" />
+              <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-300 text-center tracking-tight">
+                Sphoorthy Engineering College
+              </h1>
+              <p className="text-sm sm:text-lg text-slate-300 text-center mt-2 font-medium">
+                Select your institutional role to access the ECAP portal
+              </p>
+            </div>
 
-            <motion.div 
-              className="flex justify-center mb-10"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-            >
+            <div className="flex justify-center mb-8">
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}
-                onError={() => {
-                  toast.error('Google Login Failed');
-                }}
+                onError={() => toast.error('Google Login Failed')}
                 theme="filled_blue"
                 shape="pill"
                 size="large"
               />
-            </motion.div>
-
-            <div className="flex items-center justify-center space-x-4 mb-8 md:mb-10 px-4">
-              <div className="h-px bg-blue-200/30 flex-1"></div>
-              <span className="text-blue-200 text-sm uppercase tracking-wide whitespace-nowrap">Or manual login</span>
-              <div className="h-px bg-blue-200/30 flex-1"></div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 px-4">
+            <div className="flex items-center justify-center space-x-4 mb-8 max-w-md mx-auto">
+              <div className="h-px bg-slate-800 flex-1"></div>
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Or Manual Role Login</span>
+              <div className="h-px bg-slate-800 flex-1"></div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {roles.map((role) => (
                 <motion.div
                   key={role.name}
-                  className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 flex flex-col items-center justify-center cursor-pointer border border-white/20"
+                  className="bg-slate-900/60 backdrop-blur-xl rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer border border-slate-800/80 hover:border-indigo-500/50 transition-all duration-300 shadow-lg group relative overflow-hidden"
                   variants={cardVariants}
                   initial="hidden"
                   animate="visible"
                   whileHover="hover"
                   whileTap="tap"
-                  transition={{ duration: 0.3 }}
                   onClick={() => handleRoleSelect(role.name)}
                 >
-                  <role.icon className="text-blue-300 mb-3 md:mb-4" size={40} />
-                  <h2 className="text-xl md:text-2xl font-semibold text-white mb-1 md:mb-2">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-tr ${role.color} flex items-center justify-center text-white mb-3 shadow-md group-hover:scale-110 transition-transform`}>
+                    <role.icon size={22} />
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1 group-hover:text-indigo-300 transition-colors">
                     {role.name}
-                  </h2>
-                  <p className="text-blue-200 text-center text-sm">
-                    Login as {role.name}
-                  </p>
+                  </h3>
+                  <span className="text-[11px] font-semibold text-indigo-400 group-hover:text-white transition-colors">
+                    Login &rarr;
+                  </span>
                 </motion.div>
               ))}
             </div>
           </motion.div>
         ) : (
           <motion.div 
-            className="w-full max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 md:p-8 transform transition-all duration-300 hover:shadow-blue-500/20"
+            className="w-full max-w-md mx-auto bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-slate-800 p-8 shadow-2xl relative"
             initial="hidden"
             animate="visible"
             variants={formVariants}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
           >
-            <div className="mb-8 text-center">
-              <h2 className="text-3xl font-bold text-white">{selectedRole} Login</h2>
-              <p className="text-blue-100 mt-2">Please login to access your Dashboard</p>
+            <button
+              onClick={() => setSelectedRole(null)}
+              className="absolute top-6 left-6 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all cursor-pointer flex items-center space-x-1 text-xs font-bold"
+            >
+              <FiArrowLeft size={16} />
+              <span>Back</span>
+            </button>
+
+            <div className="mt-8 mb-8 text-center">
+              <span className="inline-block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2">
+                {selectedRole} Portal
+              </span>
+              <h2 className="text-2xl font-black text-white">{selectedRole} Sign In</h2>
+              <p className="text-xs text-slate-400 mt-1">Enter your credentials to access your dashboard</p>
             </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
               <div>
-                <label className="block text-sm font-medium text-blue-100 mb-2">
-                  {selectedRole} Login ID
+                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wide">
+                  {selectedRole} Login ID / Enrollment No.
                 </label>
                 <input
                   type="text"
                   {...register("loginid")}
-                  className="w-full px-4 py-3 rounded-lg bg-white/10 border border-blue-200/20 text-white placeholder-blue-200/50 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300"
-                  placeholder={`Enter ${selectedRole} ID`}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm transition-all"
+                  placeholder={`Enter your ${selectedRole} ID`}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-blue-100 mb-2">
+                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wide">
                   Password
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     {...register("password")}
-                    className="w-full px-4 py-3 rounded-lg bg-white/10 border border-blue-200/20 text-white placeholder-blue-200/50 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300"
-                    placeholder="Enter your password"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm transition-all pr-12"
+                    placeholder="••••••••"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-200 hover:text-white transition-colors duration-200"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                   >
-                    {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-                  </button>
-                </div>
-                <div className="flex justify-end mt-2">
-                  <button
-                    type="button"
-                    onClick={openForgotModal}
-                    className="text-xs text-blue-300 hover:text-white hover:underline transition-colors font-medium"
-                  >
-                    Forgot Password?
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                   </button>
                 </div>
               </div>
 
-              <motion.button
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(true)}
+                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center space-x-2 font-medium transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-blue-500/25"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold text-sm hover:from-indigo-500 hover:to-blue-500 shadow-lg shadow-indigo-600/30 transition-all cursor-pointer flex items-center justify-center space-x-2"
               >
-                <span>Sign In</span>
-                <FiLogIn className="w-5 h-5" />
-              </motion.button>
-
-            <div className="mt-8 text-center">
-              <motion.button 
-                type="button"
-                onClick={handleBackToRoleSelection}
-                className="text-blue-300 hover:underline text-sm"
-                whileHover={{ scale: 1.05 }}
-              >
-                ← Back to Role Selection
-              </motion.button>
-            </div>
-
-          </form>
-        </motion.div>
+                <FiLogIn size={18} />
+                <span>Sign In to Dashboard</span>
+              </button>
+            </form>
+          </motion.div>
         )}
       </div>
 
       {/* Forgot Password Modal */}
       <AnimatePresence>
         {showForgotModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className="w-full max-w-md bg-slate-900/95 border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative text-white"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative"
             >
-              {/* Close Button */}
               <button
-                type="button"
                 onClick={() => setShowForgotModal(false)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+                className="absolute top-5 right-5 text-slate-400 hover:text-white"
               >
                 <FiX size={20} />
               </button>
 
-              <div className="text-center mb-6">
-                <div className="w-14 h-14 bg-blue-600/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mx-auto mb-3 text-blue-400 shadow-inner">
-                  <FiKey size={26} />
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                  <FiKey size={20} />
                 </div>
-                <h3 className="text-2xl font-bold">Forgot Password?</h3>
-                <p className="text-blue-200/80 text-xs mt-1">
-                  Enter details to receive password reset mail for <span className="text-blue-400 font-semibold">{selectedRole}</span>
-                </p>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Reset Password</h3>
+                  <p className="text-xs text-slate-400">Request password reset details</p>
+                </div>
               </div>
 
               <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-blue-200 uppercase tracking-wider mb-2">
-                    {selectedRole} Login ID
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Login ID / Enrollment No.
                   </label>
                   <input
                     type="text"
                     value={forgotLoginId}
                     onChange={(e) => setForgotLoginId(e.target.value)}
-                    placeholder={`Enter your ${selectedRole} ID`}
+                    placeholder="Enter Login ID"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm"
                     required
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-blue-200/20 text-white placeholder-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                   />
                 </div>
 
-                {(forgotRequireEmail || true) && (
+                {forgotRequireEmail && (
                   <div>
-                    <label className="block text-xs font-semibold text-blue-200 uppercase tracking-wider mb-2 flex justify-between">
-                      <span>Registered Email</span>
-                      <span className="text-blue-300/60 font-normal lowercase">(Optional if on record)</span>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                      Email Address
                     </label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        value={forgotEmail}
-                        onChange={(e) => setForgotEmail(e.target.value)}
-                        placeholder="e.g. user@example.com"
-                        className="w-full px-4 py-3 rounded-xl bg-white/10 border border-blue-200/20 text-white placeholder-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm pl-10"
-                      />
-                      <FiMail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-200/60" />
-                    </div>
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="Enter registered email"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm"
+                      required
+                    />
                   </div>
                 )}
 
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={sendingForgot}
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 disabled:opacity-50 flex items-center justify-center space-x-2 text-sm"
-                  >
-                    {sendingForgot ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <>
-                        <FiMail size={16} />
-                        <span>Send Password Reset Mail</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={sendingForgot}
+                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+                >
+                  {sendingForgot ? "Processing..." : "Submit Reset Request"}
+                </button>
               </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      <Toaster 
-        position="bottom-center"
-        toastOptions={{
-          style: {
-            background: '#1E3A8A',
-            color: '#fff',
-            border: '1px solid #3B82F6',
-          },
-        }}
-      />
+      <Toaster position="bottom-center" />
     </div>
   );
 };

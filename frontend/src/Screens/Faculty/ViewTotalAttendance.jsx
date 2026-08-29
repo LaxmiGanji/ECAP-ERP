@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { baseApiURL } from "../../baseUrl";
+import { sortEnrollmentNo } from "../../utils/enrollmentSorter";
+import { FiAlertCircle } from "react-icons/fi";
 
 const ViewTotalAttendance = ({ branch: lockedBranch }) => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
   const [enrollmentNumbers, setEnrollmentNumbers] = useState([]);
   const [branches, setBranches] = useState([]);
   const [students, setStudents] = useState([]); // Added to get student section data
@@ -14,13 +17,46 @@ const ViewTotalAttendance = ({ branch: lockedBranch }) => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedBranch, setSelectedBranch] = useState(lockedBranch || "");
   const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [studentRegulations, setStudentRegulations] = useState([]);
   const [selectedSection, setSelectedSection] = useState("");
   const [enrollmentSearch, setEnrollmentSearch] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const sections = ['A', 'B', 'C', 'D', 'SOC', 'WIPRO TRAINING', 'ATT'];
+  const [sections, setSections] = useState(['A', 'B', 'C', 'D']);
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selectedBranch && selectedBranch !== "-- Select --") params.branch = selectedBranch;
+        if (selectedSemester && selectedSemester !== "-- Select --") params.semester = selectedSemester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSections(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selectedBranch, selectedSemester]);
+
+  useEffect(() => {
+    const fetchStudentRegulations = async () => {
+      try {
+        const response = await axios.get(`${baseApiURL()}/student/details/getRegulations`);
+        if (response.data.success) {
+          setStudentRegulations(response.data.regulations || []);
+        }
+      } catch (error) {
+        console.error("Error fetching student regulations:", error);
+      }
+    };
+    fetchStudentRegulations();
+  }, []);
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -33,15 +69,7 @@ const ViewTotalAttendance = ({ branch: lockedBranch }) => {
             ...new Set(response.data.attendance.map((item) => item.enrollmentNo)),
           ];
           
-          uniqueEnrollments.sort((a, b) => {
-            const numA = parseInt(a, 10);
-            const numB = parseInt(b, 10);
-            
-            if (!isNaN(numA) && !isNaN(numB)) {
-              return numA - numB;
-            }
-            return String(a).localeCompare(String(b), undefined, { numeric: true });
-          });
+          uniqueEnrollments.sort(sortEnrollmentNo);
           
           setEnrollmentNumbers(uniqueEnrollments);
         } else {
@@ -97,16 +125,44 @@ const ViewTotalAttendance = ({ branch: lockedBranch }) => {
   }, []);
 
   useEffect(() => {
-    if (selectedBranch && selectedSemester) {
-      const filtered = allSubjects.filter(
-        (subject) =>
-          subject.branch?.name === selectedBranch &&
-          String(subject.semester) === String(selectedSemester)
-      );
-      setFilteredSubjects(filtered);
-    } else {
-      setFilteredSubjects([]);
-    }
+    const filterSubjectsByStudentRegulation = async () => {
+      if (selectedBranch && selectedSemester) {
+        let studentReg = null;
+        let hasStudents = false;
+        try {
+          const studentRes = await axios.post(`${baseApiURL()}/student/details/getDetails`, {
+            branch: selectedBranch,
+            semester: Number(selectedSemester)
+          });
+          if (studentRes.data.success && studentRes.data.user && studentRes.data.user.length > 0) {
+            hasStudents = true;
+            studentReg = studentRes.data.user[0].regulation;
+          }
+        } catch (err) {
+          console.warn("Could not fetch students for regulation check:", err);
+        }
+
+        if (!hasStudents) {
+          setFilteredSubjects([]);
+          setNoStudentsMessage("no students are there for that semester");
+          return;
+        }
+
+        setNoStudentsMessage("");
+
+        const filtered = allSubjects.filter(
+          (subject) =>
+            (subject.branch?.name === selectedBranch || subject.branch === selectedBranch) &&
+            String(subject.semester) === String(selectedSemester) &&
+            (!studentReg || subject.regulation?.toUpperCase() === studentReg.toUpperCase())
+        );
+        setFilteredSubjects(filtered);
+      } else {
+        setFilteredSubjects([]);
+        setNoStudentsMessage("");
+      }
+    };
+    filterSubjectsByStudentRegulation();
   }, [selectedBranch, selectedSemester, allSubjects]);
 
   // Function to get section-specific total for a subject
@@ -273,18 +329,7 @@ const ViewTotalAttendance = ({ branch: lockedBranch }) => {
           (selectedSemester ? item.Semester === parseInt(selectedSemester) : true) &&
           (selectedSection ? item.Section === selectedSection : true)
       )
-      .sort((a, b) => {
-        // Sort by enrollment number
-        const numA = parseInt(a["Enrollment No"], 10);
-        const numB = parseInt(b["Enrollment No"], 10);
-
-        if (isNaN(numA) && isNaN(numB)) {
-          return a["Enrollment No"].localeCompare(b["Enrollment No"]);
-        }
-        if (isNaN(numA)) return 1;
-        if (isNaN(numB)) return -1;
-        return numA - numB;
-      });
+      .sort(sortEnrollmentNo);
 
     if (filteredData.length === 0) {
       alert("No data to export for the selected filters.");
@@ -378,6 +423,18 @@ const ViewTotalAttendance = ({ branch: lockedBranch }) => {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Regulation</label>
+            <input
+              type="text"
+              value={selectedRegulation}
+              readOnly
+              placeholder="Auto-fetched..."
+              className="w-full p-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed font-semibold text-blue-700"
+            />
+            <p className="text-[10px] text-gray-500 mt-1">Auto-fetched from student details</p>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
             <select
               value={selectedSection}
@@ -404,11 +461,16 @@ const ViewTotalAttendance = ({ branch: lockedBranch }) => {
               <option value="">All Subjects</option>
               {filteredSubjects.map((subject) => (
                 <option key={subject._id} value={subject.name}>
-                  {subject.name}
+                  {subject.name} {subject.code ? `(${subject.code})` : ''} {subject.regulation ? `[${subject.regulation}]` : ''}
                 </option>
               ))}
             </select>
-            {(!selectedBranch || !selectedSemester) && (
+            {noStudentsMessage ? (
+              <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center space-x-1">
+                <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <span>{noStudentsMessage}</span>
+              </div>
+            ) : (!selectedBranch || !selectedSemester) && (
               <p className="text-xs text-gray-500 mt-1">Select branch and semester first</p>
             )}
           </div>
@@ -512,10 +574,7 @@ const ViewTotalAttendance = ({ branch: lockedBranch }) => {
                 )
                 .sort((a, b) => {
                   // Primary sort by enrollment number
-                  const enrollmentCompare = a.enrollmentNo.localeCompare(b.enrollmentNo, undefined, {
-                    numeric: true,
-                    sensitivity: "base",
-                  });
+                  const enrollmentCompare = sortEnrollmentNo(a.enrollmentNo, b.enrollmentNo);
                   if (enrollmentCompare !== 0) return enrollmentCompare;
 
                   // Secondary sort: total rows come last

@@ -6,7 +6,6 @@ import Timetable from "./Timetable";
 import Marks from "./Marks";
 import Notice from "../../components/Notice";
 import Material from "./Material";
-import { Toaster } from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import ViewAttendance from "./ViewAttendance";
 import Certifications from "./Certifications";
@@ -17,6 +16,8 @@ import Transport from "./Transport";
 import StudentPlacementProfile from "./PlacementProfile";
 import AIAssistant from "./AIAssistant";
 import LibraryRAGAssistant from "./LibraryRAGAssistant";
+import { Toaster } from "react-hot-toast";
+import { FiTrendingUp, FiCheckCircle, FiBookOpen, FiCalendar } from "react-icons/fi";
 
 const Home = () => {
   const [selectedMenu, setSelectedMenu] = useState("My Profile");
@@ -26,7 +27,8 @@ const Home = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    if (router.state === null) {
+    const activeToken = localStorage.getItem("token");
+    if (router.state === null && !activeToken) {
       navigate("/");
     }
     setLoad(true);
@@ -69,8 +71,9 @@ const Home = () => {
 
   return (
     <>
+      <Toaster position="bottom-right" reverseOrder={false} />
       {load && (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+        <div className="min-h-screen bg-slate-50">
           <Navbar />
           <Sidebar 
             selectedMenu={selectedMenu} 
@@ -81,96 +84,90 @@ const Home = () => {
           />
           
           {/* Main Content Area */}
-          <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16" : "md:ml-64"} ml-0`}>
-            <div className="p-4 md:p-8">
-              {/* Dashboard Header */}
+          <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16 w-full md:w-[calc(100%-4rem)]" : "md:ml-64 w-full md:w-[calc(100%-16rem)]"} ml-0 min-h-[calc(100vh-4rem)]`}>
+            <div className="p-4 md:p-6 lg:p-8 w-full space-y-6">
+              {/* Dashboard Banner & Quick Access Cards */}
               {selectedMenu === "My Profile" && (
-                <div className="mb-8">
-                  <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="bg-gradient-to-r from-green-600 to-teal-600 px-4 md:px-8 py-6">
-                      <h1 className="text-2xl md:text-3xl font-bold text-white">Student Dashboard</h1>
-                      <p className="text-green-100 mt-2 text-sm md:text-base">Welcome to your academic portal</p>
+                <div className="space-y-6">
+                  {/* 🌟 Header Banner */}
+                  <div className="bento-header-banner flex items-center justify-between">
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Student Dashboard</h1>
+                      <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Welcome to Sphoorthy Engineering College Academic Portal</p>
                     </div>
-                    
-                    <div className="p-4 md:p-8">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        {/* Academic Progress */}
-                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-blue-100 text-sm font-medium">Academic Progress</p>
-                              <p className="text-lg font-semibold">Track Performance</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
+                  </div>
+                  
+                  {/* Quick Access Bento Stat Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Academic Marks Card */}
+                    <div 
+                      onClick={() => setSelectedMenu("Marks")}
+                      className="bento-card p-5 bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center justify-between group"
+                    >
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Academic Marks</p>
+                        <p className="text-base font-bold text-slate-900 mt-1 group-hover:text-indigo-600 transition-colors">View Performance</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <FiTrendingUp className="w-6 h-6" />
+                      </div>
+                    </div>
 
-                        {/* Attendance */}
-                        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-green-100 text-sm font-medium">Attendance</p>
-                              <p className="text-lg font-semibold">View Records</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
+                    {/* Attendance Card */}
+                    <div 
+                      onClick={() => setSelectedMenu("ViewAttendance")}
+                      className="bento-card p-5 bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center justify-between group"
+                    >
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Attendance</p>
+                        <p className="text-base font-bold text-slate-900 mt-1 group-hover:text-emerald-600 transition-colors">View Attendance</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                        <FiCheckCircle className="w-6 h-6" />
+                      </div>
+                    </div>
 
-                        {/* Materials */}
-                        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-purple-100 text-sm font-medium">Study Materials</p>
-                              <p className="text-lg font-semibold">Access Resources</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
+                    {/* Materials Card */}
+                    <div 
+                      onClick={() => setSelectedMenu("Material")}
+                      className="bento-card p-5 bg-white border border-slate-200 hover:border-purple-300 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center justify-between group"
+                    >
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Study Materials</p>
+                        <p className="text-base font-bold text-slate-900 mt-1 group-hover:text-purple-600 transition-colors">Access Resources</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                        <FiBookOpen className="w-6 h-6" />
+                      </div>
+                    </div>
 
-                        {/* Schedule */}
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-orange-100 text-sm font-medium">Class Schedule</p>
-                              <p className="text-lg font-semibold">View Timetable</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
+                    {/* Class Schedule Card */}
+                    <div 
+                      onClick={() => setSelectedMenu("Timetable")}
+                      className="bento-card p-5 bg-white border border-slate-200 hover:border-amber-300 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center justify-between group"
+                    >
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Class Schedule</p>
+                        <p className="text-base font-bold text-slate-900 mt-1 group-hover:text-amber-600 transition-colors">View Timetable</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 group-hover:bg-amber-600 group-hover:text-white transition-all">
+                        <FiCalendar className="w-6 h-6" />
                       </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Content Area */}
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              {/* Render Selected Content */}
+              <div className="w-full">
                 {renderContent()}
               </div>
             </div>
           </div>
         </div>
       )}
-      <Toaster position="bottom-center" />
     </>
   );
 };
 
 export default Home;
-

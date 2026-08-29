@@ -3,7 +3,19 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { baseApiURL } from "../../../baseUrl";
 import { getFileUrl } from "../../../utils/fileUrl";
-import { FiUserX, FiFilter, FiRefreshCw, FiDownload, FiEye } from "react-icons/fi";
+import { sortEnrollmentNo } from "../../../utils/enrollmentSorter";
+import { 
+  FiUserX, 
+  FiFilter, 
+  FiRefreshCw, 
+  FiDownload, 
+  FiEye, 
+  FiGrid, 
+  FiList, 
+  FiSearch,
+  FiRotateCcw,
+  FiUser
+} from "react-icons/fi";
 
 const ViewDetainStudents = () => {
   const [detainedStudents, setDetainedStudents] = useState([]);
@@ -18,6 +30,8 @@ const ViewDetainStudents = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [restoringId, setRestoringId] = useState(null);
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'table'
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch branches for filter
   const getBranchData = () => {
@@ -51,7 +65,9 @@ const ViewDetainStudents = () => {
       );
 
       if (response.data.success) {
-        setDetainedStudents(response.data.students);
+        const studentList = response.data.students || [];
+        studentList.sort(sortEnrollmentNo);
+        setDetainedStudents(studentList);
       } else {
         toast.error(response.data.message || "Failed to fetch detained students");
       }
@@ -85,6 +101,7 @@ const ViewDetainStudents = () => {
   // Reset filters
   const resetFilters = () => {
     setFilters({ branch: "", batch: "", semester: "", regulation: "" });
+    setSearchTerm("");
     setTimeout(() => fetchDetainedStudents(), 100);
   };
 
@@ -105,77 +122,62 @@ const ViewDetainStudents = () => {
       );
 
       toast.dismiss();
+
       if (response.data.success) {
-        toast.success("Student restored successfully");
+        toast.success("Student restored successfully!");
         fetchDetainedStudents(); // Refresh list
-        if (selectedStudent?._id === detainId) {
-          setShowDetailsModal(false);
-        }
       } else {
         toast.error(response.data.message || "Failed to restore student");
       }
     } catch (error) {
       toast.dismiss();
+      console.error("Error restoring student:", error);
       toast.error(error.response?.data?.message || "Error restoring student");
     } finally {
       setRestoringId(null);
     }
   };
 
-  // View student details
-  const viewStudentDetails = (student) => {
-    setSelectedStudent(student);
-    setShowDetailsModal(true);
-  };
-
   // Export to CSV
   const exportToCSV = () => {
     if (detainedStudents.length === 0) {
-      toast.error("No data to export");
+      toast.error("No detained students to export!");
       return;
     }
 
     const headers = [
-      "Enrollment No",
-      "Name",
-      "Branch",
-      "Semester",
-      "Batch",
-      "Regulation",
-      "Gender",
-      "Phone",
-      "Email",
-      "Detention Date",
-      "Detained By"
+      "Enrollment No", "Name", "Branch", "Semester", "Section", "Batch",
+      "Detain Reason", "Detained Date", "Detained By", "Attendance %", "Backlogs"
     ];
 
     const csvData = detainedStudents.map(student => [
-      student.enrollmentNo,
-      `${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.trim(),
-      student.branch,
-      student.semester,
-      student.batch,
-      student.regulation || 'N/A',
-      student.gender || 'N/A',
-      student.phoneNumber,
-      student.email || 'N/A',
-      new Date(student.detentionDate).toLocaleDateString(),
-      student.detainedBy || 'system'
+      student.enrollmentNo || '',
+      `"${student.studentName || ''}"`,
+      student.branch || '',
+      student.semester || '',
+      student.section || '',
+      student.batch || '',
+      `"${student.reason || ''}"`,
+      student.detainedDate ? new Date(student.detainedDate).toLocaleDateString() : '',
+      `"${student.detainedBy || ''}"`,
+      student.attendancePercentage || 'N/A',
+      student.activeBacklogs || 0
     ]);
 
     const csvContent = [
       headers.join(','),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+      ...csvData.map(row => row.join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `detained_students_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success("Exported successfully");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `detained_students_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV exported successfully!");
   };
 
   // Format date
@@ -190,21 +192,65 @@ const ViewDetainStudents = () => {
     });
   };
 
+  // Filtered by local search term
+  const displayedStudents = detainedStudents.filter(student => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      (student.enrollmentNo && student.enrollmentNo.toLowerCase().includes(term)) ||
+      (student.studentName && student.studentName.toLowerCase().includes(term)) ||
+      (student.branch && student.branch.toLowerCase().includes(term)) ||
+      (student.reason && student.reason.toLowerCase().includes(term))
+    );
+  });
+
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FiUserX className="text-red-500" />
-          Detained Students
-          <span className="text-sm font-normal text-gray-500 ml-2">
-            ({detainedStudents.length} students)
-          </span>
-        </h1>
-        <div className="flex gap-2">
+    <div className="w-full space-y-6 relative pb-16">
+      
+      {/* 🌟 Header Banner */}
+      <div className="bento-header-banner flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <div className="bg-rose-50 border border-rose-100 p-2.5 rounded-xl">
+            <FiUserX className="text-rose-600 text-xl" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              Detained Students Directory
+              <span className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2.5 py-0.5 rounded-full">
+                {detainedStudents.length} Students
+              </span>
+            </h1>
+            <p className="text-slate-500 font-medium text-xs mt-0.5">Manage, filter and review detained student academic records</p>
+          </div>
+        </div>
+
+        {/* View Switcher & Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Segmented Dual View Switcher */}
+          <div className="bg-slate-100 border border-slate-200 p-1 rounded-xl flex items-center space-x-1">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === "grid" ? "bg-white text-rose-600 shadow-sm border border-slate-200/60" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <FiGrid className="text-sm" />
+              <span className="hidden sm:inline">Bento Cards</span>
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === "table" ? "bg-white text-rose-600 shadow-sm border border-slate-200/60" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <FiList className="text-sm" />
+              <span className="hidden sm:inline">Compact Table</span>
+            </button>
+          </div>
+
           <button
             onClick={exportToCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm disabled:opacity-50"
             disabled={detainedStudents.length === 0}
           >
             <FiDownload />
@@ -212,7 +258,7 @@ const ViewDetainStudents = () => {
           </button>
           <button
             onClick={fetchDetainedStudents}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} />
             Refresh
@@ -220,45 +266,34 @@ const ViewDetainStudents = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <FiFilter className="text-gray-500" />
-            <span className="font-medium">Filters:</span>
+      {/* 🔲 Filter & Search Bento Card */}
+      <div className="bento-card p-6 bg-white border border-slate-200 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-center">
+          {/* Local Search Input */}
+          <div className="relative md:col-span-2">
+            <FiSearch className="absolute left-3.5 top-3 text-slate-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search by name, enrollment no, or reason..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold rounded-xl focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all outline-none"
+            />
           </div>
-          
+
           {/* Branch Filter */}
           <select
             name="branch"
             value={filters.branch}
             onChange={handleFilterChange}
-            className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold rounded-xl focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all outline-none"
           >
             <option value="">All Branches</option>
-            {branches.map((branch) => (
-              <option key={branch._id || branch.name} value={branch.name}>
-                {branch.name}
+            {branches.map((b) => (
+              <option key={b._id || b.name} value={b.name}>
+                {b.name}
               </option>
             ))}
-          </select>
-
-          {/* Batch Filter */}
-          <select
-            name="batch"
-            value={filters.batch}
-            onChange={handleFilterChange}
-            className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Batches</option>
-            {Array.from({ length: 8 }).map((_, idx) => {
-              const year = new Date().getFullYear() - idx;
-              return (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              );
-            })}
           </select>
 
           {/* Semester Filter */}
@@ -266,142 +301,172 @@ const ViewDetainStudents = () => {
             name="semester"
             value={filters.semester}
             onChange={handleFilterChange}
-            className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold rounded-xl focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all outline-none"
           >
             <option value="">All Semesters</option>
             {[1,2,3,4,5,6,7,8].map(sem => (
               <option key={sem} value={sem}>{sem}th Semester</option>
             ))}
           </select>
-          
-          {/* Regulation Filter */}
-          <input
-            type="text"
-            name="regulation"
-            placeholder="Regulation (e.g. R20)"
-            value={filters.regulation}
-            onChange={handleFilterChange}
-            className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
 
-          <button
-            onClick={applyFilters}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            Apply Filters
-          </button>
-
-          <button
-            onClick={resetFilters}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-          >
-            Reset
-          </button>
+          {/* Action Trigger Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={applyFilters}
+              className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+            >
+              Apply
+            </button>
+            <button
+              onClick={resetFilters}
+              className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all"
+            >
+              Reset
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Students Table */}
+      {/* 📦 Main Dual View Content */}
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="py-16 text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-rose-600 border-r-transparent"></div>
+          <p className="mt-2 text-xs text-slate-500 font-medium">Loading detained students...</p>
         </div>
-      ) : detainedStudents.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <FiUserX className="mx-auto text-4xl text-gray-400 mb-4" />
-          <p className="text-gray-500">No detained students found</p>
+      ) : displayedStudents.length === 0 ? (
+        <div className="bento-card p-12 text-center bg-white border border-slate-200">
+          <FiUserX className="mx-auto text-slate-300 text-4xl mb-3" />
+          <h3 className="text-base font-bold text-slate-900">No Detained Students Found</h3>
+          <p className="text-xs text-slate-500 font-medium mt-1">There are no student records currently marked as detained.</p>
         </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Profile
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Enrollment No
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Branch
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Semester
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Batch
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Regulation
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Detention Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {detainedStudents.map((student) => (
-                <tr key={student._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+      ) : viewMode === "grid" ? (
+        /* 🔲 Bento Cards Grid View */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayedStudents.map((student) => (
+            <div
+              key={student._id}
+              className="bento-card p-6 bg-white border border-rose-200/80 hover:shadow-md transition-all duration-200 space-y-4 flex flex-col justify-between"
+            >
+              <div className="space-y-4">
+                {/* Header Row: Student Info */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center space-x-3">
                     <img
-                      src={student.profile ? getFileUrl(student.profile) : "https://via.placeholder.com/40"}
-                      alt={student.firstName}
-                      className="h-10 w-10 rounded-full object-cover"
+                      src={getFileUrl(student.studentId?.profile)}
+                      alt={student.studentName}
+                      className="w-12 h-12 rounded-xl object-cover border border-rose-100 bg-rose-50 shadow-xs"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/40";
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
                       }}
                     />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-medium">
-                    {student.enrollmentNo}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {`${student.firstName || ''} ${student.middleName || ''} ${student.lastName || ''}`.trim()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {student.branch}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {student.semester}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {student.batch}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {student.regulation || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {formatDate(student.detentionDate)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => viewStudentDetails(student)}
-                        className="text-blue-600 hover:text-blue-800"
-                        title="View Details"
-                      >
-                        <FiEye size={18} />
-                      </button>
-                      <button
-                        onClick={() => restoreStudent(student._id)}
-                        disabled={restoringId === student._id}
-                        className={`text-green-600 hover:text-green-800 ${
-                          restoringId === student._id ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                        title="Restore Student"
-                      >
-                        {restoringId === student._id ? (
-                          <div className="animate-spin h-4 w-4 border-2 border-green-500 border-t-transparent rounded-full"></div>
-                        ) : (
-                          <FiRefreshCw size={18} />
-                        )}
-                      </button>
+                    <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center font-bold text-base shadow-xs" style={{ display: 'none' }}>
+                      <FiUser />
                     </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base leading-tight">
+                        {student.studentName}
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">Enrollment: <span className="font-bold text-rose-600">{student.enrollmentNo}</span></p>
+                    </div>
+                  </div>
+
+                  <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-lg text-xs border border-rose-100">
+                    Detained
+                  </span>
+                </div>
+
+                {/* Details Pills */}
+                <div className="grid grid-cols-3 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
+                  <div>
+                    <span className="text-slate-400 font-medium block">Branch</span>
+                    <span className="font-bold text-slate-800 block truncate">{student.branch}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-medium block">Semester</span>
+                    <span className="font-bold text-slate-800 block">Sem {student.semester}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-medium block">Section</span>
+                    <span className="font-bold text-slate-800 block">Sec {student.section || 'A'}</span>
+                  </div>
+                </div>
+
+                {/* Reason & Detain Notes */}
+                <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-3 text-xs space-y-1">
+                  <span className="font-bold text-rose-800 block">Detain Reason:</span>
+                  <p className="text-slate-700 leading-relaxed font-medium line-clamp-2">{student.reason || 'No specific reason provided'}</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedStudent(student);
+                    setShowDetailsModal(true);
+                  }}
+                  className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                >
+                  <FiEye /> View Details
+                </button>
+                <button
+                  onClick={() => restoreStudent(student._id)}
+                  disabled={restoringId === student._id}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-sm"
+                >
+                  <FiRotateCcw /> Restore
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* 📋 Compact Table View */
+        <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-sm bg-white">
+          <table className="min-w-[1200px] w-full text-left">
+            <thead>
+              <tr>
+                <th className="py-3 px-4">Enrollment No</th>
+                <th className="py-3 px-4">Student Name</th>
+                <th className="py-3 px-4">Branch</th>
+                <th className="py-3 px-4">Semester</th>
+                <th className="py-3 px-4">Section</th>
+                <th className="py-3 px-4">Detain Reason</th>
+                <th className="py-3 px-4">Detained Date</th>
+                <th className="py-3 px-4">Detained By</th>
+                <th className="py-3 px-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayedStudents.map((student, index) => (
+                <tr key={student._id} className={index % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                  <td className="font-bold text-xs text-rose-600 py-3.5 px-4">{student.enrollmentNo}</td>
+                  <td className="font-bold text-sm text-slate-900 py-3.5 px-4">{student.studentName}</td>
+                  <td className="text-xs font-semibold text-slate-800 py-3.5 px-4">{student.branch}</td>
+                  <td className="text-xs font-semibold text-slate-800 py-3.5 px-4">Sem {student.semester}</td>
+                  <td className="text-xs font-semibold text-slate-800 py-3.5 px-4">{student.section || 'A'}</td>
+                  <td className="text-xs text-slate-600 py-3.5 px-4 truncate max-w-xs">{student.reason}</td>
+                  <td className="text-xs text-slate-500 py-3.5 px-4">{formatDate(student.detainedDate)}</td>
+                  <td className="text-xs text-slate-600 py-3.5 px-4">{student.detainedBy || 'Admin'}</td>
+                  <td className="py-3.5 px-4 flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        setSelectedStudent(student);
+                        setShowDetailsModal(true);
+                      }}
+                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all"
+                      title="View Details"
+                    >
+                      <FiEye />
+                    </button>
+                    <button
+                      onClick={() => restoreStudent(student._id)}
+                      disabled={restoringId === student._id}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50 flex items-center gap-1"
+                    >
+                      <FiRotateCcw /> Restore
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -412,140 +477,78 @@ const ViewDetainStudents = () => {
 
       {/* Details Modal */}
       {showDetailsModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold">Student Details</h2>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bento-card p-6 bg-white border border-slate-200 max-w-lg w-full space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-900">Detained Student Profile Details</h3>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-slate-400 hover:text-slate-600 font-bold text-lg"
               >
-                ✕
+                &times;
               </button>
             </div>
-            
-            <div className="p-6">
-              {/* Profile Header */}
-              <div className="flex items-center gap-6 mb-6">
-                <img
-                  src={selectedStudent.profile ? getFileUrl(selectedStudent.profile) : "https://via.placeholder.com/100"}
-                  alt={selectedStudent.firstName}
-                  className="h-24 w-24 rounded-full object-cover border-4 border-gray-200"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/100";
-                  }}
-                />
+
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 font-bold flex items-center justify-center text-sm">
+                  {selectedStudent.studentName?.charAt(0)}
+                </div>
                 <div>
-                  <h3 className="text-2xl font-bold">
-                    {`${selectedStudent.firstName || ''} ${selectedStudent.middleName || ''} ${selectedStudent.lastName || ''}`.trim()}
-                  </h3>
-                  <p className="text-gray-600">Enrollment: {selectedStudent.enrollmentNo}</p>
-                  <p className="text-gray-600">Detained on: {formatDate(selectedStudent.detentionDate)}</p>
-                  <p className="text-gray-600">Detained by: {selectedStudent.detainedBy || 'system'}</p>
+                  <h4 className="font-bold text-slate-900 text-sm">{selectedStudent.studentName}</h4>
+                  <p className="text-slate-500 font-medium">Enrollment: {selectedStudent.enrollmentNo}</p>
                 </div>
               </div>
 
-              {/* Details Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded">
-                  <label className="text-sm text-gray-500">Personal Information</label>
-                  <div className="mt-2 space-y-2">
-                    <p><span className="font-medium">Gender:</span> {selectedStudent.gender || 'N/A'}</p>
-                    <p><span className="font-medium">Phone:</span> {selectedStudent.phoneNumber}</p>
-                    <p><span className="font-medium">Email:</span> {selectedStudent.email || 'N/A'}</p>
-                  </div>
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div>
+                  <span className="text-slate-400 font-medium block">Branch</span>
+                  <span className="font-bold text-slate-800">{selectedStudent.branch}</span>
                 </div>
-
-                <div className="bg-gray-50 p-4 rounded">
-                  <label className="text-sm text-gray-500">Academic Information</label>
-                  <div className="mt-2 space-y-2">
-                    <p><span className="font-medium">Branch:</span> {selectedStudent.branch}</p>
-                    <p><span className="font-medium">Semester:</span> {selectedStudent.semester}</p>
-                    <p><span className="font-medium">Batch:</span> {selectedStudent.batch}</p>
-                    <p><span className="font-medium">Regulation:</span> {selectedStudent.regulation || 'N/A'}</p>
-                    <p><span className="font-medium">Section:</span> {selectedStudent.section || 'N/A'}</p>
-                  </div>
+                <div>
+                  <span className="text-slate-400 font-medium block">Semester</span>
+                  <span className="font-bold text-slate-800">Sem {selectedStudent.semester}</span>
                 </div>
-
-                <div className="bg-gray-50 p-4 rounded">
-                  <label className="text-sm text-gray-500">Family Information</label>
-                  <div className="mt-2 space-y-2">
-                    <p><span className="font-medium">Father's Name:</span> {selectedStudent.FatherName || 'N/A'}</p>
-                    <p><span className="font-medium">Father's Phone:</span> {selectedStudent.FatherPhoneNumber || 'N/A'}</p>
-                    <p><span className="font-medium">Mother's Name:</span> {selectedStudent.MotherName || 'N/A'}</p>
-                    <p><span className="font-medium">Mother's Phone:</span> {selectedStudent.MotherPhoneNumber || 'N/A'}</p>
-                  </div>
+                <div>
+                  <span className="text-slate-400 font-medium block">Section</span>
+                  <span className="font-bold text-slate-800">Section {selectedStudent.section || 'A'}</span>
                 </div>
-
-                <div className="bg-gray-50 p-4 rounded">
-                  <label className="text-sm text-gray-500">Books & Transport</label>
-                  <div className="mt-2 space-y-2">
-                    <p><span className="font-medium">Issued Books:</span> {selectedStudent.books?.filter(b => b.status === 'issued').length || 0}</p>
-                    <p><span className="font-medium">Transport:</span> {selectedStudent.transport?.routeName || 'Not assigned'}</p>
-                    <p><span className="font-medium">Bus Number:</span> {selectedStudent.transport?.busNumber || 'N/A'}</p>
-                    <p><span className="font-medium">Seat Number:</span> {selectedStudent.transport?.seatNumber || 'N/A'}</p>
-                  </div>
+                <div>
+                  <span className="text-slate-400 font-medium block">Batch</span>
+                  <span className="font-bold text-slate-800">{selectedStudent.batch || 'N/A'}</span>
                 </div>
               </div>
 
-              {/* Issued Books Section */}
-              {selectedStudent.books?.filter(b => b.status === 'issued').length > 0 && (
-                <div className="mt-4 bg-gray-50 p-4 rounded">
-                  <label className="text-sm text-gray-500 font-medium">Currently Issued Books</label>
-                  <div className="mt-2">
-                    {selectedStudent.books
-                      .filter(b => b.status === 'issued')
-                      .map((book, index) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b last:border-0">
-                          <span>Book ID: {book.bookId}</span>
-                          <span className="text-sm text-gray-500">
-                            Issued: {new Date(book.issueDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Certifications */}
-              {selectedStudent.certifications?.length > 0 && (
-                <div className="mt-4 bg-gray-50 p-4 rounded">
-                  <label className="text-sm text-gray-500 font-medium">Certifications</label>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {selectedStudent.certifications.map((cert, index) => (
-                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                        {cert.split('/').pop()}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={() => restoreStudent(selectedStudent._id)}
-                  disabled={restoringId === selectedStudent._id}
-                  className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors ${
-                    restoringId === selectedStudent._id ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {restoringId === selectedStudent._id ? (
-                    <span className="flex items-center gap-2">
-                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                      Restoring...
-                    </span>
-                  ) : (
-                    'Restore Student'
-                  )}
-                </button>
-                <button
-                  onClick={() => setShowDetailsModal(false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-                >
-                  Close
-                </button>
+              <div className="bg-rose-50 border border-rose-100 p-3 rounded-xl space-y-1">
+                <span className="font-bold text-rose-800 block">Detain Reason</span>
+                <p className="text-slate-700 font-medium leading-relaxed">{selectedStudent.reason || 'No specific reason provided'}</p>
               </div>
+
+              <div className="grid grid-cols-2 gap-2 text-slate-500 font-medium pt-1">
+                <div>
+                  <span>Detained Date: </span>
+                  <span className="font-bold text-slate-800">{formatDate(selectedStudent.detainedDate)}</span>
+                </div>
+                <div>
+                  <span>Detained By: </span>
+                  <span className="font-bold text-slate-800">{selectedStudent.detainedBy || 'Admin'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
+              <button
+                onClick={() => restoreStudent(selectedStudent._id)}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <FiRotateCcw /> Restore Student
+              </button>
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

@@ -34,6 +34,39 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
   const [substitutionHistory, setSubstitutionHistory] = useState([]);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
+  // Dynamic Section Cache by (branch_semester)
+  const [sectionsCache, setSectionsCache] = useState({});
+
+  const fetchSectionsForBranchAndSemester = async (b, sem) => {
+    if (!b || !sem) return;
+    const cacheKey = `${b.trim()}_${sem}`;
+    if (sectionsCache[cacheKey]) return;
+
+    try {
+      const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, {
+        params: { branch: b, semester: sem }
+      });
+      if (res.data.success && res.data.sections?.length > 0) {
+        setSectionsCache(prev => ({
+          ...prev,
+          [cacheKey]: res.data.sections
+        }));
+      }
+    } catch (err) {
+      console.error(`Error fetching sections for ${b} Sem ${sem}:`, err);
+    }
+  };
+
+  const getSectionsForPeriod = (b, sem) => {
+    if (!b || !sem) return ["A", "B", "C", "D"];
+    const cacheKey = `${b.trim()}_${sem}`;
+    if (!sectionsCache[cacheKey]) {
+      fetchSectionsForBranchAndSemester(b, sem);
+      return ["A", "B", "C", "D"];
+    }
+    return sectionsCache[cacheKey];
+  };
+
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const timeSlots = [
     '9:00am - 10:00am',
@@ -556,54 +589,24 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-white/20 p-2 rounded-lg">
-                  <svg className="text-white text-xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-white">Faculty Timetable Management</h1>
-                  <p className="text-blue-100 text-sm">View, edit and import faculty timetables</p>
-                </div>
-              </div>
-              
-              {/* Reset Button */}
-              {selectedFaculty && originalTimetable && (
-                <button
-                  onClick={resetTimetable}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Reset Timetable
-                </button>
-              )}
-            </div>
-          </div>
+    <div className="w-full space-y-6">
+      {/* Faculty Selection Card */}
 
           {/* Faculty Selection - Common for all tabs */}
-          <div className="p-6 border-b border-gray-200 bg-gray-50">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bento-card p-6 bg-white border border-slate-200 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               <div>
-                <label htmlFor="faculty" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="faculty" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   Select Faculty
                 </label>
                 <select
                   id="faculty"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none"
                   value={selectedFaculty}
                   onChange={(e) => setSelectedFaculty(e.target.value)}
                   disabled={loading}
                 >
-                  <option value="">Select Faculty</option>
+                  <option value="">-- Select Faculty --</option>
                   {filteredFaculties.map((faculty) => (
                     <option key={faculty._id} value={faculty.employeeId}>
                       {faculty.firstName} {faculty.middleName} {faculty.lastName} ({faculty.employeeId}) - {faculty.department}
@@ -614,15 +617,15 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
               
               {/* Faculty Info Display */}
               {facultyInfo && (
-                <div className="bg-blue-100 p-3 rounded-lg border border-blue-200">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="bg-indigo-50/80 p-4 rounded-xl border border-indigo-100">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-gray-600">Name:</span>
-                      <p className="font-semibold">{facultyInfo.name}</p>
+                      <span className="text-slate-500 font-medium">Name:</span>
+                      <p className="font-bold text-slate-900">{facultyInfo.name}</p>
                     </div>
                     <div>
-                      <span className="text-gray-600">Department:</span>
-                      <p className="font-semibold">{facultyInfo.department}</p>
+                      <span className="text-slate-500 font-medium">Department:</span>
+                      <p className="font-bold text-slate-900">{facultyInfo.department}</p>
                     </div>
                   </div>
                 </div>
@@ -633,9 +636,9 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
                 <div className="flex justify-end">
                   <button
                     onClick={() => setShowHistoryModal(true)}
-                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2"
+                    className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-xl transition-all shadow-sm flex items-center gap-2"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     View Substitution History ({substitutionHistory.length})
@@ -646,49 +649,35 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex justify-center items-center w-full border-b border-gray-200">
-            <div className="flex space-x-1 p-4">
-              {["view", "edit", "import"].map((tab) => (
+          <div className="bento-card p-1.5 bg-slate-100 border border-slate-200 mb-6 max-w-md mx-auto">
+            <div className="grid grid-cols-2 gap-1.5">
+              {["view", "edit"].map((tab) => (
                 <button
                   key={tab}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                  className={`px-4 py-2 rounded-xl font-bold text-xs transition-all duration-200 ${
                     selectedTab === tab
-                      ? "bg-blue-600 text-white shadow-lg"
-                      : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                      ? "bg-white text-indigo-600 shadow-sm border border-slate-200/60"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
                   }`}
                   onClick={() => setSelectedTab(tab)}
                   disabled={!selectedFaculty && tab !== "view"}
                 >
-                  {tab === "view" ? "View Timetable" : 
-                   tab === "edit" ? "Edit Timetable" : 
-                   "Import Timetable"}
+                  {tab === "view" ? "View Timetable" : "Edit Timetable"}
                 </button>
               ))}
             </div>
-            
-            {/* Import indicator */}
-            {selectedTab === "import" && (
-              <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg mr-4">
-                <span className="flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  Excel Import Mode
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Content */}
-          <div className="p-8">
+          <div className="w-full">
             {/* No Faculty Selected Message */}
             {!selectedFaculty && (
-              <div className="text-center py-12">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="bento-card p-12 text-center bg-white border border-slate-200">
+                <svg className="mx-auto h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No faculty selected</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="mt-3 text-base font-bold text-slate-900">No Faculty Selected</h3>
+                <p className="mt-1 text-xs text-slate-500 font-medium">
                   Please select a faculty member from the dropdown above to continue.
                 </p>
               </div>
@@ -702,65 +691,35 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
             {/* Edit Tab */}
             {selectedTab === "edit" && selectedFaculty && (
               <div className="space-y-8">
-                {/* Debug Panel - Show available subjects */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3 text-gray-800">Available Subjects by Branch and Semester:</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-                    {branches.map((branch) => (
-                      <div key={branch._id} className="bg-white p-3 rounded border">
-                        <h4 className="font-medium text-sm text-gray-700 mb-2">{branch.name}</h4>
-                        <div className="space-y-1">
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
-                            const semSubjects = subjects.filter(
-                              (subject) => 
-                                subject.semester === sem && 
-                                subject.branch?.name === branch.name
-                            );
-                            return (
-                              <div key={sem} className="text-xs">
-                                <span className="font-medium">Sem {sem}:</span> {semSubjects.length} subjects
-                                {semSubjects.length > 0 && (
-                                  <div className="ml-2 text-gray-600">
-                                    {semSubjects.map(subj => subj.name).join(', ')}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
                 {/* Clash Error Display */}
                 {clashErrors.length > 0 && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
                     <div className="flex items-center mb-3">
                       <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                       </svg>
-                      <h3 className="text-lg font-semibold text-red-800">Faculty Timetable Clash Detected</h3>
+                      <h3 className="text-lg font-bold text-red-800">Faculty Timetable Clash Detected</h3>
                     </div>
-                    <p className="text-red-700 mb-4">The following conflicts were found. Please resolve them before saving:</p>
+                    <p className="text-red-700 text-xs mb-4">The following conflicts were found. Please resolve them before saving:</p>
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {clashErrors.map((clash, index) => (
-                        <div key={index} className="bg-white border border-red-200 rounded-lg p-3">
+                        <div key={index} className="bg-white border border-red-200 rounded-xl p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center space-x-2 mb-2">
-                                <span className="font-medium text-gray-800">{clash.day}</span>
-                                <span className="text-gray-500">•</span>
-                                <span className="text-gray-600">{clash.time}</span>
+                                <span className="font-bold text-slate-900 text-sm">{clash.day}</span>
+                                <span className="text-slate-400">•</span>
+                                <span className="text-slate-600 text-xs font-semibold">{clash.time}</span>
                               </div>
-                              <div className="text-sm text-gray-700 mb-2">
-                                <span className="font-medium">Conflict:</span> {clash.branch} - Semester {clash.semester} - Section {clash.section}
+                              <div className="text-xs text-slate-700 mb-1">
+                                <span className="font-semibold">Conflict:</span> {clash.branch} - Semester {clash.semester} - Section {clash.section}
                               </div>
-                              <div className="text-sm text-gray-600">
-                                <span className="font-medium">Your subject:</span> {clash.subject}
+                              <div className="text-xs text-slate-600 mb-1">
+                                <span className="font-semibold">Your subject:</span> {clash.subject}
                               </div>
-                              <div className="text-sm text-red-600">
-                                <span className="font-medium">Conflicts with:</span> {clash.conflictingFaculty.name} ({clash.conflictingFaculty.employeeId}) - {clash.conflictingFaculty.subject}
+                              <div className="text-xs text-red-600 font-semibold">
+                                <span>Conflicts with:</span> {clash.conflictingFaculty.name} ({clash.conflictingFaculty.employeeId}) - {clash.conflictingFaculty.subject}
                               </div>
                             </div>
                           </div>
@@ -770,7 +729,7 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => setClashErrors([])}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors"
                       >
                         Dismiss
                       </button>
@@ -780,12 +739,12 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {daysOfWeek.map((day) => (
-                    <div key={day} className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                    <div key={day} className="bento-card p-6 bg-white border border-slate-200">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">{day}</h3>
+                        <h3 className="text-base font-bold text-slate-900">{day}</h3>
                         <button
                           onClick={() => addPeriod(day)}
-                          className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors"
+                          className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
                         >
                           Add Period
                         </button>
@@ -989,7 +948,7 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
                                       disabled={["Break", "Sports", "Library", "Other"].includes(period.subject)}
                                     >
                                       <option value="">Section</option>
-                                      {["A", "B", "C", "D"].map((sec) => (
+                                      {getSectionsForPeriod(period.branch, period.semester).map((sec) => (
                                         <option key={sec} value={sec}>
                                           {sec}
                                         </option>
@@ -1049,7 +1008,7 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
                 {/* Save Button */}
                 <div className="flex justify-center pt-6">
                   <button
-                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
                     onClick={saveFacultyTimetable}
                     disabled={loading}
                   >
@@ -1058,14 +1017,7 @@ const FacultyTimetable = ({ branch: lockedBranch }) => {
                 </div>
               </div>
             )}
-
-            {/* Import Tab */}
-            {selectedTab === "import" && selectedFaculty && (
-              <FacultyTimetableImport onSuccess={handleImportSuccess} />
-            )}
           </div>
-        </div>
-      </div>
 
       {/* Substitution Modal */}
       {showSubstitutionModal && selectedPeriodForSubstitution && (

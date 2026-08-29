@@ -20,9 +20,10 @@ import ViewMarks from "../Faculty/ViewMarks";
 import FacultyAttendance from "./FacultyAttendance";
 import FacultySubstitution from "./FacultySubstitution";
 import DailyFacultyAttendance from "../Admin/DailyFacultyAttendance";
-import Profile from "../Admin/Profile";
+import Profile from "./Profile";
 import AIAnalytics from "../Faculty/AIAnalytics";
 import MessageParent from "../../components/MessageParent";
+import PredictiveAnalytics from "../Admin/PredictiveAnalytics";
 
 const HODHome = () => {
   const router = useLocation();
@@ -41,12 +42,14 @@ const HODHome = () => {
   const [targetRollNo, setTargetRollNo] = useState("");
 
   useEffect(() => {
-    if (!router.state?.loginid || router.state?.type !== 'HOD') {
+    const activeToken = localStorage.getItem("token");
+    const activeLoginId = router.state?.loginid || localStorage.getItem("loginid");
+    if (!activeToken && !activeLoginId && !router.state) {
       navigate('/');
     } else {
       fetchPendingRequests();
     }
-  }, []);
+  }, [router.state, navigate]);
 
   const fetchPendingRequests = async () => {
     setLoading(true);
@@ -204,7 +207,7 @@ const HODHome = () => {
       case "FacultyAttendance":
         return <FacultyAttendance branch={branch} />;
       case "FacultySubstitution":
-        return <FacultySubstitution />;
+        return <FacultySubstitution branch={branch} />;
       case "DailyFacultyAttendance":
         return <DailyFacultyAttendance branch={branch} />;
       case "Message Parent":
@@ -213,6 +216,8 @@ const HODHome = () => {
         return <Profile />;
       case "AI Analytics":
         return <AIAnalytics />;
+      case "PredictiveAnalytics":
+        return <PredictiveAnalytics branch={branch} />;
       default:
         return <div>Select a module</div>;
     }
@@ -230,7 +235,7 @@ const HODHome = () => {
       />
       
       {/* Main Content Area */}
-      <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16" : "md:ml-64"} ml-0`}>
+      <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16 w-full md:w-[calc(100%-4rem)]" : "md:ml-64 w-full md:w-[calc(100%-16rem)]"} ml-0 min-h-[calc(100vh-4rem)]`}>
         <div className="p-0">
           {/* Header */}
           <div className="bg-white shadow-sm px-8 py-4 flex justify-between items-center sticky top-0 z-10 border-b border-gray-200">

@@ -3,6 +3,7 @@ import axios from "axios";
 import { baseApiURL } from "../../baseUrl";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
+import { FiAlertCircle } from "react-icons/fi";
 
 const ExcelTemplateDownload = ({ branch: lockedBranch }) => {
   const [filters, setFilters] = useState({
@@ -14,22 +15,44 @@ const ExcelTemplateDownload = ({ branch: lockedBranch }) => {
   const [branches, setBranches] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [sections, setSections] = useState(["A", "B", "C", "D", "SOC", "WIPRO TRAINING", "ATT"]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
+  const [sections, setSections] = useState([]);
 
   // Fetch branches on component mount
   React.useEffect(() => {
     fetchBranches();
   }, []);
 
-  // Fetch subjects when branch and semester are selected
+  // Fetch subjects & dynamic sections when branch and semester are selected
   React.useEffect(() => {
     if (filters.branch && filters.semester) {
       fetchSubjectsByBranchAndSemester();
+      fetchSectionsByBranchAndSemester();
     } else {
       setSubjects([]);
-      setFilters(prevFilters => ({ ...prevFilters, subject: "" }));
+      setSections([]);
+      setFilters(prevFilters => ({ ...prevFilters, subject: "", section: "" }));
     }
   }, [filters.branch, filters.semester]);
+
+  const fetchSectionsByBranchAndSemester = async () => {
+    try {
+      const response = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, {
+        params: {
+          branch: filters.branch,
+          semester: filters.semester,
+        },
+      });
+      if (response.data.success && response.data.sections) {
+        setSections(response.data.sections);
+        if (filters.section && !response.data.sections.includes(filters.section)) {
+          setFilters(prev => ({ ...prev, section: "" }));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching sections:", error);
+    }
+  };
 
   const fetchBranches = async () => {
     try {
@@ -45,14 +68,39 @@ const ExcelTemplateDownload = ({ branch: lockedBranch }) => {
 
   const fetchSubjectsByBranchAndSemester = async () => {
     try {
-      // Get all subjects first
+      // 1. Fetch student details to detect active cohort regulation
+      let studentReg = null;
+      let hasStudents = false;
+      try {
+        const studentRes = await axios.post(`${baseApiURL()}/student/details/getDetails`, {
+          branch: filters.branch,
+          semester: parseInt(filters.semester)
+        });
+        if (studentRes.data.success && studentRes.data.user && studentRes.data.user.length > 0) {
+          hasStudents = true;
+          studentReg = studentRes.data.user[0].regulation;
+        }
+      } catch (err) {
+        console.warn("Could not fetch students for regulation check:", err);
+      }
+
+      if (!hasStudents) {
+        setSubjects([]);
+        setNoStudentsMessage("no students are there for that semester");
+        setFilters(prevFilters => ({ ...prevFilters, subject: "" }));
+        return;
+      }
+
+      setNoStudentsMessage("");
+
+      // 2. Fetch all subjects and filter by branch, semester, AND student regulation
       const response = await axios.get(`${baseApiURL()}/subject/getSubject`);
       if (response.data.success) {
-        // Filter subjects by branch name and semester
         const filteredSubjects = response.data.subject.filter(subject => {
           const branchMatch = subject.branch?.name === filters.branch;
           const semesterMatch = subject.semester === parseInt(filters.semester);
-          return branchMatch && semesterMatch;
+          const regMatch = !studentReg || subject.regulation?.toUpperCase() === studentReg.toUpperCase();
+          return branchMatch && semesterMatch && regMatch;
         });
         
         setSubjects(filteredSubjects);
@@ -264,16 +312,19 @@ const ExcelTemplateDownload = ({ branch: lockedBranch }) => {
   };
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-      <h3 className="text-lg font-semibold text-blue-800 mb-4">
-        📊 Generate Attendance Template
-      </h3>
+    <div className="bento-card p-6 bg-white border border-slate-200 shadow-xs space-y-4 mb-6">
+      <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
+        <div className="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+        <h3 className="text-base font-bold text-slate-900">
+          Generate Attendance Excel Template
+        </h3>
+      </div>
       
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Branch Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-bold text-slate-600 mb-1">
             Branch *
           </label>
           <select
@@ -318,10 +369,17 @@ const ExcelTemplateDownload = ({ branch: lockedBranch }) => {
           <select
             value={filters.section}
             onChange={(e) => handleFilterChange('section', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={!filters.branch || !filters.semester}
+            className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${!filters.branch || !filters.semester ? 'bg-gray-100 cursor-not-allowed' : ''}`}
           >
-            <option value="">Select Section</option>
-            {getAvailableSections().map(section => (
+            <option value="">
+              {!filters.branch || !filters.semester
+                ? "Select Branch & Semester First"
+                : sections.length > 0
+                ? "Select Section"
+                : "No Sections Found"}
+            </option>
+            {sections.map((section) => (
               <option key={section} value={section}>
                 {section}
               </option>
@@ -349,11 +407,16 @@ const ExcelTemplateDownload = ({ branch: lockedBranch }) => {
             </option>
             {subjects.map(subject => (
               <option key={subject._id} value={subject.name}>
-                {subject.name}
+                {subject.name} {subject.code ? `(${subject.code})` : ''} {subject.regulation ? `[${subject.regulation}]` : ''}
               </option>
             ))}
           </select>
-          {filters.branch && filters.semester && subjects.length === 0 && (
+          {noStudentsMessage ? (
+            <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs flex items-center space-x-1">
+              <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span>{noStudentsMessage}</span>
+            </div>
+          ) : filters.branch && filters.semester && subjects.length === 0 && (
             <p className="text-xs text-red-600 mt-1">
               No subjects found for {filters.branch} - Sem {filters.semester}
             </p>

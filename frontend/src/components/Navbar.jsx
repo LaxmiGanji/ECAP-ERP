@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { FiLogOut, FiMenu, FiX, FiUser, FiBell } from "react-icons/fi";
+import { FiLogOut, FiMenu, FiUser, FiBell } from "react-icons/fi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RxDashboard } from "react-icons/rx";
-import sphnLogo from "./sphn.png"; // Use your actual logo path
+import sphnLogo from "./sphn.png";
 
 const Navbar = () => {
   const router = useLocation();
@@ -18,101 +18,75 @@ const Navbar = () => {
     window.dispatchEvent(new Event("toggleSidebar"));
   };
 
+  const userRole = (router.state && router.state.type) || "ECAP";
+
   return (
-    <nav className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 shadow-2xl border-b border-blue-500/20">
+    <nav className="sticky top-0 z-40 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/80 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20 w-full">
+        <div className="flex justify-between items-center h-16 w-full">
           {/* Logo Section */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <img
               src={sphnLogo}
               alt="Sphoorthy Logo"
-              className="w-12 h-12 rounded-xl object-cover shadow-lg"
+              className="w-10 h-10 rounded-xl object-cover shadow-md ring-2 ring-indigo-500/30 bg-slate-900"
             />
             <div className="flex flex-col justify-center">
-              <span className="text-sm md:text-xl font-bold text-white tracking-wide truncate max-w-[150px] md:max-w-none">
+              <span className="text-sm md:text-base font-extrabold text-white tracking-tight truncate max-w-[200px] md:max-w-none">
                 Sphoorthy Engineering College
               </span>
-              <span className="hidden sm:block text-[10px] md:text-xs text-blue-200 font-medium tracking-wider uppercase">
-                Engineering College Automation Package
+              <span className="hidden sm:block text-[10px] text-indigo-400 font-bold tracking-widest uppercase">
+                ECAP Management Portal
               </span>
             </div>
           </div>
 
-          {/* Center Dashboard */}
+          {/* Center Dashboard Badge */}
           <div className="hidden md:flex items-center space-x-6">
-            <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-              <RxDashboard className="text-blue-300 text-lg" />
-              <span className="text-white font-medium">
-                {router.state && router.state.type} Dashboard
+            <div className="flex items-center space-x-2.5 bg-gradient-to-r from-slate-900 to-indigo-950/80 border border-indigo-500/30 rounded-full px-4 py-1.5 shadow-inner">
+              <RxDashboard className="text-indigo-400 text-base" />
+              <span className="text-slate-100 font-bold text-xs tracking-wide">
+                {userRole} Dashboard
               </span>
             </div>
           </div>
 
           {/* Profile & Logout */}
-          <div className="hidden md:flex items-center space-x-6">
-            <button className="relative p-2 text-blue-200 hover:text-white transition-colors">
-              <FiBell className="text-xl" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+          <div className="hidden md:flex items-center space-x-4">
+            <button className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-full transition-all duration-200">
+              <FiBell className="text-lg" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full"></span>
             </button>
-            <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full flex items-center justify-center">
-                <FiUser className="text-white text-sm" />
+
+            <div className="flex items-center space-x-2.5 bg-slate-900/90 border border-slate-800 rounded-full px-3.5 py-1.5 shadow-sm">
+              <div className="w-6 h-6 bg-gradient-to-tr from-indigo-500 to-cyan-500 rounded-full flex items-center justify-center shadow-xs">
+                <FiUser className="text-white text-xs" />
               </div>
-              <span className="text-white font-medium text-sm">
-                {router.state && router.state.type}
+              <span className="text-slate-200 font-bold text-xs">
+                {userRole}
               </span>
             </div>
+
             <button
-              className="inline-flex items-center px-6 py-3 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 shadow-lg"
+              className="inline-flex items-center px-4 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 shadow-md shadow-indigo-600/20 active:scale-95 cursor-pointer"
               onClick={handleLogout}
             >
-              <FiLogOut className="mr-2 h-4 w-4" />
+              <FiLogOut className="mr-1.5 h-3.5 w-3.5" />
               Logout
             </button>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
             <button
               onClick={toggleSidebar}
-              className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="text-slate-300 p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors"
             >
               <FiMenu className="text-xl" />
             </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-slate-800/95 backdrop-blur-sm rounded-xl mt-4 p-4 border border-blue-500/20">
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center space-x-2 bg-white/10 rounded-lg px-4 py-3">
-                <RxDashboard className="text-blue-300" />
-                <span className="text-white font-medium">
-                  {router.state && router.state.type} Dashboard
-                </span>
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full flex items-center justify-center">
-                    <FiUser className="text-white text-sm" />
-                  </div>
-                  <span className="text-white font-medium text-sm">
-                    {router.state && router.state.type}
-                  </span>
-                </div>
-                <button
-                  className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200"
-                  onClick={handleLogout}
-                >
-                  <FiLogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );

@@ -67,39 +67,34 @@ const AddCertification = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={addCertification}
-        className="w-full max-w-lg bg-white shadow-md rounded-lg p-10 transition-all duration-300 ease-in-out transform hover:shadow-lg"
-      >
-        <h2 className="text-xl font-semibold text-gray-700 mb-6 text-center">
-          Add Certification
+    <div className="bento-card p-6 md:p-8 bg-white max-w-2xl mx-auto space-y-6">
+      <div className="border-b border-slate-100 pb-4">
+        <h2 className="text-base font-bold text-slate-900 border-l-4 border-indigo-600 pl-3">
+          Add New Certification
         </h2>
+        <p className="text-xs text-slate-500 mt-1 pl-4">Upload course certificates, workshop credentials or internship completion documents</p>
+      </div>
 
+      <form onSubmit={addCertification} className="space-y-4">
         {/* Student ID Field */}
-        <div className="mb-4">
-          <label
-            htmlFor="studentId"
-            className="block text-sm font-medium text-gray-600"
-          >
-            Student ID
+        <div>
+          <label htmlFor="studentId" className="block text-xs font-bold text-slate-700 mb-1">
+            Student ID / Roll No *
           </label>
           <input
             type="text"
             id="studentId"
+            required
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
-            className="mt-1 w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter Student ID"
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium font-mono"
+            placeholder="e.g. 22N81A0501"
           />
         </div>
 
-        {/* Certification Title (Optional) */}
-        <div className="mb-4">
-          <label
-            htmlFor="certificationTitle"
-            className="block text-sm font-medium text-gray-600"
-          >
+        {/* Certification Title */}
+        <div>
+          <label htmlFor="certificationTitle" className="block text-xs font-bold text-slate-700 mb-1">
             Certification Title (Optional)
           </label>
           <input
@@ -107,59 +102,57 @@ const AddCertification = () => {
             id="certificationTitle"
             value={certificationTitle}
             onChange={(e) => setCertificationTitle(e.target.value)}
-            className="mt-1 w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter Certification Title"
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+            placeholder="e.g. AWS Certified Cloud Practitioner / Python Masterclass"
           />
         </div>
 
         {/* Certification File Upload */}
-        <div className="mb-4">
-          <label
-            htmlFor="certificationFile"
-            className="block text-sm font-medium text-gray-600"
-          >
-            Certification File
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            Certification File (PDF / Image) *
           </label>
-          <div className="relative mt-1 w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <div className="relative border-2 border-dashed border-indigo-200 bg-indigo-50/40 rounded-2xl p-6 text-center hover:border-indigo-500 transition-all cursor-pointer">
             <input
               type="file"
               id="certificationFile"
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
               accept="image/*,application/pdf"
               onChange={handleFileChange}
             />
-            <label
-              htmlFor="certificationFile"
-              className="cursor-pointer flex items-center text-gray-600"
-            >
-              <FiUpload className="mr-2" />
-              {previewFile ? (
-                <span className="text-blue-600">
-                  {previewFile.split("/").pop()}
-                </span>
+            <div className="flex flex-col items-center justify-center space-y-2 text-indigo-600">
+              <FiUpload className="w-8 h-8 text-indigo-500" />
+              {file ? (
+                <span className="text-xs font-bold text-indigo-700">{file.name}</span>
               ) : (
-                <span className="text-gray-400">
-                  Upload a certification file
-                </span>
+                <>
+                  <span className="text-xs font-bold text-slate-700">Click to browse or drop certificate file</span>
+                  <span className="text-[10px] text-slate-400">PDF, PNG, JPG up to 10MB</span>
+                </>
               )}
-            </label>
+            </div>
           </div>
-          {previewFile && (
-            <img
-              src={previewFile}
-              alt="Certification Preview"
-              className="mt-2 w-24 h-24 object-cover rounded-md border border-gray-300"
-            />
-          )}
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-200"
-        >
-          Add Certification
-        </button>
+        {/* Image Preview */}
+        {previewFile && (
+          <div className="pt-2">
+            <p className="text-xs font-semibold text-slate-600 mb-2">File Preview:</p>
+            <div className="w-40 h-32 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+              <img src={previewFile} alt="Certificate Preview" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        )}
+
+        {/* Submit */}
+        <div className="flex justify-end pt-4">
+          <button
+            type="submit"
+            className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold text-xs rounded-xl transition-all shadow-md shadow-indigo-200"
+          >
+            Upload Certification
+          </button>
+        </div>
       </form>
     </div>
   );

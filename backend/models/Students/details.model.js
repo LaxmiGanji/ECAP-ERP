@@ -86,6 +86,33 @@ const studentDetails = new mongoose.Schema({
     required: false,
     trim: true
   },
+  tenthPercentage: {
+    type: Number,
+    required: false
+  },
+  twelfthPercentage: {
+    type: Number,
+    required: false
+  },
+  cgpa: {
+    type: Number,
+    required: false
+  },
+  activeBacklogs: {
+    type: Number,
+    required: false,
+    default: 0
+  },
+  resumeLink: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  linkedinLink: {
+    type: String,
+    required: false,
+    trim: true
+  },
   certifications: {
     type: [String],
     required: false,

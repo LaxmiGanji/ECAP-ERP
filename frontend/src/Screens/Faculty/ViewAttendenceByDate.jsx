@@ -1,23 +1,46 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { baseApiURL } from "../../baseUrl";
+import { sortEnrollmentNo } from "../../utils/enrollmentSorter";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-toastify";
+import { FiAlertCircle } from "react-icons/fi";
 
 const ViewAttendenceByDate = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [filteredSubjectObjs, setFilteredSubjectObjs] = useState([]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
   const [branches, setBranches] = useState([]);
-  const [sections, setSections] = useState(["A", "B", "C", "D", "SOC", "WIPRO TRAINING", "ATT"]);
+  const [sections, setSections] = useState(["A", "B", "C", "D"]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [studentRegulations, setStudentRegulations] = useState([]);
   const [selectedSection, setSelectedSection] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selectedBranch) params.branch = selectedBranch;
+        if (selectedSemester) params.semester = selectedSemester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSections(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selectedBranch, selectedSemester]);
   const [editModal, setEditModal] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -30,6 +53,20 @@ const ViewAttendenceByDate = () => {
   });
 
   const [allSubjects, setAllSubjects] = useState([]);
+
+  useEffect(() => {
+    const fetchStudentRegulations = async () => {
+      try {
+        const response = await axios.get(`${baseApiURL()}/student/details/getRegulations`);
+        if (response.data.success) {
+          setStudentRegulations(response.data.regulations || []);
+        }
+      } catch (error) {
+        console.error("Error fetching student regulations:", error);
+      }
+    };
+    fetchStudentRegulations();
+  }, []);
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -59,17 +96,59 @@ const ViewAttendenceByDate = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedBranch && selectedSemester) {
-      const filtered = allSubjects.filter(
-        (subject) =>
-          subject.branch?.name === selectedBranch &&
-          String(subject.semester) === String(selectedSemester)
-      );
-      setSubjects(filtered.map(sub => sub.name));
-    } else {
-      setSubjects(allSubjects.map(sub => sub.name));
-    }
-  }, [selectedBranch, selectedSemester, allSubjects]);
+    const filterSubjectsByStudentRegulation = async () => {
+      if (selectedBranch && selectedSemester) {
+        let studentReg = null;
+        let hasStudents = false;
+        try {
+          const studentRes = await axios.post(`${baseApiURL()}/student/details/getDetails`, {
+            branch: selectedBranch,
+            semester: Number(selectedSemester)
+          });
+          if (studentRes.data.success && studentRes.data.user && studentRes.data.user.length > 0) {
+            hasStudents = true;
+            studentReg = studentRes.data.user[0].regulation;
+          }
+        } catch (err) {
+          console.warn("Could not fetch students for regulation check:", err);
+        }
+
+        if (!hasStudents) {
+          setSubjects([]);
+          setFilteredSubjectObjs([]);
+          setNoStudentsMessage("no students are there for that semester");
+          setSelectedSubject("");
+          return;
+        }
+
+        setNoStudentsMessage("");
+
+        const filtered = allSubjects.filter(
+          (subject) =>
+            (subject.branch?.name === selectedBranch || subject.branch === selectedBranch) &&
+            String(subject.semester) === String(selectedSemester) &&
+            (!studentReg || subject.regulation?.toUpperCase() === studentReg.toUpperCase())
+        );
+        setFilteredSubjectObjs(filtered);
+        setSubjects(filtered.map(sub => sub.name));
+      } else {
+        let filtered = allSubjects;
+        if (selectedBranch) {
+          filtered = filtered.filter(s => (s.branch?.name || s.branch) === selectedBranch);
+        }
+        if (selectedSemester) {
+          filtered = filtered.filter(s => String(s.semester) === String(selectedSemester));
+        }
+        if (selectedRegulation) {
+          filtered = filtered.filter(s => s.regulation === selectedRegulation);
+        }
+        setFilteredSubjectObjs(filtered);
+        setSubjects(filtered.map(sub => sub.name));
+        setNoStudentsMessage("");
+      }
+    };
+    filterSubjectsByStudentRegulation();
+  }, [selectedBranch, selectedSemester, selectedRegulation, allSubjects]);
 
   const fetchAttendanceByDate = useCallback(async () => {
     try {
@@ -280,6 +359,18 @@ const ViewAttendenceByDate = () => {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Regulation</label>
+            <input
+              type="text"
+              value={selectedRegulation}
+              readOnly
+              placeholder="Auto-fetched..."
+              className="w-full p-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed font-semibold text-blue-700"
+            />
+            <p className="text-[10px] text-gray-500 mt-1">Auto-fetched from student details</p>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
             <select
               value={selectedSection}
@@ -301,14 +392,23 @@ const ViewAttendenceByDate = () => {
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Subjects</option>
-              {subjects.map((subject) => (
-                <option key={subject} value={subject}>
-                  {subject}
+              {filteredSubjectObjs.map((subjectObj) => (
+                <option key={subjectObj._id} value={subjectObj.name}>
+                  {subjectObj.name} {subjectObj.code ? `(${subjectObj.code})` : ''} {subjectObj.regulation ? `[${subjectObj.regulation}]` : ''}
                 </option>
               ))}
             </select>
           </div>
+        </div>
 
+        {noStudentsMessage && (
+          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center space-x-2 w-full">
+            <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span className="font-medium">{noStudentsMessage}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
             <DatePicker
@@ -383,14 +483,7 @@ const ViewAttendenceByDate = () => {
                     (!selectedSection || record.section === selectedSection) &&
                     (!selectedSubject || record.subject === selectedSubject)
                   )
-                  .sort((a, b) => {
-                    const aNum = Number(a.enrollmentNo);
-                    const bNum = Number(b.enrollmentNo);
-                    if (!isNaN(aNum) && !isNaN(bNum)) {
-                      return aNum - bNum;
-                    }
-                    return String(a.enrollmentNo).localeCompare(String(b.enrollmentNo));
-                  })
+                  .sort(sortEnrollmentNo)
                   .map((record, index) => (
                     <tr key={record._id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{record.enrollmentNo}</td>

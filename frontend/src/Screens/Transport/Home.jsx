@@ -14,7 +14,8 @@ const Home = () => {
   const [selectedMenu, setSelectedMenu] = useState("My Profile");
 
   useEffect(() => {
-    if (!router.state) {
+    const activeToken = localStorage.getItem("token");
+    if (!router.state && !activeToken) {
       navigate("/");
     } else {
       setLoad(true);

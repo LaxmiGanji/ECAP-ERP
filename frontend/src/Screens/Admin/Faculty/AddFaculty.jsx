@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { baseApiURL } from "../../../baseUrl";
-import { FiUpload, FiUser, FiBriefcase, FiCreditCard } from "react-icons/fi";
-
+import { FiUpload, FiUser, FiBriefcase, FiCreditCard, FiCheckCircle } from "react-icons/fi";
 
 const AddFaculty = ({ branch: lockedBranch }) => {
   const [file, setFile] = useState();
@@ -50,17 +49,26 @@ const AddFaculty = ({ branch: lockedBranch }) => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-    const imageUrl = URL.createObjectURL(selectedFile);
-    setPreviewImage(imageUrl);
+    if (selectedFile) {
+      const imageUrl = URL.createObjectURL(selectedFile);
+      setPreviewImage(imageUrl);
+    }
   };
 
   const addFacultyProfile = (e) => {
     e.preventDefault();
-    toast.loading("Adding Faculty");
+    if (!data.employeeId || !data.firstName || !data.lastName || !data.email) {
+      toast.error("Please fill in all required fields marked with *");
+      return;
+    }
+
+    toast.loading("Adding Faculty Member...");
     const formData = new FormData();
     Object.keys(data).forEach((key) => formData.append(key, data[key]));
     formData.append("type", "profile");
-    formData.append("profile", file);
+    if (file) {
+      formData.append("profile", file);
+    }
 
     axios
       .post(`${baseApiURL()}/faculty/details/addDetails`, formData)
@@ -82,14 +90,15 @@ const AddFaculty = ({ branch: lockedBranch }) => {
               }
             })
             .catch((error) => {
-              toast.error(error.response.data.message);
+              toast.error(error.response?.data?.message || "Auth Registration Failed");
             });
         } else {
           toast.error(response.data.message);
         }
       })
       .catch((error) => {
-        toast.error(error.response.data.message);
+        toast.dismiss();
+        toast.error(error.response?.data?.message || "Failed to add faculty");
       });
   };
 
@@ -102,7 +111,7 @@ const AddFaculty = ({ branch: lockedBranch }) => {
       lastName: "",
       email: "",
       phoneNumber: "",
-      department: "",
+      department: lockedBranch || "",
       gender: "",
       experience: "",
       post: "",
@@ -114,307 +123,246 @@ const AddFaculty = ({ branch: lockedBranch }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white/20 p-2 rounded-lg">
-                <FiUser className="text-white text-xl" />
-              </div>
+    <div className="w-full space-y-6">
+      {/* 🌟 Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+            <FiUser className="text-indigo-400" />
+            <span>Add New Faculty</span>
+          </h1>
+          <p className="text-xs md:text-sm mt-1">Fill in the faculty details below to initialize teaching credentials</p>
+        </div>
+      </div>
+
+      <form onSubmit={addFacultyProfile} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* 📸 Photo Upload Bento Box */}
+          <div className="bento-card p-6 flex flex-col items-center justify-center text-center space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 self-start border-l-4 border-indigo-600 pl-3">
+              Faculty Profile Photo
+            </h3>
+            <div className="relative group w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed border-indigo-200 bg-indigo-50/50 flex items-center justify-center transition-all hover:border-indigo-500">
+              {previewImage ? (
+                <img src={previewImage} alt="Faculty Avatar Preview" className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex flex-col items-center text-slate-400">
+                  <FiUser className="w-10 h-10 mb-1" />
+                  <span className="text-[10px] font-medium">No Image</span>
+                </div>
+              )}
+              <label htmlFor="faculty-photo" className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity text-xs font-semibold">
+                <FiUpload className="w-5 h-5 mb-1" />
+                <span>Upload</span>
+              </label>
+              <input type="file" id="faculty-photo" accept="image/*" onChange={handleFileChange} className="hidden" />
+            </div>
+            <p className="text-xs text-slate-500">Allowed formats: JPG, PNG. Max 5MB.</p>
+          </div>
+
+          {/* 👤 Personal Details Bento Card */}
+          <div className="bento-card p-6 lg:col-span-2 space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 border-l-4 border-indigo-600 pl-3 flex items-center gap-2">
+              <FiUser className="text-indigo-600" />
+              <span>Personal Details</span>
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-white">Add New Faculty</h1>
-                <p className="text-blue-100 text-sm">Enter faculty information below</p>
+                <label className="block text-xs font-bold text-slate-700 mb-1">First Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={data.firstName}
+                  onChange={(e) => setData({ ...data, firstName: e.target.value })}
+                  placeholder="Enter first name"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Middle Name</label>
+                <input
+                  type="text"
+                  value={data.middleName}
+                  onChange={(e) => setData({ ...data, middleName: e.target.value })}
+                  placeholder="Enter middle name"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Last Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={data.lastName}
+                  onChange={(e) => setData({ ...data, lastName: e.target.value })}
+                  placeholder="Enter last name"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Employee ID *</label>
+                <input
+                  type="text"
+                  required
+                  value={data.employeeId}
+                  onChange={(e) => setData({ ...data, employeeId: e.target.value })}
+                  placeholder="e.g. FAC101"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={data.email}
+                  onChange={(e) => setData({ ...data, email: e.target.value })}
+                  placeholder="faculty@sphoorthy.ac.in"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
+                <input
+                  type="tel"
+                  required
+                  value={data.phoneNumber}
+                  onChange={(e) => setData({ ...data, phoneNumber: e.target.value })}
+                  placeholder="Enter phone number"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+                <select
+                  value={data.gender}
+                  onChange={(e) => setData({ ...data, gender: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+                >
+                  <option value="">-- Select Gender --</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
             </div>
           </div>
-
-          {/* Form */}
-          <form onSubmit={addFacultyProfile} className="p-8">
-            <div className="space-y-8">
-              {/* Personal Information Section */}
-              <div>
-                <div className="flex items-center space-x-2 mb-6">
-                  <FiUser className="text-blue-600 text-lg" />
-                  <h2 className="text-xl font-semibold text-gray-800">Personal Information</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
-                    <label htmlFor="firstname" className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="firstname"
-                    
-                      value={data.firstName}
-                      onChange={(e) => setData({ ...data, firstName: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter first name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="middlename" className="block text-sm font-medium text-gray-700 mb-2">
-                      Middle Name
-                    </label>
-                    <input
-                      type="text"
-                      id="middlename"
-                      value={data.middleName}
-                      onChange={(e) => setData({ ...data, middleName: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter middle name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="lastname" className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="lastname"
-                     
-                      value={data.lastName}
-                      onChange={(e) => setData({ ...data, lastName: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter last name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="employeeId" className="block text-sm font-medium text-gray-700 mb-2">
-                      Employee ID *
-                    </label>
-                    <input
-                      type="text"
-                      id="employeeId"
-                      required
-                      value={data.employeeId}
-                      onChange={(e) => setData({ ...data, employeeId: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter employee ID"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      required
-                      value={data.email}
-                      onChange={(e) => setData({ ...data, email: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter email address"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      required
-                      value={data.phoneNumber}
-                      onChange={(e) => setData({ ...data, phoneNumber: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
-                      Gender *
-                    </label>
-                    <select
-                      id="gender"
-                      required
-                      value={data.gender}
-                      onChange={(e) => setData({ ...data, gender: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    >
-                      <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Professional Information Section */}
-              <div>
-                <div className="flex items-center space-x-2 mb-6">
-                  <FiBriefcase className="text-blue-600 text-lg" />
-                  <h2 className="text-xl font-semibold text-gray-800">Professional Information</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
-                    <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
-                      Department *
-                    </label>
-                    <select
-                      id="department"
-                      required
-                      value={data.department}
-                      onChange={(e) => setData({ ...data, department: e.target.value })}
-                      disabled={!!lockedBranch}
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${lockedBranch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    >
-                      <option value="">Select department</option>
-                      {branch?.map((branch) => (
-                        <option value={branch.name} key={branch.name}>
-                          {branch.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="post" className="block text-sm font-medium text-gray-700 mb-2">
-                      Designation *
-                    </label>
-                    <input
-                      type="text"
-                      id="post"
-                      value={data.post}
-                      onChange={(e) => setData({ ...data, post: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="e.g., Assistant Professor"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-2">
-                      Experience (Years) *
-                    </label>
-                    <input
-                      type="number"
-                      id="experience"
-                      value={data.experience}
-                      onChange={(e) => setData({ ...data, experience: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter years of experience"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* ID Information Section */}
-              <div>
-                <div className="flex items-center space-x-2 mb-6">
-                  <FiCreditCard className="text-blue-600 text-lg" />
-                  <h2 className="text-xl font-semibold text-gray-800">ID Information</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
-                    <label htmlFor="panCard" className="block text-sm font-medium text-gray-700 mb-2">
-                      PAN Card Number
-                    </label>
-                    <input
-                      type="text"
-                      id="panCard"
-                      value={data.panCard}
-                      onChange={(e) => setData({ ...data, panCard: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter PAN card number"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="jntuId" className="block text-sm font-medium text-gray-700 mb-2">
-                      JNTUH ID
-                    </label>
-                    <input
-                      type="text"
-                      id="jntuId"
-                      value={data.jntuId}
-                      onChange={(e) => setData({ ...data, jntuId: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter JNTUH ID"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="aicteId" className="block text-sm font-medium text-gray-700 mb-2">
-                      AICTE ID
-                    </label>
-                    <input
-                      type="text"
-                      id="aicteId"
-                      value={data.aicteId}
-                      onChange={(e) => setData({ ...data, aicteId: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="Enter AICTE ID"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Profile Picture Section */}
-              <div>
-                <div className="flex items-center space-x-2 mb-6">
-                  <FiUpload className="text-blue-600 text-lg" />
-                  <h2 className="text-xl font-semibold text-gray-800">Profile Picture</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
-                      Upload Photo
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        id="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors cursor-pointer">
-                        <div className="flex items-center justify-center space-x-2">
-                          <FiUpload className="text-gray-400 text-lg" />
-                          <span className="text-gray-600">
-                            {previewImage ? "Change photo" : "Click to upload photo"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {previewImage && (
-                    <div className="flex items-center justify-center">
-                      <div className="relative">
-                        <img
-                          src={previewImage}
-                          alt="Profile Preview"
-                          className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200 shadow-md"
-                        />
-                        <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                          ✓
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="flex justify-end space-x-4 pt-8 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Reset Form
-              </button>
-              <button
-                type="submit"
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Add Faculty
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
+
+        {/* 💼 Professional Information Bento Card */}
+        <div className="bento-card p-6 space-y-4">
+          <h3 className="text-sm font-bold text-slate-900 border-l-4 border-indigo-600 pl-3 flex items-center gap-2">
+            <FiBriefcase className="text-indigo-600" />
+            <span>Professional Information</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Department / Branch *</label>
+              <select
+                required
+                disabled={!!lockedBranch}
+                value={data.department}
+                onChange={(e) => setData({ ...data, department: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+              >
+                <option value="">-- Select Department --</option>
+                {branch && branch.map((item) => (
+                  <option key={item._id} value={item.name}>{item.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Designation / Post</label>
+              <input
+                type="text"
+                value={data.post}
+                onChange={(e) => setData({ ...data, post: e.target.value })}
+                placeholder="e.g. Assistant Professor"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Experience (Years)</label>
+              <input
+                type="text"
+                value={data.experience}
+                onChange={(e) => setData({ ...data, experience: e.target.value })}
+                placeholder="e.g. 5 Years"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 💳 Statutory Identifiers Bento Card */}
+        <div className="bento-card p-6 space-y-4">
+          <h3 className="text-sm font-bold text-slate-900 border-l-4 border-indigo-600 pl-3 flex items-center gap-2">
+            <FiCreditCard className="text-indigo-600" />
+            <span>Statutory & Accreditation IDs</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">PAN Card Number</label>
+              <input
+                type="text"
+                value={data.panCard}
+                onChange={(e) => setData({ ...data, panCard: e.target.value })}
+                placeholder="ABCDE1234F"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">JNTU Faculty ID</label>
+              <input
+                type="text"
+                value={data.jntuId}
+                onChange={(e) => setData({ ...data, jntuId: e.target.value })}
+                placeholder="Enter JNTU ID"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">AICTE Faculty ID</label>
+              <input
+                type="text"
+                value={data.aicteId}
+                onChange={(e) => setData({ ...data, aicteId: e.target.value })}
+                placeholder="Enter AICTE ID"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-900 font-medium"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 🚀 Submit Button */}
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={resetForm}
+            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all"
+          >
+            Reset Form
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold text-xs rounded-xl transition-all shadow-md shadow-indigo-200 flex items-center space-x-2"
+          >
+            <FiCheckCircle className="text-base" />
+            <span>Add Faculty Member</span>
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

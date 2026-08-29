@@ -132,46 +132,80 @@ const StudentPlacementProfile = () => {
             <h2 className="text-3xl font-bold mb-6 text-blue-900">Placement Hub</h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Profile Section */}
-                <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-100">
-                    <h3 className="text-xl font-bold mb-4 border-b pb-2">My Placement Profile</h3>
-                    <form onSubmit={handleProfileSubmit} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Enrollment No.</label>
-                                <input type="text" name="enrollmentNo" value={profile.enrollmentNo} onChange={handleChange} className="w-full p-2 border rounded mt-1" required />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Branch</label>
-                                <input type="text" name="branch" value={profile.branch} onChange={handleChange} className="w-full p-2 border rounded mt-1" required />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">10th Percentage</label>
-                                <input type="number" step="0.1" name="tenthPercentage" value={profile.tenthPercentage} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">12th Percentage</label>
-                                <input type="number" step="0.1" name="twelfthPercentage" value={profile.twelfthPercentage} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Current CGPA</label>
-                                <input type="number" step="0.01" name="cgpa" value={profile.cgpa} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Active Backlogs</label>
-                                <input type="number" name="activeBacklogs" value={profile.activeBacklogs} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="text-sm font-medium text-gray-700">Resume Link (GDrive/Dropbox)</label>
-                                <input type="url" name="resumeLink" value={profile.resumeLink} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="text-sm font-medium text-gray-700">LinkedIn Profile</label>
-                                <input type="url" name="linkedinLink" value={profile.linkedinLink} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
-                            </div>
+                {/* Profile Section (Read-Only Summary Fetched from My Profile) */}
+                <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-100 space-y-4">
+                    <div className="flex justify-between items-center border-b pb-3">
+                        <h3 className="text-xl font-bold text-gray-900">My Placement Profile</h3>
+                        <span className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-bold border border-indigo-100">
+                            Fetched from My Profile
+                        </span>
+                    </div>
+
+                    <div className="bg-indigo-50/70 p-3 rounded-lg border border-indigo-100 text-xs text-indigo-900 font-medium">
+                        💡 <strong>Note:</strong> Academic credentials and resume links are managed directly under your <strong>My Profile</strong> tab.
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div className="bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block">Enrollment No.</span>
+                            <span className="font-bold text-gray-900 text-sm">{profile.enrollmentNo || "N/A"}</span>
                         </div>
-                        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 transition">Save Profile</button>
-                    </form>
+
+                        <div className="bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block">Branch</span>
+                            <span className="font-bold text-gray-900 text-sm">{profile.branch || "N/A"}</span>
+                        </div>
+
+                        <div className="bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block">10th Percentage</span>
+                            <span className="font-bold text-indigo-700 text-sm">
+                                {profile.tenthPercentage !== undefined && profile.tenthPercentage !== null && profile.tenthPercentage !== "" ? `${profile.tenthPercentage}%` : "N/A"}
+                            </span>
+                        </div>
+
+                        <div className="bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block">12th Percentage</span>
+                            <span className="font-bold text-indigo-700 text-sm">
+                                {profile.twelfthPercentage !== undefined && profile.twelfthPercentage !== null && profile.twelfthPercentage !== "" ? `${profile.twelfthPercentage}%` : "N/A"}
+                            </span>
+                        </div>
+
+                        <div className="bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block">Current CGPA</span>
+                            <span className="font-bold text-blue-700 text-sm">
+                                {profile.cgpa !== undefined && profile.cgpa !== null && profile.cgpa !== "" ? profile.cgpa : "N/A"}
+                            </span>
+                        </div>
+
+                        <div className="bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block">Active Backlogs</span>
+                            <span className={`font-bold text-sm ${profile.activeBacklogs > 0 ? "text-amber-600" : "text-emerald-600"}`}>
+                                {profile.activeBacklogs ?? 0}
+                            </span>
+                        </div>
+
+                        <div className="col-span-2 bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block mb-1">Resume Link</span>
+                            {profile.resumeLink ? (
+                                <a href={profile.resumeLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold text-xs underline truncate block">
+                                    {profile.resumeLink}
+                                </a>
+                            ) : (
+                                <span className="text-gray-400 font-medium">Not Uploaded (Add in My Profile)</span>
+                            )}
+                        </div>
+
+                        <div className="col-span-2 bg-gray-50 p-3 rounded border">
+                            <span className="text-gray-500 font-medium block mb-1">LinkedIn Profile</span>
+                            {profile.linkedinLink ? (
+                                <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold text-xs underline truncate block">
+                                    {profile.linkedinLink}
+                                </a>
+                            ) : (
+                                <span className="text-gray-400 font-medium">Not Added (Add in My Profile)</span>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Drives and Applications Section */}

@@ -26,6 +26,7 @@ import DailyFacultyAttendance from "./DailyFacultyAttendance";
 import AIAnalytics from "./AIAnalytics";
 import NotificationSettings from "./NotificationSettings";
 import MessageParent from "../../components/MessageParent";
+import PredictiveAnalytics from "./PredictiveAnalytics";
 
 const Home = () => {
   const router = useLocation();
@@ -40,7 +41,8 @@ const Home = () => {
   });
 
   useEffect(() => {
-    if (router.state === null) {
+    const activeToken = localStorage.getItem("token");
+    if (router.state === null && !activeToken) {
       navigate("/");
     }
     setLoad(true);
@@ -137,6 +139,8 @@ const Home = () => {
         return <DailyFacultyAttendance />;
       case "AI Analytics":
         return <AIAnalytics />;
+      case "PredictiveAnalytics":
+        return <PredictiveAnalytics />;
       case "Notification Settings":
         return <NotificationSettings />;
       default:
@@ -147,7 +151,7 @@ const Home = () => {
   return (
     <>
       {load && (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+        <div className="min-h-screen bg-slate-50/70 text-slate-800">
           <Navbar />
           <Sidebar 
             selectedMenu={selectedMenu} 
@@ -158,87 +162,73 @@ const Home = () => {
           />
           
           {/* Main Content Area */}
-          <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16" : "md:ml-64"} ml-0`}>
-            <div className="p-4 md:p-8">
-              {/* Dashboard Header */}
+          <div className={`transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16 w-full md:w-[calc(100%-4rem)]" : "md:ml-64 w-full md:w-[calc(100%-16rem)]"} ml-0 min-h-[calc(100vh-4rem)]`}>
+            <div className="p-4 md:p-6 lg:p-8 w-full space-y-6">
+              
+              {/* Bento Dashboard Section */}
               {selectedMenu === "Profile" && (
-                <div className="mb-8">
-                  <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 md:px-8 py-6">
-                      <h1 className="text-2xl md:text-3xl font-bold text-white">Admin Dashboard</h1>
-                      <p className="text-blue-100 mt-2 text-sm md:text-base">Welcome to Sphoorthy Engineering College Management System</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                  
+                  {/* Hero Bento Box (Spans 2 columns) */}
+                  <div className="md:col-span-2 lg:col-span-2 bento-card bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 p-6 text-white relative overflow-hidden flex flex-col justify-between min-h-[180px] border border-indigo-500/20 shadow-lg">
+                    <div className="absolute right-0 top-0 -mt-6 -mr-6 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                    <div>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 mb-3 shadow-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+                        Admin Control Panel
+                      </span>
+                      <h1 className="text-xl md:text-2xl font-black text-white tracking-tight drop-shadow-sm">Sphoorthy Engineering College</h1>
+                      <p className="text-indigo-200 text-xs md:text-sm font-semibold mt-1">Automation & ERP Management Hub</p>
                     </div>
-                    
-                    <div className="p-4 md:p-8">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        {/* Student Count Card */}
-                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-blue-100 text-sm font-medium">Total Students</p>
-                              <p className="text-3xl font-bold">{dashboardData.studentCount}</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Faculty Count Card */}
-                        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-purple-100 text-sm font-medium">Total Faculty</p>
-                              <p className="text-3xl font-bold">{dashboardData.facultyCount}</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Quick Actions Card */}
-                        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-green-100 text-sm font-medium">Quick Actions</p>
-                              <p className="text-lg font-semibold">Manage System</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* System Status Card */}
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-orange-100 text-sm font-medium">System Status</p>
-                              <p className="text-lg font-semibold">Online</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex items-center space-x-3 pt-4 border-t border-slate-800/80 mt-4 text-xs font-semibold text-slate-300">
+                      <span className="text-slate-400">Quick Access</span>
+                      <span className="text-slate-600">•</span>
+                      <button onClick={() => setSelectedMenu("Student")} className="text-indigo-300 hover:text-white transition-colors cursor-pointer font-bold">Manage Students</button>
+                      <span className="text-slate-600">•</span>
+                      <button onClick={() => setSelectedMenu("Faculty")} className="text-indigo-300 hover:text-white transition-colors cursor-pointer font-bold">Faculty Directory</button>
                     </div>
                   </div>
+
+                  {/* Student Count Bento Card */}
+                  <div className="bento-card p-5 flex flex-col justify-between bg-white border border-slate-200/80 shadow-xs hover:border-indigo-300">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total Students</span>
+                      <div className="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-3xl font-black text-slate-900">{dashboardData.studentCount !== "" ? dashboardData.studentCount : "—"}</p>
+                      <p className="text-[11px] text-emerald-600 font-bold mt-1">✓ Active Profiles Enrolled</p>
+                    </div>
+                  </div>
+
+                  {/* Faculty Count Bento Card */}
+                  <div className="bento-card p-5 flex flex-col justify-between bg-white border border-slate-200/80 shadow-xs hover:border-purple-300">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total Faculty</span>
+                      <div className="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-3xl font-black text-slate-900">{dashboardData.facultyCount !== "" ? dashboardData.facultyCount : "—"}</p>
+                      <p className="text-[11px] text-purple-600 font-bold mt-1">✓ Teaching Staff</p>
+                    </div>
+                  </div>
+
                 </div>
               )}
 
-              {/* Content Area */}
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              {/* Main Content Render Area */}
+              <div className="w-full">
                 {renderContent()}
               </div>
+
             </div>
           </div>
         </div>

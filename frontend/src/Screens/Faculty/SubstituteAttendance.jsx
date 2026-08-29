@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseApiURL } from "../../baseUrl";
+import { sortEnrollmentNo } from "../../utils/enrollmentSorter";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 
@@ -208,15 +209,7 @@ const SubstituteAttendance = ({ onClose }) => {
       filtered = filtered.filter((student) => student.section === classInfo.section);
     }
 
-    // Sort by enrollment number
-    filtered.sort((a, b) => {
-      const aNum = Number(a.enrollmentNo);
-      const bNum = Number(b.enrollmentNo);
-      if (!isNaN(aNum) && !isNaN(bNum)) {
-        return aNum - bNum;
-      }
-      return String(a.enrollmentNo).localeCompare(String(b.enrollmentNo));
-    });
+    filtered.sort(sortEnrollmentNo);
 
     console.log("Filtered students:", filtered.length);
     setFilteredStudents(filtered);

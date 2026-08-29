@@ -16,7 +16,25 @@ const ViewTimetable = () => {
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [availableDays, setAvailableDays] = useState([]);
 
+  const [sectionsList, setSectionsList] = useState(["A", "B", "C", "D"]);
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selected.branch) params.branch = selected.branch;
+        if (selected.semester) params.semester = selected.semester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSectionsList(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selected.branch, selected.semester]);
 
   useEffect(() => {
     fetchBranches();
@@ -344,7 +362,7 @@ const ViewTimetable = () => {
           disabled={editMode}
         >
           <option value="">Select Section</option>
-          {["A", "B", "C", "D", "SOC", "WIPRO TRAINING", "ATT"].map((sec) => (
+          {sectionsList.map((sec) => (
             <option key={sec} value={sec}>Section {sec}</option>
           ))}
         </select>

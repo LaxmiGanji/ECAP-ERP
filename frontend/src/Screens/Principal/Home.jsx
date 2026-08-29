@@ -18,12 +18,14 @@ const PrincipalHome = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!router.state?.loginid || router.state?.type !== 'Principal') {
+    const activeToken = localStorage.getItem("token");
+    const activeLoginId = router.state?.loginid || localStorage.getItem("loginid");
+    if (!activeToken && !activeLoginId && !router.state) {
       navigate('/');
     } else {
       fetchPendingRequests();
     }
-  }, []);
+  }, [router.state, navigate]);
 
   const fetchPendingRequests = async () => {
     setLoading(true);

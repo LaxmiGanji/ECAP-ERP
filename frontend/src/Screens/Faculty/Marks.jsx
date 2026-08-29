@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import Heading from "../../components/Heading";
 import toast from "react-hot-toast";
 import { BiArrowBack, BiDownload } from "react-icons/bi";
-import { FiFileText, FiUpload } from "react-icons/fi";
+import { FiFileText, FiUpload, FiAlertCircle } from "react-icons/fi";
 import { baseApiURL } from "../../baseUrl";
+import { sortEnrollmentNo } from "../../utils/enrollmentSorter";
 import ViewMarks from "./ViewMarks";
 import * as XLSX from "xlsx";
 
@@ -14,21 +15,78 @@ const Marks = () => {
   const [subject, setSubject] = useState([]);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [existingMarks, setExistingMarks] = useState({});
-  const [sections, setSections] = useState(["A", "B", "C", "D", "WIPRO TRAINING", "ATT", "SOC"]);
+  const [sections, setSections] = useState(["A", "B", "C", "D"]);
   const [selected, setSelected] = useState({
     branch: "-- Select --",
     semester: "-- Select --",
     section: "-- Select --",
     subject: "-- Select --",
+    regulation: "-- Select --",
     examType: "-- Select --",
     totalInternal: "40",
     totalExternal: "60",
   });
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selected.branch && selected.branch !== "-- Select --") params.branch = selected.branch;
+        if (selected.semester && selected.semester !== "-- Select --") params.semester = selected.semester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSections(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selected.branch, selected.semester]);
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
+  const [studentRegulations, setStudentRegulations] = useState([]);
   const [showViewMarks, setShowViewMarks] = useState(false);
   const [loading, setLoading] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+
+  useEffect(() => {
+    axios
+      .get(`${baseApiURL()}/student/details/getRegulations`)
+      .then((res) => {
+        if (res.data.success) {
+          setStudentRegulations(res.data.regulations || []);
+        }
+      })
+      .catch((err) => console.error("Error fetching student regulations:", err));
+  }, []);
+
+  useEffect(() => {
+    if (selected.branch !== "-- Select --" && selected.semester !== "-- Select --") {
+      const payload = { semester: Number(selected.semester) };
+      if (selected.branch) payload.branch = selected.branch;
+      axios.post(`${baseApiURL()}/student/details/getDetails`, payload)
+        .then(res => {
+          if (res.data.success && res.data.user && res.data.user.length > 0) {
+            const studentReg = res.data.user[0].regulation;
+            if (studentReg && (selected.regulation === "-- Select --" || !selected.regulation)) {
+              setSelected(prev => ({ ...prev, regulation: studentReg }));
+            }
+            setNoStudentsMessage("");
+          } else {
+            setNoStudentsMessage("no students are there for that semester");
+            setSelected(prev => ({ ...prev, regulation: "-- Select --" }));
+          }
+        })
+        .catch(() => {
+          setNoStudentsMessage("no students are there for that semester");
+          setSelected(prev => ({ ...prev, regulation: "-- Select --" }));
+        });
+    } else {
+      setNoStudentsMessage("");
+    }
+  }, [selected.branch, selected.semester]);
 
   // Function to load existing marks for all students
   const loadExistingMarks = (students) => {
@@ -101,10 +159,7 @@ const Marks = () => {
       .then((response) => {
         toast.dismiss();
         if (response.data.success) {
-          // Sort student data by enrollment number (ascending order)
-          const sortedData = [...response.data.user].sort((a, b) => {
-            return (a.enrollmentNo || '').localeCompare(b.enrollmentNo || '', undefined, { numeric: true });
-          });
+          const sortedData = [...response.data.user].sort(sortEnrollmentNo);
           setStudentData(sortedData);
           
           // Load existing marks for these students
@@ -149,10 +204,7 @@ const Marks = () => {
     toast.loading("Generating template...");
     
     try {
-      // Sort students by enrollment number
-      const sortedStudents = [...studentData].sort((a, b) => {
-        return (a.enrollmentNo || '').localeCompare(b.enrollmentNo || '', undefined, { numeric: true });
-      });
+      const sortedStudents = [...studentData].sort(sortEnrollmentNo);
 
       // Create worksheet data
       const wsData = [
@@ -638,7 +690,7 @@ const Marks = () => {
       });
   };
 
-  // Filter subjects when branch or semester changes
+  // Filter subjects when branch, semester or regulation changes
   useEffect(() => {
     if (
       selected.branch !== "-- Select --" &&
@@ -646,10 +698,15 @@ const Marks = () => {
       subject &&
       subject.length > 0
     ) {
+      if (noStudentsMessage) {
+        setFilteredSubjects([]);
+        return;
+      }
       const filtered = subject.filter(
-        (subject) =>
-          subject.semester === parseInt(selected.semester) &&
-          subject.branch?.name === selected.branch
+        (sub) =>
+          sub.semester === parseInt(selected.semester) &&
+          (sub.branch?.name === selected.branch || sub.branch === selected.branch) &&
+          (selected.regulation !== "-- Select --" && selected.regulation ? sub.regulation?.toUpperCase() === selected.regulation.toUpperCase() : true)
       );
       setFilteredSubjects(filtered);
       if (
@@ -659,9 +716,13 @@ const Marks = () => {
         setSelected((prev) => ({ ...prev, subject: "-- Select --" }));
       }
     } else {
-      setFilteredSubjects(subject || []);
+      let filtered = subject || [];
+      if (selected.regulation !== "-- Select --" && selected.regulation) {
+        filtered = filtered.filter(s => s.regulation?.toUpperCase() === selected.regulation.toUpperCase());
+      }
+      setFilteredSubjects(filtered);
     }
-  }, [selected.branch, selected.semester, subject]);
+  }, [selected.branch, selected.semester, selected.regulation, subject, noStudentsMessage]);
 
   // Update total marks based on exam type
   useEffect(() => {
@@ -703,20 +764,17 @@ const Marks = () => {
     : parseInt(selected.totalExternal);
 
   return (
-    <div className="w-full mx-auto flex justify-center items-start flex-col my-10 px-4">
+    <div className="w-full space-y-6 p-2 md:p-4">
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold mb-4">Import Marks</h3>
-            <p className="text-gray-600 mb-4">
-              File: <span className="font-medium">{importFile?.name}</span>
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200">
+            <h3 className="text-lg font-extrabold text-slate-900 mb-2">Import Marks Excel Sheet</h3>
+            <p className="text-xs text-slate-500 mb-3">
+              Selected File: <span className="font-bold text-indigo-600">{importFile?.name}</span>
             </p>
-            <p className="text-sm text-gray-500 mb-2">
-              This will import marks from the file and fill them in the input fields.
-            </p>
-            <p className="text-sm text-gray-500 mb-6">
-              Marks will be validated against the maximum marks ({maxMarks}) for {selected.examType === 'internal' ? 'Internal' : 'External'} exam.
+            <p className="text-xs text-slate-600 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              Marks will be validated against the maximum marks limit (<strong>{maxMarks}</strong>) for {selected.examType === 'internal' ? 'Internal' : 'External'} examinations.
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -725,16 +783,16 @@ const Marks = () => {
                   setImportFile(null);
                 }}
                 disabled={isImporting}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="px-4 py-2 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-50 disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={processImport}
                 disabled={isImporting}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="px-5 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-md"
               >
-                {isImporting ? "Importing..." : "Import"}
+                {isImporting ? "Processing..." : "Confirm & Import Marks"}
               </button>
             </div>
           </div>
@@ -744,190 +802,187 @@ const Marks = () => {
       {showViewMarks ? (
         <ViewMarks setShowViewMarks={setShowViewMarks} />
       ) : (
-        <>
-          <div className="relative flex justify-between items-center w-full">
-            <Heading title={`Upload Marks`} />
-            <div className="absolute right-2 flex gap-2">
+        <div className="w-full space-y-6">
+          {/* Header Banner */}
+          <div className="bento-header-banner flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Upload & Manage Student Marks</h1>
+              <p className="text-xs text-slate-500 font-semibold mt-1">Select class, subject, and exam type to enter or import marks</p>
+            </div>
+            <div className="flex items-center space-x-2">
               <button
-                className="flex justify-center items-center border-2 border-blue-500 px-3 py-2 rounded text-blue-500 hover:bg-blue-50 transition-colors"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
                 onClick={() => setShowViewMarks(true)}
               >
-                View Marks
+                View Published Marks
               </button>
               {studentData.length > 0 && (
                 <button
-                  className="flex justify-center items-center border-2 border-red-500 px-3 py-2 rounded text-red-500 hover:bg-red-50 transition-colors"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
                   onClick={resetValueHandler}
                 >
-                  <span className="mr-2">
-                    <BiArrowBack className="text-red-500" />
-                  </span>
-                  Reset
+                  Reset Form
                 </button>
               )}
             </div>
           </div>
 
-          {/* Selection Form - Always visible */}
-          <div className="mt-10 w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="w-full">
-              <label htmlFor="branch" className="leading-7 text-base font-medium text-gray-700">
-                Select Branch
-              </label>
-              <select
-                id="branch"
-                className="px-2 bg-blue-50 py-3 rounded-lg text-base w-full mt-1 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                value={selected.branch}
-                onChange={(e) =>
-                  setSelected({ ...selected, branch: e.target.value })
-                }
-              >
-                <option>-- Select --</option>
-                {branch && branch.length > 0 &&
-                  branch.map((branch) => (
-                    <option value={branch.name} key={branch.name}>
-                      {branch.name}
+          {/* Selection Filter Bento Card */}
+          <div className="bento-card p-6 bg-white border border-slate-200 shadow-xs space-y-4">
+            <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+              <h3 className="font-bold text-slate-900 text-base">Select Class & Subject Parameters</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label htmlFor="branch" className="block text-xs font-bold text-slate-600 mb-1">
+                  Branch
+                </label>
+                <select
+                  id="branch"
+                  className="w-full"
+                  value={selected.branch}
+                  onChange={(e) => setSelected({ ...selected, branch: e.target.value })}
+                >
+                  <option>-- Select --</option>
+                  {branch && branch.length > 0 &&
+                    branch.map((b) => (
+                      <option value={b.name} key={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="semester" className="block text-xs font-bold text-slate-600 mb-1">
+                  Semester
+                </label>
+                <select
+                  id="semester"
+                  className="w-full"
+                  value={selected.semester}
+                  onChange={(e) => setSelected({ ...selected, semester: e.target.value })}
+                >
+                  <option>-- Select --</option>
+                  {[...Array(8).keys()].map((i) => (
+                    <option value={i + 1} key={i}>
+                      Semester {i + 1}
                     </option>
                   ))}
-              </select>
-            </div>
+                </select>
+              </div>
 
-            <div className="w-full">
-              <label htmlFor="semester" className="leading-7 text-base font-medium text-gray-700">
-                Select Semester
-              </label>
-              <select
-                id="semester"
-                className="px-2 bg-blue-50 py-3 rounded-lg text-base w-full mt-1 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                value={selected.semester}
-                onChange={(e) =>
-                  setSelected({ ...selected, semester: e.target.value })
-                }
-              >
-                <option>-- Select --</option>
-                {[...Array(8).keys()].map((i) => (
-                  <option value={i + 1} key={i}>
-                    Semester {i + 1}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="w-full">
-              <label htmlFor="section" className="leading-7 text-base font-medium text-gray-700">
-                Select Section
-              </label>
-              <select
-                id="section"
-                className="px-2 bg-blue-50 py-3 rounded-lg text-base w-full mt-1 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                value={selected.section}
-                onChange={(e) =>
-                  setSelected({ ...selected, section: e.target.value })
-                }
-              >
-                <option>-- Select --</option>
-                {sections.map((section) => (
-                  <option value={section} key={section}>
-                    Section {section}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="w-full">
-              <label htmlFor="subject" className="leading-7 text-base font-medium text-gray-700">
-                Select Subject
-              </label>
-              <select
-                id="subject"
-                className={`px-2 bg-blue-50 py-3 rounded-lg text-base w-full mt-1 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  selected.branch === "-- Select --" || selected.semester === "-- Select --"
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                }`}
-                value={selected.subject}
-                onChange={(e) =>
-                  setSelected({ ...selected, subject: e.target.value })
-                }
-                disabled={selected.branch === "-- Select --" || selected.semester === "-- Select --"}
-              >
-                <option>-- Select --</option>
-                {filteredSubjects && filteredSubjects.length > 0 &&
-                  filteredSubjects.map((subject) => (
-                    <option value={subject.name} key={subject.name}>
-                      {subject.name}
+              <div>
+                <label htmlFor="regulation" className="block text-xs font-bold text-slate-600 mb-1">
+                  Regulation
+                </label>
+                <select
+                  id="regulation"
+                  className="w-full"
+                  value={selected.regulation}
+                  onChange={(e) => setSelected({ ...selected, regulation: e.target.value })}
+                >
+                  <option>-- Select --</option>
+                  {(studentRegulations.length > 0 ? studentRegulations : Array.from(new Set((subject || []).map(s => s.regulation).filter(Boolean)))).map((reg) => (
+                    <option key={reg} value={reg}>
+                      {reg}
                     </option>
                   ))}
-              </select>
-              {filteredSubjects.length === 0 && selected.branch !== "-- Select --" && selected.semester !== "-- Select --" && (
-                <p className="text-xs text-red-500 mt-1">No subjects found for this branch and semester</p>
-              )}
-            </div>
+                </select>
+              </div>
 
-            <div className="w-full">
-              <label htmlFor="examType" className="leading-7 text-base font-medium text-gray-700">
-                Select Exam Type
-              </label>
-              <select
-                id="examType"
-                className="px-2 bg-blue-50 py-3 rounded-lg text-base w-full mt-1 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                value={selected.examType}
-                onChange={(e) =>
-                  setSelected({ ...selected, examType: e.target.value })
-                }
-              >
-                <option>-- Select --</option>
-                <option value="internal">Internal</option>
-                <option value="external">External</option>
-              </select>
-            </div>
+              <div>
+                <label htmlFor="section" className="block text-xs font-bold text-slate-600 mb-1">
+                  Section
+                </label>
+                <select
+                  id="section"
+                  className="w-full"
+                  value={selected.section}
+                  onChange={(e) => setSelected({ ...selected, section: e.target.value })}
+                >
+                  <option>-- Select --</option>
+                  {sections.map((sec) => (
+                    <option value={sec} key={sec}>
+                      Section {sec}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="w-full">
-              <label htmlFor="totalInternal" className="leading-7 text-base font-medium text-gray-700">
-                Internal Max Marks
-              </label>
-              <input
-                type="number"
-                id="totalInternal"
-                className="px-2 bg-blue-50 py-3 rounded-lg text-base w-full mt-1 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                value={selected.totalInternal}
-                onChange={(e) => {
-                  const internal = parseInt(e.target.value) || 0;
-                  const external = 100 - internal;
-                  setSelected({ 
-                    ...selected, 
-                    totalInternal: e.target.value,
-                    totalExternal: external.toString()
-                  });
-                }}
-                min="0"
-                max="100"
-              />
-            </div>
+              <div className="md:col-span-2">
+                <label htmlFor="subject" className="block text-xs font-bold text-slate-600 mb-1">
+                  Subject
+                </label>
+                <select
+                  id="subject"
+                  className={`w-full ${
+                    selected.branch === "-- Select --" || selected.semester === "-- Select --"
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : ""
+                  }`}
+                  value={selected.subject}
+                  onChange={(e) => setSelected({ ...selected, subject: e.target.value })}
+                  disabled={selected.branch === "-- Select --" || selected.semester === "-- Select --"}
+                >
+                  <option>-- Select --</option>
+                  {filteredSubjects && filteredSubjects.length > 0 &&
+                    filteredSubjects.map((sub) => (
+                      <option value={sub.name} key={sub.name || sub._id}>
+                        {sub.name} {sub.code ? `(${sub.code})` : ''} {sub.regulation ? `[${sub.regulation}]` : ''}
+                      </option>
+                    ))}
+                </select>
+              </div>
 
-            <div className="w-full">
-              <label htmlFor="totalExternal" className="leading-7 text-base font-medium text-gray-700">
-                External Max Marks
-              </label>
-              <input
-                type="number"
-                id="totalExternal"
-                className="px-2 bg-blue-50 py-3 rounded-lg text-base w-full mt-1 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                value={selected.totalExternal}
-                onChange={(e) => {
-                  const external = parseInt(e.target.value) || 0;
-                  const internal = 100 - external;
-                  setSelected({ 
-                    ...selected, 
-                    totalExternal: e.target.value,
-                    totalInternal: internal.toString()
-                  });
-                }}
-                min="0"
-                max="100"
-              />
+              <div>
+                <label htmlFor="examType" className="block text-xs font-bold text-slate-600 mb-1">
+                  Exam Type
+                </label>
+                <select
+                  id="examType"
+                  className="w-full"
+                  value={selected.examType}
+                  onChange={(e) => setSelected({ ...selected, examType: e.target.value })}
+                >
+                  <option>-- Select --</option>
+                  <option value="internal">Internal Examination</option>
+                  <option value="external">External Examination</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="totalMaxMarks" className="block text-xs font-bold text-slate-600 mb-1">
+                  {selected.examType === 'external' ? 'External' : 'Internal'} Max Marks
+                </label>
+                <input
+                  type="number"
+                  id="totalMaxMarks"
+                  className="w-full bg-slate-50 font-bold text-indigo-600"
+                  value={selected.examType === 'external' ? selected.totalExternal : selected.totalInternal}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (selected.examType === 'external') {
+                      setSelected({ ...selected, totalExternal: val });
+                    } else {
+                      setSelected({ ...selected, totalInternal: val });
+                    }
+                  }}
+                  min="0"
+                  max="100"
+                />
+              </div>
             </div>
           </div>
+
+          {noStudentsMessage && (
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center space-x-2 w-full">
+              <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span className="font-medium">{noStudentsMessage}</span>
+            </div>
+          )}
 
           {/* Action Buttons - Always visible */}
           <div className="flex flex-wrap justify-center gap-4 w-full mt-8">
@@ -1091,7 +1146,7 @@ const Marks = () => {
               </div>
             </>
           )}
-        </>
+        </div>
       )}
     </div>
   );

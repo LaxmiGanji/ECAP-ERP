@@ -9,69 +9,70 @@ const Attendence = ({ branch }) => {
   const [activeTab, setActiveTab] = useState('add');
   
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Attendance Management</h1>
-            <p className="text-gray-600 mt-2">Add and view student attendance records {branch ? `for ${branch}` : ''}</p>
-          </div>
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Attendance Management</h1>
+          <p className="text-xs md:text-sm mt-1">Add, view, import & manage student attendance records {branch ? `for ${branch}` : ''}</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-        <div className="flex border-b border-gray-200">
+      <div className="bento-card p-2 bg-slate-100/80 border border-slate-200">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <button
-            className={`flex-1 px-6 py-4 text-center font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 ${
               activeTab === "add"
-                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
             onClick={() => setActiveTab("add")}
           >
             <div className="flex items-center justify-center space-x-2">
-              <FiUserCheck className="w-5 h-5" />
+              <FiUserCheck className="w-4 h-4" />
               <span>Add Attendance</span>
             </div>
           </button>
+
           <button
-            className={`flex-1 px-6 py-4 text-center font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 ${
               activeTab === "import"
-                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
             onClick={() => setActiveTab("import")}
           >
             <div className="flex items-center justify-center space-x-2">
-              <FiUserCheck className="w-5 h-5" />
+              <FiUserCheck className="w-4 h-4" />
               <span>Import Attendance</span>
             </div>
           </button>
+
           <button
-            className={`flex-1 px-6 py-4 text-center font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 ${
               activeTab === "view"
-                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
             onClick={() => setActiveTab("view")}
           >
             <div className="flex items-center justify-center space-x-2">
-              <FiEye className="w-5 h-5" />
-              <span>View Total Attendance</span>
+              <FiEye className="w-4 h-4" />
+              <span>View Total</span>
             </div>
           </button>
+
           <button
-            className={`flex-1 px-6 py-4 text-center font-medium transition-all duration-200 ${
+            className={`px-4 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 ${
               activeTab === "delete"
-                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
             onClick={() => setActiveTab("delete")}
           >
             <div className="flex items-center justify-center space-x-2">
-              <FiEye className="w-5 h-5" />
+              <FiUserCheck className="w-4 h-4" />
               <span>Delete Attendance</span>
             </div>
           </button>

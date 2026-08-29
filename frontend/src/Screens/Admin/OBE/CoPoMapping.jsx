@@ -11,7 +11,8 @@ import {
   FiDownload,
   FiFileText,
   FiFilter,
-  FiAlertCircle
+  FiAlertCircle,
+  FiCpu
 } from "react-icons/fi";
 import { baseApiURL } from "../../../baseUrl";
 import * as XLSX from 'xlsx';
@@ -52,14 +53,68 @@ const CoPoMapping = ({ branch: lockedBranchName }) => {
     { poNumber: 'PO12', title: 'Life-long learning', description: 'A recognition of the need for, and an ability to engage in, to resolve contemporary issues and acquire lifelong learning' }
   ];
 
+  const [studentRegulations, setStudentRegulations] = useState([]);
+
   useEffect(() => {
     getSubjectsHandler();
     getBranchesHandler();
+    getStudentRegulationsHandler();
   }, []);
+
+  const getStudentRegulationsHandler = () => {
+    axios
+      .get(`${baseApiURL()}/student/details/getRegulations`)
+      .then((response) => {
+        if (response.data.success) {
+          setStudentRegulations(response.data.regulations || []);
+        }
+      })
+      .catch((error) => console.error("Error fetching student regulations:", error));
+  };
 
   useEffect(() => {
     filterSubjects();
   }, [subjects, filters]);
+
+  useEffect(() => {
+    checkStudentPresence();
+  }, [filters.semester, filters.branch, branches, selectedSubject]);
+
+  const checkStudentPresence = async () => {
+    const targetSemester = filters.semester || selectedSubject?.semester;
+    if (!targetSemester) {
+      setNoStudentsMessage("");
+      return;
+    }
+
+    try {
+      let bName = "";
+      if (filters.branch) {
+        const branchObj = branches.find(b => b._id === filters.branch || b.name === filters.branch);
+        if (branchObj?.name) bName = branchObj.name;
+      } else if (selectedSubject?.branch) {
+        bName = selectedSubject.branch?.name || selectedSubject.branch;
+      }
+
+      const response = await axios.post(`${baseApiURL()}/student/details/getCohortRegulation`, {
+        semester: Number(targetSemester),
+        branch: bName
+      });
+
+      if (response.data.success && response.data.count > 0 && response.data.regulations?.length > 0) {
+        const studentReg = response.data.regulation || response.data.regulations[0];
+        setFilters(prev => ({ ...prev, regulation: studentReg }));
+        setNoStudentsMessage("");
+      } else {
+        setFilters(prev => ({ ...prev, regulation: "" }));
+        setNoStudentsMessage("no student in that semester");
+      }
+    } catch (error) {
+      console.error("CoPoMapping checkStudentPresence error:", error);
+      setFilters(prev => ({ ...prev, regulation: "" }));
+      setNoStudentsMessage("no student in that semester");
+    }
+  };
 
   const getBranchesHandler = () => {
     axios
@@ -81,6 +136,10 @@ const CoPoMapping = ({ branch: lockedBranchName }) => {
   };
 
   const filterSubjects = () => {
+    if (noStudentsMessage) {
+      setFilteredSubjects([]);
+      return;
+    }
     let filtered = [...subjects];
     
     if (filters.branch) {
@@ -98,7 +157,7 @@ const CoPoMapping = ({ branch: lockedBranchName }) => {
 
     if (filters.regulation) {
       filtered = filtered.filter(item => 
-        item.regulation && item.regulation.toLowerCase().includes(filters.regulation.toLowerCase())
+        item.regulation && item.regulation.toUpperCase() === filters.regulation.toUpperCase()
       );
     }
     
@@ -387,6 +446,30 @@ const CoPoMapping = ({ branch: lockedBranchName }) => {
     }
   };
 
+  const handleAutoMapCOs = async () => {
+    if (!selectedSubject) {
+      toast.error("Please select a subject first");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${baseApiURL()}/subject/autoMapCoPo/${selectedSubject._id}`);
+      if (response.data.success) {
+        toast.success(response.data.message || "Automatic CO-PO mapping completed!");
+        // Refresh subject mappings
+        handleSubjectSelect(selectedSubject);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error auto-mapping COs:", error);
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Compute PO attainments locally using weighted average formula
   const computePoFromCoAttainments = (coAttainmentsArr, coPoMatrix) => {
     // po keys PO1..PO12
@@ -429,7 +512,15 @@ const CoPoMapping = ({ branch: lockedBranchName }) => {
           <div className="flex items-center space-x-3">
             {selectedSubject && (
               <div className="flex items-center space-x-2">
-                
+                <button
+                  onClick={handleAutoMapCOs}
+                  disabled={loading}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 shadow-sm"
+                  title="Automatically map COs to POs using NLP keyword matching"
+                >
+                  <FiCpu size={18} />
+                  <span>Auto Map COs</span>
+                </button>
                 <button
                   onClick={exportToCSV}
                   className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
@@ -542,14 +633,26 @@ const CoPoMapping = ({ branch: lockedBranchName }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Filter by Regulation</label>
-                <input
-                  type="text"
-                  placeholder="e.g. R20"
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-gray-600">Filter by Regulation</label>
+                  {filters.regulation && (
+                    <span className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-semibold border border-purple-100">
+                      Auto-fetched
+                    </span>
+                  )}
+                </div>
+                <select
                   value={filters.regulation}
-                  onChange={(e) => setFilters({ ...filters, regulation: e.target.value.toUpperCase() })}
+                  onChange={(e) => setFilters({ ...filters, regulation: e.target.value })}
                   className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors bg-white"
-                />
+                >
+                  <option value="">All Regulations</option>
+                  {(studentRegulations.length > 0 ? studentRegulations : Array.from(new Set(subjects.map(s => s.regulation).filter(Boolean)))).map((reg) => (
+                    <option key={reg} value={reg}>
+                      {reg}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="text-xs text-gray-500 pt-1">

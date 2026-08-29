@@ -4,6 +4,7 @@ import { baseApiURL } from "../../baseUrl";
 import { toast } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { getFileUrl } from "../../utils/fileUrl";
+import { FiUser, FiMail, FiPhone, FiBriefcase, FiAward, FiUploadCloud, FiCheckCircle } from "react-icons/fi";
 
 const EditFaculty = () => {
   const router = useLocation();
@@ -82,185 +83,187 @@ const EditFaculty = () => {
   };
 
   if (!faculty) {
-    return <p className="p-6">Loading faculty details...</p>;
+    return (
+      <div className="p-8 text-center text-slate-500 font-medium">
+        Loading faculty details...
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Edit My Details</h1>
-      <form
-        className="bg-white p-6 rounded-lg shadow-lg space-y-4"
-        onSubmit={handleSubmit}
-      >
-        {/* Profile Preview */}
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="bento-header-banner flex items-center justify-between">
         <div>
-          <img
-            src={
-              profileFile
-                ? URL.createObjectURL(profileFile)
-                : getFileUrl(faculty.profile)
-            }
-            alt="Profile"
-            className="w-24 h-24 rounded-full object-cover mb-2"
-          />
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Edit Profile Details</h1>
+          <p className="text-slate-500 font-medium text-xs md:text-sm mt-1">Update your personal information, contact info, department & credentials</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Picture Card */}
+        <div className="bento-card p-6 bg-white border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Profile Photo</h3>
+          <div className="relative group mb-4">
+            <img
+              src={
+                profileFile
+                  ? URL.createObjectURL(profileFile)
+                  : getFileUrl(faculty.profile)
+              }
+              alt="Profile"
+              className="w-32 h-32 rounded-2xl object-cover border-4 border-slate-100 shadow-md"
+            />
+          </div>
+
+          <label className="cursor-pointer px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-xl border border-indigo-200 transition-colors flex items-center space-x-2">
+            <FiUploadCloud className="w-4 h-4" />
+            <span>Change Photo</span>
+            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          </label>
+          <p className="text-[11px] text-slate-400 mt-2">JPG, PNG or WEBP up to 5MB</p>
         </div>
 
-        {/* First Name */}
-        <div>
-          <label className="block text-sm font-medium">First Name</label>
-          <input
-            type="text"
-            name="firstName"
-            value={formData.firstName || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
+        {/* Form Fields Card */}
+        <div className="lg:col-span-2 bento-card p-6 bg-white border border-slate-200 shadow-sm space-y-6">
+          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider border-b pb-3">Personal & Academic Details</h3>
 
-        {/* Middle Name */}
-        <div>
-          <label className="block text-sm font-medium">Middle Name</label>
-          <input
-            type="text"
-            name="middleName"
-            value={formData.middleName || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">First Name</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Middle Name</label>
+              <input
+                type="text"
+                name="middleName"
+                value={formData.middleName || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Last Name</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          </div>
 
-        {/* Last Name */}
-        <div>
-          <label className="block text-sm font-medium">Last Name</label>
-          <input
-            type="text"
-            name="lastName"
-            value={formData.lastName || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Email Address</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Phone Number</label>
+              <input
+                type="number"
+                name="phoneNumber"
+                value={formData.phoneNumber || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          </div>
 
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Department</label>
+              <input
+                type="text"
+                name="department"
+                value={formData.department || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Designation / Post</label>
+              <input
+                type="text"
+                name="post"
+                value={formData.post || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Gender</label>
+              <select
+                name="gender"
+                value={formData.gender || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </div>
 
-        {/* Phone Number */}
-        <div>
-          <label className="block text-sm font-medium">Phone Number</label>
-          <input
-            type="number"
-            name="phoneNumber"
-            value={formData.phoneNumber || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Experience (Years)</label>
+              <input
+                type="number"
+                name="experience"
+                value={formData.experience || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">JNTU ID</label>
+              <input
+                type="text"
+                name="jntuId"
+                value={formData.jntuId || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">AICTE ID</label>
+              <input
+                type="text"
+                name="aicteId"
+                value={formData.aicteId || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          </div>
 
-        {/* Department */}
-        <div>
-          <label className="block text-sm font-medium">Department</label>
-          <input
-            type="text"
-            name="department"
-            value={formData.department || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
+          <div className="pt-4 border-t flex justify-end">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center space-x-2 disabled:opacity-50"
+            >
+              <FiCheckCircle className="w-4 h-4" />
+              <span>{loading ? "Updating..." : "Save Profile Details"}</span>
+            </button>
+          </div>
         </div>
-
-        {/* Gender */}
-        <div>
-          <label className="block text-sm font-medium">Gender</label>
-          <select
-            name="gender"
-            value={formData.gender || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-        </div>
-
-        {/* Experience */}
-        <div>
-          <label className="block text-sm font-medium">Experience (Years)</label>
-          <input
-            type="number"
-            name="experience"
-            value={formData.experience || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* Post */}
-        <div>
-          <label className="block text-sm font-medium">Post</label>
-          <input
-            type="text"
-            name="post"
-            value={formData.post || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* PAN */}
-        <div>
-          <label className="block text-sm font-medium">PAN Card</label>
-          <input
-            type="text"
-            name="panCard"
-            value={formData.panCard || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* JNTU ID */}
-        <div>
-          <label className="block text-sm font-medium">JNTU ID</label>
-          <input
-            type="text"
-            name="jntuId"
-            value={formData.jntuId || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* AICTE ID */}
-        <div>
-          <label className="block text-sm font-medium">AICTE ID</label>
-          <input
-            type="text"
-            name="aicteId"
-            value={formData.aicteId || ""}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          {loading ? "Updating..." : "Update Details"}
-        </button>
       </form>
     </div>
   );

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseApiURL } from "../../baseUrl";
+import { sortEnrollmentNo } from "../../utils/enrollmentSorter";
 import toast from "react-hot-toast";
+import { FiAlertCircle } from "react-icons/fi";
 
 const AddAttendance = ({ branch: lockedBranch }) => {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [markedAttendance, setMarkedAttendance] = useState({});
+  const [noStudentsMessage, setNoStudentsMessage] = useState("");
   const [semester, setSemester] = useState("-- Select --");
   const [branch, setBranch] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -28,8 +31,25 @@ const AddAttendance = ({ branch: lockedBranch }) => {
   const [existingAttendanceRecords, setExistingAttendanceRecords] = useState([]);
   const [isCheckingAttendance, setIsCheckingAttendance] = useState(false);
 
-  // Sections available for filtering
-  const sections = ['A', 'B', 'C', 'D', 'SOC', 'WIPRO TRAINING', 'ATT'];
+  // Dynamic Sections available for filtering
+  const [sections, setSections] = useState(['A', 'B', 'C', 'D']);
+
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        let params = {};
+        if (selectedBranch && selectedBranch !== "-- Select --") params.branch = selectedBranch;
+        if (semester && semester !== "-- Select --") params.semester = semester;
+        const res = await axios.get(`${baseApiURL()}/section/getSectionsByBranchAndSemester`, { params });
+        if (res.data.success && res.data.sections?.length > 0) {
+          setSections(res.data.sections);
+        }
+      } catch (err) {
+        console.error("Error fetching dynamic sections:", err);
+      }
+    };
+    fetchSections();
+  }, [selectedBranch, semester]);
 
   
   // Fetch branch data
@@ -74,8 +94,8 @@ const AddAttendance = ({ branch: lockedBranch }) => {
   };
 
   // Function to filter subjects based on semester and branch
-  const filterSubjectsBySemester = (selectedSemester, subjectsList = subjects) => {
-    if (selectedSemester === "-- Select --" || selectedBranch === "-- Select --") {
+  const filterSubjectsBySemester = (selectedSemester, subjectsList = subjects, reg = selectedRegulation) => {
+    if (selectedSemester === "-- Select --" || selectedBranch === "-- Select --" || noStudentsMessage) {
       setFilteredSubjects([]);
       setSelectedSubject("-- Select --");
       setSelectedSubjectId(null);
@@ -87,8 +107,8 @@ const AddAttendance = ({ branch: lockedBranch }) => {
     const semesterSubjects = subjectsList.filter(
       (subject) => 
         String(subject.semester) === String(selectedSemester) &&
-        subject.branch?.name === selectedBranch &&
-        (selectedRegulation === "" || subject.regulation?.toUpperCase() === selectedRegulation.toUpperCase())
+        (subject.branch?.name === selectedBranch || subject.branch === selectedBranch) &&
+        (!reg || subject.regulation?.toUpperCase() === reg.toUpperCase())
     );
     setFilteredSubjects(semesterSubjects);
     
@@ -478,16 +498,32 @@ const AddAttendance = ({ branch: lockedBranch }) => {
     checkAttendanceExists();
   }, [selectedBranch, semester, selectedSection, selectedSubject, selectedPeriod, selectedDate]);
 
-  // Auto-detect regulation from filtered students
+  // Auto-detect regulation and check student presence for selected semester & branch
   useEffect(() => {
-    if (filteredStudents.length > 0) {
-      // Find the regulation from the first student (usually all students in a section have the same regulation)
-      const detectedReg = filteredStudents[0].regulation;
-      if (detectedReg && detectedReg.toUpperCase() !== selectedRegulation) {
+    if (semester !== "-- Select --" && selectedBranch !== "-- Select --") {
+      const semesterStudents = students.filter(
+        (s) => String(s.semester) === String(semester) &&
+               (s.branch.toLowerCase() === selectedBranch.toLowerCase() || s.branch === selectedBranch)
+      );
+
+      if (semesterStudents.length > 0) {
+        const detectedReg = semesterStudents[0].regulation || "";
         setSelectedRegulation(detectedReg.toUpperCase());
+        setNoStudentsMessage("");
+      } else {
+        setSelectedRegulation("");
+        setNoStudentsMessage("no students are there for that semester");
       }
+    } else {
+      setSelectedRegulation("");
+      setNoStudentsMessage("");
     }
-  }, [filteredStudents, selectedRegulation]);
+  }, [semester, selectedBranch, students]);
+
+  // Re-filter subjects whenever semester, selectedBranch, selectedRegulation, or subjects update
+  useEffect(() => {
+    filterSubjectsBySemester(semester, subjects, selectedRegulation);
+  }, [semester, selectedBranch, selectedRegulation, subjects, noStudentsMessage]);
 
   const filterStudents = () => {
     let filtered = students;
@@ -514,15 +550,7 @@ const AddAttendance = ({ branch: lockedBranch }) => {
       );
     }
 
-    // Sort enrollment numbers in ascending order
-    filtered.sort((a, b) => {
-      const aNum = Number(a.enrollmentNo);
-      const bNum = Number(b.enrollmentNo);
-      if (!isNaN(aNum) && !isNaN(bNum)) {
-        return aNum - bNum;
-      }
-      return String(a.enrollmentNo).localeCompare(String(b.enrollmentNo));
-    });
+    filtered.sort(sortEnrollmentNo);
 
     setFilteredStudents(filtered);
   };
@@ -792,7 +820,7 @@ const AddAttendance = ({ branch: lockedBranch }) => {
             <option>-- Select --</option>
             {filteredSubjects.map((subject) => (
               <option key={subject._id} value={subject.name}>
-                {subject.name}
+                {subject.name} {subject.code ? `(${subject.code})` : ''} {subject.regulation ? `[${subject.regulation}]` : ''}
               </option>
             ))}
           </select>
@@ -844,6 +872,13 @@ const AddAttendance = ({ branch: lockedBranch }) => {
           </div>
         </div>
       </div>
+
+      {noStudentsMessage && (
+        <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center space-x-2 w-full">
+          <FiAlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <span className="font-medium">{noStudentsMessage}</span>
+        </div>
+      )}
 
       {/* Total Classes Input - Section Specific */}
       <div className="mb-6">
