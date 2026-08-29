@@ -170,6 +170,8 @@ const updateMaterial = async (req, res) => {
     }
 }
 
+const { deleteFromS3 } = require("../../utils/s3");
+
 // Delete material
 const deleteMaterial = async (req, res) => {
     try {
@@ -183,22 +185,28 @@ const deleteMaterial = async (req, res) => {
                 .json({ success: false, message: "No Material Found!" });
         }
         
-        // Try to delete from Cloudinary as well (optional)
+        // Delete file from AWS S3 or Cloudinary
         try {
-            if (material.link && material.link.includes('cloudinary.com')) {
-                // Extract public_id from URL and delete from Cloudinary
-                const urlParts = material.link.split('/');
-                const publicIdWithExtension = urlParts[urlParts.length - 1];
-                const publicId = publicIdWithExtension.split('.')[0];
-                
-                if (publicId) {
-                    await cloudinary.uploader.destroy(publicId);
-                    console.log("✅ Deleted from Cloudinary:", publicId);
+            if (material.link) {
+                if (material.link.includes('amazonaws.com') || (process.env.AWS_S3_BUCKET_NAME && material.link.includes(process.env.AWS_S3_BUCKET_NAME))) {
+                    const urlObj = new URL(material.link);
+                    const key = urlObj.pathname.startsWith('/') ? urlObj.pathname.substring(1) : urlObj.pathname;
+                    if (key) {
+                        await deleteFromS3(key);
+                        console.log("✅ Deleted from AWS S3 Key:", key);
+                    }
+                } else if (material.link.includes('cloudinary.com')) {
+                    const urlParts = material.link.split('/');
+                    const publicIdWithExtension = urlParts[urlParts.length - 1];
+                    const publicId = publicIdWithExtension.split('.')[0];
+                    if (publicId) {
+                        await cloudinary.uploader.destroy(publicId);
+                        console.log("✅ Deleted from Cloudinary:", publicId);
+                    }
                 }
             }
-        } catch (cloudinaryError) {
-            console.error("⚠️ Error deleting from Cloudinary:", cloudinaryError);
-            // Continue even if Cloudinary deletion fails
+        } catch (cloudErr) {
+            console.error("⚠️ Error deleting file from cloud storage:", cloudErr.message);
         }
         
         console.log("✅ Material deleted successfully from database");
@@ -213,6 +221,7 @@ const deleteMaterial = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
+
 
 // Get all materials with filters (for faculty view)
 const getAllMaterials = async (req, res) => {
