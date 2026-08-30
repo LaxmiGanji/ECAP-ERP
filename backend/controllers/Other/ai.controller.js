@@ -740,17 +740,23 @@ const chatCampusQuery = async (req, res) => {
           Total Students in ${faculty.department} Department: ${deptStudentsCount}
         `;
       }
-    } else if (role === "hod") {
+    } else if (userRole === "hod") {
       const FacultyDetail = mongoose.model("Faculty Detail");
-      const hodQuery = {
-        $or: [
-          { employeeId: req.user.loginid },
-          { employeeId: id },
-          { email: req.user.loginid }
-        ]
-      };
-      if (mongoose.Types.ObjectId.isValid(id)) hodQuery.$or.push({ _id: id });
-      const hod = await FacultyDetail.findOne(hodQuery);
+      let hod = null;
+      if (userLoginId || userId) {
+        const hodQuery = {
+          $or: [
+            { employeeId: userLoginId },
+            { employeeId: userId },
+            { email: new RegExp(userLoginId, "i") }
+          ]
+        };
+        if (mongoose.Types.ObjectId.isValid(userId)) hodQuery.$or.push({ _id: userId });
+        hod = await FacultyDetail.findOne(hodQuery);
+      }
+      if (!hod) {
+        hod = await FacultyDetail.findOne({ post: /hod/i }) || await FacultyDetail.findOne();
+      }
 
       if (hod) {
         chatbotTargetName = `${hod.firstName} ${hod.lastName} (HOD)`;
@@ -777,8 +783,8 @@ const chatCampusQuery = async (req, res) => {
           ${pendingLeavesText}
         `;
       }
-    } else if (role === "admin" || role === "principal") {
-      chatbotTargetName = role === "principal" ? "Principal" : "Admin";
+    } else if (userRole === "admin" || userRole === "principal") {
+      chatbotTargetName = userRole === "principal" ? "Principal" : "Admin";
 
       let totalStudents = 0, totalFaculty = 0, totalMaterials = 0, pendingLeavesCount = 0;
       try {
@@ -792,7 +798,7 @@ const chatCampusQuery = async (req, res) => {
       } catch (aErr) {}
 
       userContextText = `
-        User Role: ${role.toUpperCase()}
+        User Role: ${userRole.toUpperCase()}
         
         --- COLLEGE-WIDE EXECUTIVE DATA SUMMARY ---
         Total Enrolled Students: ${totalStudents}
@@ -802,7 +808,7 @@ const chatCampusQuery = async (req, res) => {
       `;
     } else {
       userContextText = `
-        User Role: ${role}
+        User Role: ${userRole}
         Welcome to ECAP campus AI assistant. You can assist with queries about college management, study materials, library books, and section statistics.
       `;
     }
