@@ -859,6 +859,60 @@ const chatCampusQuery = async (req, res) => {
       `;
     }
 
+    // Dynamic Real-Time Database Query Expansion for Student Lists, Faculty Directories & Sections
+    let dynamicContext = "";
+    const cleanMsg = message.toLowerCase();
+
+    // A. Student Directory & Section Query Interceptor (e.g. "sem 8 sec A students list", "students in CSE", "student list")
+    if (cleanMsg.includes("student") || cleanMsg.includes("list") || cleanMsg.includes("sec") || cleanMsg.includes("sem")) {
+      try {
+        const queryFilter = {};
+        const semMatch = message.match(/sem(?:ester)?\s*(\d+)/i);
+        if (semMatch) queryFilter.semester = String(semMatch[1]);
+        
+        const secMatch = message.match(/sec(?:tion)?\s*([a-d])/i);
+        if (secMatch) queryFilter.section = secMatch[1].toUpperCase();
+        
+        const branchMatch = message.match(/\b(cse|ece|eee|mech|civil|it|ai|ds)\b/i);
+        if (branchMatch) queryFilter.branch = new RegExp(branchMatch[1], "i");
+
+        if (cleanMsg.includes("student") || semMatch || secMatch || branchMatch) {
+          const studentList = await StudentDetail.find(queryFilter).limit(35);
+          if (studentList && studentList.length > 0) {
+            const formattedStudents = studentList.map((s, i) => 
+              `${i + 1}. **${s.firstName} ${s.lastName}** (Roll: ${s.enrollmentNo}, Branch: ${s.branch}, Sem ${s.semester}, Sec ${s.section}, Email: ${s.email})`
+            ).join("\n");
+
+            dynamicContext += `\n--- MATCHING STUDENTS DIRECTORY (${studentList.length} Found) ---\n${formattedStudents}\n`;
+          }
+        }
+      } catch (stErr) {
+        console.warn("Dynamic student query notice:", stErr.message);
+      }
+    }
+
+    // B. Faculty Directory Query Interceptor (e.g. "faculty list", "professors", "CSE faculty")
+    if (cleanMsg.includes("faculty") || cleanMsg.includes("professor") || cleanMsg.includes("teacher")) {
+      try {
+        const FacultyDetail = mongoose.model("Faculty Detail");
+        const deptMatch = message.match(/\b(cse|ece|eee|mech|civil|it|ai|ds)\b/i);
+        const facFilter = deptMatch ? { department: new RegExp(deptMatch[1], "i") } : {};
+
+        const facultyList = await FacultyDetail.find(facFilter).limit(35);
+        if (facultyList && facultyList.length > 0) {
+          const formattedFaculty = facultyList.map((f, i) => 
+            `${i + 1}. **${f.firstName} ${f.lastName}** (Employee ID: ${f.employeeId}, Dept: ${f.department}, Post: ${f.post || "Faculty"}, Email: ${f.email})`
+          ).join("\n");
+
+          dynamicContext += `\n--- FACULTY DIRECTORY (${facultyList.length} Found) ---\n${formattedFaculty}\n`;
+        }
+      } catch (fErr) {
+        console.warn("Dynamic faculty query notice:", fErr.message);
+      }
+    }
+
+    const fullUserContext = (userContextText + "\n" + dynamicContext).trim();
+
     // Call Gemini if API Key is configured
     if (process.env.GEMINI_API_KEY && GoogleGenerativeAI) {
       try {
@@ -874,21 +928,20 @@ const chatCampusQuery = async (req, res) => {
         }
 
         const systemInstruction = `
-          You are the ECAP Campus AI Assistant.
-          Help the user with their queries. You can answer general knowledge, coding, writing, math, or other general questions outside of the college system as well, just like a regular assistant.
-          If the question is about the current student/user or campus details, read from the provided context below:
+          You are the ECAP Campus AI & General Knowledge Super Assistant.
+          You MUST answer ALL questions asked by the user — including both campus/project-specific role queries AND general out-of-project questions (coding, algorithms, science, mathematics, general knowledge, writing, history, etc.) just like ChatGPT or Claude.
+
+          For campus/project queries, use the real-time database context provided below:
           
-          --- LOGGED IN USER CONTEXT ---
-          ${userContextText}
+          --- REAL-TIME LOGGED IN & DATABASE CONTEXT ---
+          ${fullUserContext}
           
           Guidelines:
-          - Answer general queries directly, helpful, and accurately.
-          - If asked about attendance, timetable, marks, or books, read from the user context provided.
-          - When outputting timetable or schedule, provide ONLY the target day's active working periods. Do NOT output break periods or the entire week unless explicitly asked for the full weekly schedule.
+          - Answer general knowledge, coding, writing, and scientific queries directly, comprehensively, and accurately.
+          - When asked for student lists, section lists, or faculty lists, read directly from the MATCHING STUDENTS DIRECTORY or FACULTY DIRECTORY context above and format as a clean Markdown list.
+          - When outputting a timetable or schedule, provide ONLY the target day's active working periods. Do NOT output break periods or the entire week unless explicitly asked for the full weekly schedule.
           - When recommending or listing study materials, ALWAYS include the exact material title uploaded by faculty in bold, e.g.: **Material Title**: [Download PDF](link).
-          - Be encouraging. Warn them if their attendance is below 75%.
-          - Keep answers clear, readable, and formatted in Markdown.
-          - If the user attaches an image or document (PDF, Text), analyze it carefully to answer their questions.
+          - Keep responses encouraging, well-structured, and formatted in clean GitHub Markdown.
         `;
 
         const finalPrompt = `
@@ -926,11 +979,16 @@ const chatCampusQuery = async (req, res) => {
       }
     }
 
-    // Fallback Mode (Standard keyword-based parser)
+    // Fallback Mode (Standard keyword-based parser with Dynamic Directory Query support)
     let reply = "";
     const cleanMsg = message.toLowerCase();
 
-    if (cleanMsg.includes("attendance") || cleanMsg.includes("present") || cleanMsg.includes("absent")) {
+    if (dynamicContext && dynamicContext.trim().length > 0) {
+      const cleanDir = dynamicContext.replace(/--- MATCHING STUDENTS DIRECTORY /g, "**Matching Students Directory ")
+                                      .replace(/--- FACULTY DIRECTORY /g, "**Faculty Directory ")
+                                      .replace(/---/g, "**\n");
+      reply = cleanDir.trim();
+    } else if (cleanMsg.includes("attendance") || cleanMsg.includes("present") || cleanMsg.includes("absent")) {
       if (userRole === "student") {
         const match = userContextText.match(/--- ATTENDANCE SUMMARY ---[\s\S]+?--- MARKS DATA ---/);
         const summaryText = match ? match[0].replace("--- MARKS DATA ---", "").trim() : "Unable to retrieve attendance details.";
