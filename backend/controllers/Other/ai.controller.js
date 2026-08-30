@@ -677,64 +677,51 @@ const chatCampusQuery = async (req, res) => {
       if (faculty) {
         chatbotTargetName = `${faculty.firstName} ${faculty.lastName}`;
 
-        // 1. Calculate Target Day & Filter Timetable (ONLY active working periods, 0 breaks)
+        // 1. Build Full Weekly Faculty Timetable Context (All 7 Days)
         const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        const todayDayName = daysOfWeek[new Date().getDay()];
-        const messageLower = message.toLowerCase();
-        let targetDay = daysOfWeek.find(d => messageLower.includes(d.toLowerCase()));
-        if (!targetDay) {
-          if (messageLower.includes("tomorrow")) {
-            targetDay = daysOfWeek[(new Date().getDay() + 1) % 7];
-          } else {
-            targetDay = todayDayName;
-          }
-        }
+        let fullWeeklyScheduleText = "";
 
-        let facultyTimetableText = "";
         if (faculty.timetable && faculty.timetable.length > 0) {
-          const daySchedule = faculty.timetable.find(d => d.day.toLowerCase() === targetDay.toLowerCase());
-          if (daySchedule && daySchedule.periods && daySchedule.periods.length > 0) {
-            const activePeriods = daySchedule.periods.filter(p => 
-              p.subject && !p.subject.toLowerCase().includes("break") && p.subject.trim() !== ""
-            );
+          fullWeeklyScheduleText = faculty.timetable.map(d => {
+            const activePeriods = d.periods ? d.periods.filter(p => p.subject && !p.subject.toLowerCase().includes("break") && p.subject.trim() !== "") : [];
             if (activePeriods.length > 0) {
-              facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\n` + activePeriods.map(p => 
-                `• **${p.startTime}-${p.endTime}:** ${p.subject} (Branch: ${p.branch}, Sem ${p.semester}, Sec ${p.section})`
-              ).join("\n");
+              const pList = activePeriods.map(p => `• ${p.startTime}-${p.endTime}: ${p.subject} (Branch: ${p.branch}, Sem ${p.semester}, Sec ${p.section})`).join("\n");
+              return `**${d.day}:**\n${pList}`;
             } else {
-              facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo active teaching periods scheduled for ${targetDay} (No classes).`;
+              return `**${d.day}:** No active classes scheduled.`;
             }
-          } else {
-            facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo classes scheduled for ${targetDay}.`;
-          }
+          }).join("\n\n");
         } else {
           try {
             const ttList = await Timetable.find({
-              "schedule.day": new RegExp(`^${targetDay}$`, "i"),
               "schedule.periods.faculty": new RegExp(faculty.firstName, "i")
             });
             if (ttList && ttList.length > 0) {
-              const periodsFound = [];
+              const dayMap = {};
               ttList.forEach(t => {
-                const dayObj = t.schedule.find(d => d.day.toLowerCase() === targetDay.toLowerCase());
-                if (dayObj && dayObj.periods) {
-                  dayObj.periods.forEach(p => {
-                    if (p.faculty && p.faculty.toLowerCase().includes(faculty.firstName.toLowerCase()) && !p.subject.toLowerCase().includes("break")) {
-                      periodsFound.push(`• **${p.startTime || "P" + p.periodNumber}:** ${p.subject} (Branch: ${t.branch}, Sem ${t.semester}, Sec ${t.section})`);
-                    }
-                  });
-                }
+                t.schedule.forEach(d => {
+                  if (!dayMap[d.day]) dayMap[d.day] = [];
+                  if (d.periods) {
+                    d.periods.forEach(p => {
+                      if (p.faculty && p.faculty.toLowerCase().includes(faculty.firstName.toLowerCase()) && !p.subject.toLowerCase().includes("break")) {
+                        dayMap[d.day].push(`• ${p.startTime || "P" + p.periodNumber}: ${p.subject} (Branch: ${t.branch}, Sem ${t.semester}, Sec ${t.section})`);
+                      }
+                    });
+                  }
+                });
               });
-              if (periodsFound.length > 0) {
-                facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\n${periodsFound.join("\n")}`;
-              } else {
-                facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo active teaching periods found for ${targetDay}.`;
-              }
+
+              fullWeeklyScheduleText = daysOfWeek.map(dName => {
+                if (dayMap[dName] && dayMap[dName].length > 0) {
+                  return `**${dName}:**\n${dayMap[dName].join("\n")}`;
+                }
+                return `**${dName}:** No active classes scheduled.`;
+              }).join("\n\n");
             } else {
-              facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo teaching classes assigned for ${targetDay}.`;
+              fullWeeklyScheduleText = "No teaching classes assigned in the weekly schedule.";
             }
           } catch (ttErr) {
-            facultyTimetableText = `No assigned schedule for ${targetDay}.`;
+            fullWeeklyScheduleText = "No assigned schedule found.";
           }
         }
 
@@ -783,8 +770,8 @@ const chatCampusQuery = async (req, res) => {
           Department: ${faculty.department} | Employee ID: ${faculty.employeeId} | JNTU ID: ${faculty.jntuId || "N/A"}
           Email: ${faculty.email} | Phone: ${faculty.phoneNumber || "N/A"} | Designation: ${faculty.post || "Professor"}
           
-          --- YOUR TEACHING TIMETABLE SCHEDULE ---
-          ${facultyTimetableText}
+          --- YOUR TEACHING TIMETABLE SCHEDULE (ALL DAYS) ---
+          ${fullWeeklyScheduleText}
 
           --- YOUR FACULTY LEAVE APPLICATIONS ---
           ${leaveText}
@@ -957,9 +944,30 @@ const chatCampusQuery = async (req, res) => {
         const ttText = match ? match[0].replace("--- LIBRARY ISSUED BOOKS ---", "").trim() : "Unable to retrieve timetable.";
         reply = `**Your Student Timetable:**\n\n${ttText}`;
       } else if (userRole === "faculty" || userRole === "professor") {
-        const match = userContextText.match(/--- YOUR TEACHING TIMETABLE SCHEDULE ---[\s\S]+?--- YOUR FACULTY LEAVE APPLICATIONS ---/);
-        const ttText = match ? match[0].replace("--- YOUR FACULTY LEAVE APPLICATIONS ---", "").trim() : "No assigned teaching schedule found.";
-        reply = `**Your Faculty Teaching Timetable:**\n\n${ttText}`;
+        const match = userContextText.match(/--- YOUR TEACHING TIMETABLE SCHEDULE \(ALL DAYS\) ---[\s\S]+?--- YOUR FACULTY LEAVE APPLICATIONS ---/);
+        let ttText = match ? match[0].replace("--- YOUR FACULTY LEAVE APPLICATIONS ---", "").trim() : "No assigned teaching schedule found.";
+
+        // Target day extraction in fallback mode
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const todayDayName = daysOfWeek[new Date().getDay()];
+        let targetDay = daysOfWeek.find(d => cleanMsg.includes(d.toLowerCase()));
+        if (!targetDay) {
+          if (cleanMsg.includes("tomorrow") || cleanMsg.includes("tmr")) {
+            targetDay = daysOfWeek[(new Date().getDay() + 1) % 7];
+          } else if (cleanMsg.includes("today")) {
+            targetDay = todayDayName;
+          }
+        }
+
+        if (targetDay) {
+          const dayRegex = new RegExp(`\\*\\*${targetDay}:\\*\\*[\\s\\S]+?(?=\\n\\n\\*\\*|$)`, "i");
+          const dayMatch = ttText.match(dayRegex);
+          if (dayMatch) {
+            ttText = dayMatch[0].trim();
+          }
+        }
+
+        reply = `**Your Faculty Teaching Timetable (${targetDay || "Weekly Overview"}):**\n\n${ttText}`;
       } else {
         reply = "You can view your teaching timetable in the 'MyFacultyTimeTable' tab in the sidebar menu.";
       }
