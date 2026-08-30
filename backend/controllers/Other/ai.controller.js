@@ -525,6 +525,22 @@ function runAnomalyRules(student, studentAttendance, sectionAttendance) {
 }
 
 /**
+ * Helper for clean name formatting (0 undefined strings)
+ */
+function getCleanFullName(obj) {
+  if (!obj) return "";
+  if (obj.name && String(obj.name).trim()) return String(obj.name).trim();
+  if (obj.fullName && String(obj.fullName).trim()) return String(obj.fullName).trim();
+  if (obj.studentName && String(obj.studentName).trim()) return String(obj.studentName).trim();
+  
+  const parts = [obj.firstName, obj.middleName, obj.lastName]
+    .filter(p => p && String(p).trim() && String(p).trim().toLowerCase() !== "undefined");
+  
+  if (parts.length > 0) return parts.join(" ").trim();
+  return obj.enrollmentNo || obj.employeeId || "User";
+}
+
+/**
  * 3. AI Chatbot for Campus Queries
  * POST /api/ai/chat
  */
@@ -858,20 +874,6 @@ const chatCampusQuery = async (req, res) => {
         Welcome to ECAP campus AI assistant. You can assist with queries about college management, study materials, library books, and section statistics.
       `;
     }
-
-    // Helper for clean name formatting (0 undefined strings)
-    const getCleanFullName = (obj) => {
-      if (!obj) return "";
-      if (obj.name && String(obj.name).trim()) return String(obj.name).trim();
-      if (obj.fullName && String(obj.fullName).trim()) return String(obj.fullName).trim();
-      if (obj.studentName && String(obj.studentName).trim()) return String(obj.studentName).trim();
-      
-      const parts = [obj.firstName, obj.middleName, obj.lastName]
-        .filter(p => p && String(p).trim() && String(p).trim().toLowerCase() !== "undefined");
-      
-      if (parts.length > 0) return parts.join(" ").trim();
-      return obj.enrollmentNo || obj.employeeId || "User";
-    };
 
     // Universal Multi-Collection Campus RAG Interceptor across ALL project data models
     let dynamicContext = "";
