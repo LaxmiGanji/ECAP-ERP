@@ -587,7 +587,7 @@ const chatCampusQuery = async (req, res) => {
             ]
           }).sort({ createdAt: -1 }).limit(10);
           if (materialsList && materialsList.length > 0) {
-            materialsText = materialsList.map(m => `- [${m.subject}] "${m.title}" (Faculty: ${m.faculty}, Sem ${m.semester}) -> Link: ${m.link}`).join("\n");
+            materialsText = materialsList.map(m => `- **${m.title}** (${m.subject} - Faculty: ${m.faculty}, Sem ${m.semester}): [Download PDF](${m.link})`).join("\n");
           }
         } catch (mErr) {
           console.warn("Materials fetch notice:", mErr.message);
@@ -672,6 +672,7 @@ const chatCampusQuery = async (req, res) => {
           Guidelines:
           - Answer general queries directly, helpful, and accurately.
           - If asked about attendance, timetable, marks, or books, read from the user context provided.
+          - When recommending or listing study materials, ALWAYS include the exact material title uploaded by faculty in bold, e.g.: **Material Title**: [Download PDF](link).
           - Be encouraging. Warn them if their attendance is below 75%.
           - Keep answers clear, readable, and formatted in Markdown.
           - If the user attaches an image or document (PDF, Text), analyze it carefully to answer their questions.

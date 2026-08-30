@@ -405,11 +405,40 @@ How can I help you today? You can type a question, upload a file, or select one 
                             const rawUrl = urlMatch[1];
                             const cleanUrl = rawUrl.replace(/[\)\>\]]+$/, "");
 
-                            let fileTitle = line.replace(/\[\s*(https?:\/\/[^\s\]]+)\s*\]\([^\)]+\)/i, "")
-                                                .replace(/(https?:\/\/[^\s\)\"]+)/gi, "")
-                                                .replace(/\*+|\-+|\:|Link/gi, "")
-                                                .trim();
-                            if (!fileTitle || fileTitle.length < 3) {
+                            let fileTitle = "";
+
+                            // 1. Check for bold title **Title**
+                            const boldMatch = line.match(/\*\*([^*]+)\*\*/);
+                            if (boldMatch && boldMatch[1]) {
+                              fileTitle = boldMatch[1].replace(/\[|\]/g, "").trim();
+                            }
+
+                            // 2. Check for quoted title "Title"
+                            if (!fileTitle) {
+                              const quoteMatch = line.match(/["“']([^"”']+)["”']/);
+                              if (quoteMatch && quoteMatch[1]) {
+                                fileTitle = quoteMatch[1].trim();
+                              }
+                            }
+
+                            // 3. Check for markdown link label [Title](url)
+                            if (!fileTitle) {
+                              const linkMatch = line.match(/\[([^\]]+)\]\([^\)]+\)/);
+                              if (linkMatch && linkMatch[1] && !linkMatch[1].startsWith("http")) {
+                                fileTitle = linkMatch[1].trim();
+                              }
+                            }
+
+                            // 4. Fallback: Clean line text
+                            if (!fileTitle) {
+                              fileTitle = line.replace(/\[\s*(https?:\/\/[^\s\]]+)\s*\]\([^\)]+\)/gi, "")
+                                                  .replace(/(https?:\/\/[^\s\)\"]+)/gi, "")
+                                                  .replace(/\*+|\-+|\:|Link|Faculty|Sem|Semester/gi, "")
+                                                  .trim();
+                            }
+
+                            // 5. Final fallback to URL filename
+                            if (!fileTitle || fileTitle.length < 2) {
                               const parts = cleanUrl.split("/");
                               fileTitle = decodeURIComponent(parts[parts.length - 1] || "Study Material PDF").replace(/_\d+$/, "");
                             }
