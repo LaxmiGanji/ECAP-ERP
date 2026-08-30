@@ -577,13 +577,32 @@ const chatCampusQuery = async (req, res) => {
           section: student.section
         });
 
-        // Format Timetable to text
+        // Format Timetable to text (Target day & working periods only)
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const todayDayName = daysOfWeek[new Date().getDay()];
+        const messageLower = message.toLowerCase();
+        let targetDay = daysOfWeek.find(d => messageLower.includes(d.toLowerCase()));
+        if (!targetDay) {
+          if (messageLower.includes("tomorrow")) {
+            targetDay = daysOfWeek[(new Date().getDay() + 1) % 7];
+          } else {
+            targetDay = todayDayName;
+          }
+        }
+
         let timetableText = "No timetable available.";
         if (timetable && timetable.schedule) {
-          timetableText = timetable.schedule.map(d => {
-            const periodList = d.periods.map(p => `Period ${p.periodNumber}: ${p.subject} (${p.startTime}-${p.endTime})`).join(", ");
-            return `${d.day}: [${periodList}]`;
-          }).join("\n");
+          const daySchedule = timetable.schedule.find(d => d.day.toLowerCase() === targetDay.toLowerCase());
+          if (daySchedule && daySchedule.periods) {
+            const activeClasses = daySchedule.periods.filter(p => p.subject && !p.subject.toLowerCase().includes("break") && p.subject.trim() !== "");
+            if (activeClasses.length > 0) {
+              timetableText = `**Student Classes for ${targetDay}:**\n` + activeClasses.map(p => `• **${p.startTime}-${p.endTime}:** ${p.subject} (Period ${p.periodNumber})`).join("\n");
+            } else {
+              timetableText = `No active classes scheduled for ${targetDay}.`;
+            }
+          } else {
+            timetableText = `No classes scheduled for ${targetDay}.`;
+          }
         }
 
         // Format Books
@@ -640,42 +659,83 @@ const chatCampusQuery = async (req, res) => {
         `;
       }
     } else if (userRole === "faculty" || userRole === "professor") {
-      // Fetch faculty details & database context (Robust Lookup)
+      // Fetch faculty details & database context (Strict & Accurate Lookup)
       const FacultyDetail = mongoose.model("Faculty Detail");
       let faculty = null;
       if (userLoginId || userId) {
+        const cleanLogin = userLoginId.trim();
+        const cleanId = userId.trim();
         const queryConds = [
-          { employeeId: userLoginId },
-          { employeeId: userId },
-          { email: new RegExp(userLoginId, "i") }
+          { employeeId: new RegExp(`^${cleanLogin}$`, "i") },
+          { employeeId: new RegExp(`^${cleanId}$`, "i") },
+          { email: new RegExp(`^${cleanLogin}$`, "i") }
         ];
-        if (mongoose.Types.ObjectId.isValid(userId)) queryConds.push({ _id: userId });
+        if (mongoose.Types.ObjectId.isValid(cleanId)) queryConds.push({ _id: cleanId });
         faculty = await FacultyDetail.findOne({ $or: queryConds });
-      }
-      if (!faculty) {
-        faculty = await FacultyDetail.findOne();
       }
 
       if (faculty) {
         chatbotTargetName = `${faculty.firstName} ${faculty.lastName}`;
 
-        // 1. Fetch Faculty Teaching Timetable
-        let facultyTimetableText = "No assigned teaching schedule found.";
+        // 1. Calculate Target Day & Filter Timetable (ONLY active working periods, 0 breaks)
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const todayDayName = daysOfWeek[new Date().getDay()];
+        const messageLower = message.toLowerCase();
+        let targetDay = daysOfWeek.find(d => messageLower.includes(d.toLowerCase()));
+        if (!targetDay) {
+          if (messageLower.includes("tomorrow")) {
+            targetDay = daysOfWeek[(new Date().getDay() + 1) % 7];
+          } else {
+            targetDay = todayDayName;
+          }
+        }
+
+        let facultyTimetableText = "";
         if (faculty.timetable && faculty.timetable.length > 0) {
-          facultyTimetableText = faculty.timetable.map(d => {
-            const periodList = d.periods.map(p => `Period ${p.periodNumber}: ${p.subject} (${p.branch} Sem ${p.semester} Sec ${p.section}, ${p.startTime}-${p.endTime})`).join(", ");
-            return `${d.day}: [${periodList}]`;
-          }).join("\n");
+          const daySchedule = faculty.timetable.find(d => d.day.toLowerCase() === targetDay.toLowerCase());
+          if (daySchedule && daySchedule.periods && daySchedule.periods.length > 0) {
+            const activePeriods = daySchedule.periods.filter(p => 
+              p.subject && !p.subject.toLowerCase().includes("break") && p.subject.trim() !== ""
+            );
+            if (activePeriods.length > 0) {
+              facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\n` + activePeriods.map(p => 
+                `• **${p.startTime}-${p.endTime}:** ${p.subject} (Branch: ${p.branch}, Sem ${p.semester}, Sec ${p.section})`
+              ).join("\n");
+            } else {
+              facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo active teaching periods scheduled for ${targetDay} (No classes).`;
+            }
+          } else {
+            facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo classes scheduled for ${targetDay}.`;
+          }
         } else {
           try {
-            const ttList = await Timetable.find({ "schedule.periods.faculty": new RegExp(faculty.firstName, "i") });
+            const ttList = await Timetable.find({
+              "schedule.day": new RegExp(`^${targetDay}$`, "i"),
+              "schedule.periods.faculty": new RegExp(faculty.firstName, "i")
+            });
             if (ttList && ttList.length > 0) {
-              facultyTimetableText = ttList.map(t => 
-                `Branch: ${t.branch} Sem ${t.semester} Sec ${t.section}:\n` +
-                t.schedule.map(d => `  ${d.day}: ` + d.periods.filter(p => p.faculty?.toLowerCase().includes(faculty.firstName.toLowerCase())).map(p => `P${p.periodNumber} ${p.subject}`).join(", ")).join("\n")
-              ).join("\n\n");
+              const periodsFound = [];
+              ttList.forEach(t => {
+                const dayObj = t.schedule.find(d => d.day.toLowerCase() === targetDay.toLowerCase());
+                if (dayObj && dayObj.periods) {
+                  dayObj.periods.forEach(p => {
+                    if (p.faculty && p.faculty.toLowerCase().includes(faculty.firstName.toLowerCase()) && !p.subject.toLowerCase().includes("break")) {
+                      periodsFound.push(`• **${p.startTime || "P" + p.periodNumber}:** ${p.subject} (Branch: ${t.branch}, Sem ${t.semester}, Sec ${t.section})`);
+                    }
+                  });
+                }
+              });
+              if (periodsFound.length > 0) {
+                facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\n${periodsFound.join("\n")}`;
+              } else {
+                facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo active teaching periods found for ${targetDay}.`;
+              }
+            } else {
+              facultyTimetableText = `**Teaching Schedule for ${targetDay}:**\nNo teaching classes assigned for ${targetDay}.`;
             }
-          } catch (ttErr) {}
+          } catch (ttErr) {
+            facultyTimetableText = `No assigned schedule for ${targetDay}.`;
+          }
         }
 
         // 2. Fetch Faculty Leave Applications from Database
@@ -695,9 +755,7 @@ const chatCampusQuery = async (req, res) => {
               `- Leave Type: **${l.leaveType}** | Dates: ${l.startDate} to ${l.endDate} | Status: **${l.status.toUpperCase().replace(/_/g, " ")}** | Reason: "${l.reason}"${l.substituteName ? ` | Substitute: ${l.substituteName}` : ""}${l.rejectionReason ? ` | Rejection Reason: "${l.rejectionReason}"` : ""}`
             ).join("\n");
           }
-        } catch (lErr) {
-          console.warn("Faculty leave fetch notice:", lErr.message);
-        }
+        } catch (lErr) {}
 
         // 3. Fetch Faculty Uploaded Study Materials
         let facultyMatText = "No materials uploaded yet.";
@@ -712,9 +770,7 @@ const chatCampusQuery = async (req, res) => {
           if (mats && mats.length > 0) {
             facultyMatText = mats.map(m => `- **${m.title}** (${m.subject}, Sem ${m.semester}): [Download PDF](${m.link})`).join("\n");
           }
-        } catch (mErr) {
-          console.warn("Faculty materials fetch notice:", mErr.message);
-        }
+        } catch (mErr) {}
 
         // 4. Fetch Department Students Overview
         let deptStudentsCount = 0;
@@ -739,6 +795,9 @@ const chatCampusQuery = async (req, res) => {
           --- DEPARTMENT OVERVIEW ---
           Total Students in ${faculty.department} Department: ${deptStudentsCount}
         `;
+      } else {
+        chatbotTargetName = userLoginId || "Faculty";
+        userContextText = `Faculty profile not found for Employee ID: ${userLoginId}. Please check login credentials.`;
       }
     } else if (userRole === "hod") {
       const FacultyDetail = mongoose.model("Faculty Detail");
@@ -838,6 +897,7 @@ const chatCampusQuery = async (req, res) => {
           Guidelines:
           - Answer general queries directly, helpful, and accurately.
           - If asked about attendance, timetable, marks, or books, read from the user context provided.
+          - When outputting timetable or schedule, provide ONLY the target day's active working periods. Do NOT output break periods or the entire week unless explicitly asked for the full weekly schedule.
           - When recommending or listing study materials, ALWAYS include the exact material title uploaded by faculty in bold, e.g.: **Material Title**: [Download PDF](link).
           - Be encouraging. Warn them if their attendance is below 75%.
           - Keep answers clear, readable, and formatted in Markdown.
