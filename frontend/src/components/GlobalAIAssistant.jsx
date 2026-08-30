@@ -6,19 +6,14 @@ import {
   FiX,
   FiSend,
   FiBookOpen,
-  FiFileText,
   FiSearch,
   FiDatabase,
   FiDownload,
   FiExternalLink,
-  FiRefreshCw,
   FiGlobe,
   FiPaperclip,
   FiZap,
-  FiUserCheck,
-  FiClock,
   FiFile,
-  FiCheckCircle,
   FiLayers
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
