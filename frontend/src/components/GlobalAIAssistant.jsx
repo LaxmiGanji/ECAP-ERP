@@ -227,13 +227,40 @@ Ask me any question or pick a quick suggestion below!`,
     }
   };
 
-  const quickPrompts = [
-    { label: "📚 Search Study Materials", text: "What study materials and PDFs are available for my branch?" },
-    { label: "📊 Check My Attendance", text: "What is my attendance percentage and subject breakdown?" },
-    { label: "📝 2024 Question Papers", text: "Find previous year question papers for my subjects" },
-    { label: "📍 Where is Cormen Book?", text: "Where is the Cormen Introduction to Algorithms book in the library?" },
-    { label: "✍️ Write Leave Application", text: "Generate a leave application for my HOD" }
-  ];
+  // Detect current path/role for dynamic prompts
+  const currentPath = typeof window !== "undefined" ? window.location.pathname.toLowerCase() : "";
+  const getRolePrompts = () => {
+    if (currentPath.includes("faculty")) {
+      return [
+        { label: "📋 Check My Leave Status", text: "What is the status of my leave applications?" },
+        { label: "📤 My Uploaded Materials", text: "Show the study materials I have uploaded." },
+        { label: "👥 Department Student Count", text: "How many students are in my department?" },
+        { label: "📍 Library Catalog Search", text: "Search library books available for my subject." }
+      ];
+    } else if (currentPath.includes("hod")) {
+      return [
+        { label: "⏳ Pending Faculty Leaves", text: "Show pending faculty leave applications requiring my approval." },
+        { label: "👥 Department Overview", text: "Show department statistics and faculty overview." },
+        { label: "📚 Search Department Materials", text: "Search study materials uploaded in my department." }
+      ];
+    } else if (currentPath.includes("admin") || currentPath.includes("principal")) {
+      return [
+        { label: "📊 College Total Enrollment", text: "Show total enrolled students and faculty members." },
+        { label: "⏳ Pending College Leaves", text: "Show pending leave requests across all departments." },
+        { label: "📚 Uploaded Materials Summary", text: "Show total study materials uploaded in the system." }
+      ];
+    } else {
+      return [
+        { label: "📚 Search Study Materials", text: "What study materials and PDFs are available for my branch?" },
+        { label: "📊 Check My Attendance", text: "What is my attendance percentage and subject breakdown?" },
+        { label: "📝 2024 Question Papers", text: "Find previous year question papers for my subjects" },
+        { label: "📍 Where is Cormen Book?", text: "Where is the Cormen Introduction to Algorithms book in the library?" },
+        { label: "✍️ Write Leave Application", text: "Generate a leave application for my HOD" }
+      ];
+    }
+  };
+
+  const quickPrompts = getRolePrompts();
 
   return (
     <>

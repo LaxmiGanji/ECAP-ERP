@@ -625,25 +625,126 @@ const chatCampusQuery = async (req, res) => {
         `;
       }
     } else if (role === "faculty") {
-      // Fetch faculty details
-      const FacultyDetail = mongoose.model("Faculty Detail"); // Lazy load Model
+      // Fetch faculty details & database context
+      const FacultyDetail = mongoose.model("Faculty Detail");
       const faculty = await FacultyDetail.findById(id);
       if (faculty) {
         chatbotTargetName = `${faculty.firstName} ${faculty.lastName}`;
+
+        // 1. Fetch Faculty Leave Applications from Database
+        let leaveText = "No leave applications submitted yet.";
+        try {
+          const FacultyLeave = require("../../models/Faculty/leave.model");
+          const leaveApps = await FacultyLeave.find({
+            $or: [
+              { facultyId: faculty.employeeId },
+              { facultyId: String(faculty._id) },
+              { facultyName: new RegExp(`${faculty.firstName}`, "i") }
+            ]
+          }).sort({ createdAt: -1 });
+
+          if (leaveApps && leaveApps.length > 0) {
+            leaveText = leaveApps.map(l => 
+              `- Leave Type: **${l.leaveType}** | Dates: ${l.startDate} to ${l.endDate} | Status: **${l.status.toUpperCase().replace(/_/g, " ")}** | Reason: "${l.reason}"${l.substituteName ? ` | Substitute: ${l.substituteName}` : ""}${l.rejectionReason ? ` | Rejection Reason: "${l.rejectionReason}"` : ""}`
+            ).join("\n");
+          }
+        } catch (lErr) {
+          console.warn("Faculty leave fetch notice:", lErr.message);
+        }
+
+        // 2. Fetch Faculty Uploaded Study Materials
+        let facultyMatText = "No materials uploaded yet.";
+        try {
+          const Material = require("../../models/Other/material.model");
+          const mats = await Material.find({
+            $or: [
+              { faculty: new RegExp(faculty.firstName, "i") },
+              { faculty: faculty.employeeId }
+            ]
+          }).sort({ createdAt: -1 });
+          if (mats && mats.length > 0) {
+            facultyMatText = mats.map(m => `- **${m.title}** (${m.subject}, Sem ${m.semester}): [Download PDF](${m.link})`).join("\n");
+          }
+        } catch (mErr) {
+          console.warn("Faculty materials fetch notice:", mErr.message);
+        }
+
+        // 3. Fetch Department Students Overview
+        let deptStudentsCount = 0;
+        try {
+          deptStudentsCount = await StudentDetail.countDocuments({ branch: new RegExp(faculty.department, "i") });
+        } catch (dErr) {}
+
         userContextText = `
           Faculty Name: ${faculty.firstName} ${faculty.lastName}
-          Department: ${faculty.department}
-          Employee ID: ${faculty.employeeId}
-          Email: ${faculty.email}
+          Department: ${faculty.department} | Employee ID: ${faculty.employeeId} | JNTU ID: ${faculty.jntuId || "N/A"}
+          Email: ${faculty.email} | Phone: ${faculty.phoneNumber || "N/A"} | Designation: ${faculty.post || "Professor"}
           
-          TIMETABLE CONTEXT: As faculty, you teach subjects in the ${faculty.department} department.
-          LEAVE POLICY: Faculty leaves must be submitted through HOD leave management approvals.
+          --- YOUR FACULTY LEAVE APPLICATIONS ---
+          ${leaveText}
+
+          --- YOUR UPLOADED STUDY MATERIALS ---
+          ${facultyMatText}
+
+          --- DEPARTMENT OVERVIEW ---
+          Total Students in ${faculty.department} Department: ${deptStudentsCount}
         `;
       }
+    } else if (role === "hod") {
+      const FacultyDetail = mongoose.model("Faculty Detail");
+      const hod = await FacultyDetail.findById(id);
+      if (hod) {
+        chatbotTargetName = `${hod.firstName} ${hod.lastName} (HOD)`;
+
+        let pendingLeavesText = "No pending faculty leave applications requiring HOD approval.";
+        try {
+          const FacultyLeave = require("../../models/Faculty/leave.model");
+          const pendingLeaves = await FacultyLeave.find({
+            branch: new RegExp(hod.department || hod.branch, "i"),
+            status: "pending"
+          });
+          if (pendingLeaves && pendingLeaves.length > 0) {
+            pendingLeavesText = pendingLeaves.map(l => 
+              `- Faculty: **${l.facultyName}** (${l.leaveType}) | Dates: ${l.startDate} to ${l.endDate} | Reason: "${l.reason}" | Substitute: ${l.substituteName || "None"}`
+            ).join("\n");
+          }
+        } catch (hErr) {}
+
+        userContextText = `
+          HOD Name: ${hod.firstName} ${hod.lastName}
+          Department: ${hod.department || hod.branch}
+          
+          --- PENDING FACULTY LEAVE APPROVALS IN YOUR DEPARTMENT ---
+          ${pendingLeavesText}
+        `;
+      }
+    } else if (role === "admin" || role === "principal") {
+      chatbotTargetName = role === "principal" ? "Principal" : "Admin";
+
+      let totalStudents = 0, totalFaculty = 0, totalMaterials = 0, pendingLeavesCount = 0;
+      try {
+        totalStudents = await StudentDetail.countDocuments();
+        const FacultyDetail = mongoose.model("Faculty Detail");
+        totalFaculty = await FacultyDetail.countDocuments();
+        const Material = require("../../models/Other/material.model");
+        totalMaterials = await Material.countDocuments();
+        const FacultyLeave = require("../../models/Faculty/leave.model");
+        pendingLeavesCount = await FacultyLeave.countDocuments({ status: { $in: ["pending", "approved_by_hod"] } });
+      } catch (aErr) {}
+
+      userContextText = `
+        User Role: ${role.toUpperCase()}
+        
+        --- COLLEGE-WIDE EXECUTIVE DATA SUMMARY ---
+        Total Enrolled Students: ${totalStudents}
+        Total Faculty Members: ${totalFaculty}
+        Total Study Materials Uploaded: ${totalMaterials}
+        Pending Leave Applications Needing Executive Approval: ${pendingLeavesCount}
+      `;
     } else {
       userContextText = `
         User Role: ${role}
-        Welcome to ECAP admin panel chatbot. You can assist the admin with queries about college management, student risk monitoring, and section statistics.
+        Welcome to ECAP campus AI assistant. You can assist with queries about college management, study materials, library books, and section statistics.
       `;
     }
 
@@ -749,11 +850,19 @@ const chatCampusQuery = async (req, res) => {
       } else {
         reply = "Library book records can be checked directly from the principal or library dashboard.";
       }
-    } else if (cleanMsg.includes("leave") || cleanMsg.includes("apply")) {
+    } else if (cleanMsg.includes("leave") || cleanMsg.includes("apply") || cleanMsg.includes("status")) {
       if (role === "student") {
         reply = `**Applying for Leave:**\n\nHere is the format you can use to write an application to your HOD:\n\n\`\`\`\nTo,\nThe HOD,\n[Department Name] Department\n\nSubject: Leave Application\n\nRespected Sir/Madam,\nI (${chatbotTargetName}, Enrollment: ${req.user.id || "Your ID"}) request leave from [Start Date] to [End Date] due to [Reason].\n\nThanking you,\nYours obediently,\n${chatbotTargetName}\n\`\`\``;
+      } else if (role === "faculty") {
+        const match = userContextText.match(/--- YOUR FACULTY LEAVE APPLICATIONS ---[\s\S]+?--- YOUR UPLOADED STUDY MATERIALS ---/);
+        const leaveStatusText = match ? match[0].replace("--- YOUR UPLOADED STUDY MATERIALS ---", "").trim() : "No leave records found.";
+        reply = `**Your Faculty Leave Applications:**\n\n${leaveStatusText}`;
+      } else if (role === "hod") {
+        const match = userContextText.match(/--- PENDING FACULTY LEAVE APPROVALS IN YOUR DEPARTMENT ---[\s\S]+/);
+        const pendingText = match ? match[0] : "No pending approvals.";
+        reply = `**Pending Department Faculty Leaves:**\n\n${pendingText}`;
       } else {
-        reply = "To apply for leave, navigate to the 'Leave Management' sidebar tab to submit an electronic application.";
+        reply = "You can view and process leave applications in your dashboard under Leave Management.";
       }
     } else {
       reply = `Hello ${chatbotTargetName}! I am running in **Standard Mode**.\n\nI can answer queries related to:\n- **Attendance** (e.g., "What is my attendance?")\n- **Timetable** (e.g., "Show my schedule")\n- **Marks** (e.g., "What are my marks?")\n- **Library Books** (e.g., "Do I have any books?")\n- **Leave applications** (e.g., "How to apply for leave?")\n\n*Tip: To unlock advanced chat, ask your admin to add the ` + "`GEMINI_API_KEY`" + ` to the backend environment.*`;
