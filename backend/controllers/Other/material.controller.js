@@ -1,19 +1,36 @@
 const Material = require("../../models/Other/material.model");
 const cloudinary = require("cloudinary").v2;
 
-// Get materials by subject (for students)
+// Get materials by branch, semester, regulation, or subject (for students)
 const getMaterial = async (req, res) => {
     try {
-        let material = await Material.find(req.body).sort({ createdAt: -1 });
-        if (!material || material.length === 0) {
-            return res
-                .status(404)
-                .json({ success: false, message: "No Material Available!" });
+        const { subject, branch, semester, regulation } = req.body;
+        let query = {};
+        
+        if (subject && subject !== "select") query.subject = new RegExp(`^${subject}$`, "i");
+        if (branch) query.branch = new RegExp(branch, "i");
+        if (semester) query.semester = parseInt(semester, 10) || semester;
+        if (regulation) query.regulation = new RegExp(regulation, "i");
+
+        let material = await Material.find(query).sort({ createdAt: -1 });
+        
+        // Intelligent Fallback: If strict regulation filtering returns 0, match branch & semester
+        if ((!material || material.length === 0) && regulation && (branch || semester)) {
+            const fallbackQuery = {};
+            if (branch) fallbackQuery.branch = new RegExp(branch, "i");
+            if (semester) fallbackQuery.semester = parseInt(semester, 10) || semester;
+            if (subject && subject !== "select") fallbackQuery.subject = new RegExp(`^${subject}$`, "i");
+            material = await Material.find(fallbackQuery).sort({ createdAt: -1 });
         }
-        res.json({ success: true, message: "Material Found!", material });
+
+        res.json({ 
+            success: true, 
+            message: material && material.length > 0 ? "Material Found!" : "No materials available for current selection.", 
+            material: material || [] 
+        });
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error in getMaterial:", error.message);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
 

@@ -952,15 +952,28 @@ const chatCampusQuery = async (req, res) => {
       }
 
       // D. Materials & Question Papers Interceptor
-      if (cleanMsg.includes("material") || cleanMsg.includes("pyq") || cleanMsg.includes("paper") || cleanMsg.includes("pdf") || cleanMsg.includes("note")) {
+      if (cleanMsg.includes("material") || cleanMsg.includes("pyq") || cleanMsg.includes("paper") || cleanMsg.includes("pdf") || cleanMsg.includes("note") || cleanMsg.includes("subject")) {
         try {
           const Material = require("../../models/Other/material.model");
+          const matQuery = {};
+          
+          const searchKeywords = message.split(/\s+/)
+            .filter(w => w.length > 3 && !["material", "materials", "notes", "paper", "pyqs", "please", "give", "want", "show", "find", "other", "need"].includes(w.toLowerCase()));
+          
+          if (searchKeywords.length > 0) {
+            const pattern = searchKeywords.join("|");
+            matQuery.$or = [
+              { subject: new RegExp(pattern, "i") },
+              { title: new RegExp(pattern, "i") }
+            ];
+          }
+
           queryPromises.push(
-            Material.find().sort({ createdAt: -1 }).limit(12).lean()
+            Material.find(matQuery).sort({ createdAt: -1 }).limit(20).lean()
               .then(mats => {
                 if (mats && mats.length > 0) {
                   const formattedMats = mats.map((m, i) => 
-                    `${i + 1}. **${m.title}** (${m.subject}, Sem ${m.semester}, Faculty: ${m.faculty}): [Download PDF](${m.link})`
+                    `${i + 1}. **${m.title}** (${m.subject}, Branch: ${m.branch || "General"}, Sem ${m.semester}, Faculty: ${m.faculty}): [Download PDF](${m.link})`
                   ).join("\n");
                   dynamicContext += `\n--- UPLOADED STUDY MATERIALS (${mats.length} Found) ---\n${formattedMats}\n`;
                 }
