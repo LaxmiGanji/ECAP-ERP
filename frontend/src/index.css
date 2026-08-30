@@ -79,37 +79,81 @@ body {
   }
 }
 
-/* Custom Sleek Scrollbar */
+/* Custom Sleek Modern Scrollbars (Dark Theme Aware) */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #090d16;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #334155;
   border-radius: 9999px;
+  border: 1px solid #1e293b;
   transition: background 0.2s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #6366f1;
+}
+
+::-webkit-scrollbar-corner {
+  background: #090d16;
 }
 
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-color: #334155 #090d16;
+}
+
+/* Scrollbar None / Hidden Utilities */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Custom Dark Panel Scrollbar */
+.dark-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.dark-scrollbar::-webkit-scrollbar-track {
+  background: #020617 !important;
+  border-radius: 9999px;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155 !important;
+  border-radius: 9999px;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6366f1 !important;
+}
+
+.dark-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-color: #334155 #020617 !important;
 }
 
 /* Global Table Overflow Rules with Viewport-Height Lock */
 .overflow-x-auto {
-  scrollbar-width: auto;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #090d16;
   -webkit-overflow-scrolling: touch;
   width: 100%;
   max-width: 100%;
@@ -118,9 +162,9 @@ body {
   overflow-x: auto !important;
   display: block;
   border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  background-color: #ffffff;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  border: 1px solid #1e293b;
+  background-color: #090d16;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 }
 
 .overflow-x-auto table {
