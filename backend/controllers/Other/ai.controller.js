@@ -859,6 +859,20 @@ const chatCampusQuery = async (req, res) => {
       `;
     }
 
+    // Helper for clean name formatting (0 undefined strings)
+    const getCleanFullName = (obj) => {
+      if (!obj) return "";
+      if (obj.name && String(obj.name).trim()) return String(obj.name).trim();
+      if (obj.fullName && String(obj.fullName).trim()) return String(obj.fullName).trim();
+      if (obj.studentName && String(obj.studentName).trim()) return String(obj.studentName).trim();
+      
+      const parts = [obj.firstName, obj.middleName, obj.lastName]
+        .filter(p => p && String(p).trim() && String(p).trim().toLowerCase() !== "undefined");
+      
+      if (parts.length > 0) return parts.join(" ").trim();
+      return obj.enrollmentNo || obj.employeeId || "User";
+    };
+
     // Universal Multi-Collection Campus RAG Interceptor across ALL project data models
     let dynamicContext = "";
     const cleanMsg = message.toLowerCase();
@@ -870,22 +884,30 @@ const chatCampusQuery = async (req, res) => {
       if (cleanMsg.includes("student") || cleanMsg.includes("list") || cleanMsg.includes("sec") || cleanMsg.includes("sem") || cleanMsg.includes("roll")) {
         const queryFilter = {};
         const semMatch = message.match(/sem(?:ester)?\s*(\d+)/i);
-        if (semMatch) queryFilter.semester = String(semMatch[1]);
+        if (semMatch) {
+          const semNum = parseInt(semMatch[1], 10);
+          queryFilter.$or = [{ semester: semNum }, { semester: String(semNum) }];
+        }
         
         const secMatch = message.match(/sec(?:tion)?\s*([a-d])/i);
-        if (secMatch) queryFilter.section = secMatch[1].toUpperCase();
+        if (secMatch) {
+          queryFilter.section = new RegExp(`^${secMatch[1]}$`, "i");
+        }
         
         const branchMatch = message.match(/\b(cse|ece|eee|mech|civil|it|ai|ds)\b/i);
-        if (branchMatch) queryFilter.branch = new RegExp(branchMatch[1], "i");
+        if (branchMatch) {
+          queryFilter.branch = new RegExp(branchMatch[1], "i");
+        }
 
         queryPromises.push(
-          StudentDetail.find(queryFilter).limit(35).lean()
+          StudentDetail.find(queryFilter).sort({ enrollmentNo: 1 }).limit(500).lean()
             .then(studentList => {
               if (studentList && studentList.length > 0) {
-                const formattedStudents = studentList.map((s, i) => 
-                  `${i + 1}. **${s.firstName} ${s.lastName}** (Roll: ${s.enrollmentNo}, Branch: ${s.branch}, Sem ${s.semester}, Sec ${s.section}, Email: ${s.email})`
-                ).join("\n");
-                dynamicContext += `\n--- MATCHING STUDENTS DIRECTORY (${studentList.length} Found) ---\n${formattedStudents}\n`;
+                const formattedStudents = studentList.map((s, i) => {
+                  const sName = getCleanFullName(s);
+                  return `${i + 1}. **${sName}** (Roll: ${s.enrollmentNo}, Branch: ${s.branch}, Sem ${s.semester}, Sec ${s.section}, Email: ${s.email || "N/A"})`;
+                }).join("\n");
+                dynamicContext += `\n--- MATCHING STUDENTS DIRECTORY (${studentList.length} Students Found) ---\n${formattedStudents}\n`;
               }
             }).catch(() => {})
         );
@@ -898,13 +920,14 @@ const chatCampusQuery = async (req, res) => {
         const facFilter = deptMatch ? { department: new RegExp(deptMatch[1], "i") } : {};
 
         queryPromises.push(
-          FacultyDetail.find(facFilter).limit(35).lean()
+          FacultyDetail.find(facFilter).sort({ employeeId: 1 }).limit(200).lean()
             .then(facultyList => {
               if (facultyList && facultyList.length > 0) {
-                const formattedFaculty = facultyList.map((f, i) => 
-                  `${i + 1}. **${f.firstName} ${f.lastName}** (Employee ID: ${f.employeeId}, Dept: ${f.department}, Post: ${f.post || "Faculty"}, Email: ${f.email})`
-                ).join("\n");
-                dynamicContext += `\n--- FACULTY DIRECTORY (${facultyList.length} Found) ---\n${formattedFaculty}\n`;
+                const formattedFaculty = facultyList.map((f, i) => {
+                  const fName = getCleanFullName(f);
+                  return `${i + 1}. **${fName}** (Employee ID: ${f.employeeId}, Dept: ${f.department}, Post: ${f.post || "Faculty"}, Email: ${f.email || "N/A"})`;
+                }).join("\n");
+                dynamicContext += `\n--- FACULTY DIRECTORY (${facultyList.length} Members Found) ---\n${formattedFaculty}\n`;
               }
             }).catch(() => {})
         );
