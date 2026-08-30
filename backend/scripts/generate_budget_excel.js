@@ -3,25 +3,25 @@ const path = require("path");
 
 async function createDeploymentBudgetExcel() {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Sphorthy Engineering College ECAP ERP Team";
-  workbook.lastModifiedBy = "ECAP ERP AI System";
+  workbook.creator = "Sphoorthy Engineering College ECAP ERP Team";
+  workbook.lastModifiedBy = "ECAP ERP System";
   workbook.created = new Date();
   workbook.modified = new Date();
 
   // ----------------------------------------------------
-  // SHEET 1: Dynamic Budget Calculator
+  // SHEET 1: Dynamic Budget Calculator (INR Only with Per Year Column)
   // ----------------------------------------------------
-  const sheet = workbook.addWorksheet("Dynamic Budget Calculator", {
+  const sheet = workbook.addWorksheet("ERP Deployment Budget Model", {
     views: [{ showGridLines: true }],
   });
 
   // Column definitions
   sheet.columns = [
     { header: "", key: "colA", width: 4 },
-    { header: "", key: "colB", width: 42 },
-    { header: "", key: "colC", width: 22 },
-    { header: "", key: "colD", width: 20 },
-    { header: "", key: "colE", width: 48 },
+    { header: "", key: "colB", width: 46 },
+    { header: "", key: "colC", width: 24 },
+    { header: "", key: "colD", width: 24 },
+    { header: "", key: "colE", width: 55 },
   ];
 
   // Title Block
@@ -31,11 +31,11 @@ async function createDeploymentBudgetExcel() {
   titleCell.font = { name: "Calibri", size: 16, bold: true, color: { argb: "FFFFFFFF" } };
   titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
   titleCell.alignment = { horizontal: "center", vertical: "middle" };
-  sheet.getRow(2).height = 35;
+  sheet.getRow(2).height = 36;
 
   sheet.mergeCells("B3:E3");
   const subtitleCell = sheet.getCell("B3");
-  subtitleCell.value = "Dynamic Infrastructure Cost Calculator (Change Student Count in Cell C5 to Recalculate All Costs)";
+  subtitleCell.value = "Dynamic Financial & Infrastructure Model in INR (Change Student Count in Cell C6 to Recalculate All Costs)";
   subtitleCell.font = { name: "Calibri", size: 10, italic: true, color: { argb: "FF94A3B8" } };
   subtitleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E293B" } };
   subtitleCell.alignment = { horizontal: "center", vertical: "middle" };
@@ -44,18 +44,17 @@ async function createDeploymentBudgetExcel() {
   // Section Header: Inputs
   sheet.mergeCells("B5:E5");
   const inputHeader = sheet.getCell("B5");
-  inputHeader.value = "1. DYNAMIC INPUT CONTROLS & ASSUMPTIONS (EDITABLE CELLS)";
+  inputHeader.value = "1. DYNAMIC INPUT CONTROLS & ASSUMPTIONS (EDITABLE CELL)";
   inputHeader.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   inputHeader.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4338CA" } };
-  sheet.getRow(5).height = 24;
+  sheet.getRow(5).height = 25;
 
   // Inputs Rows
   const inputs = [
-    { row: 6, label: "Number of Active Students (MAIN DRIVER)", val: 5000, fmt: "#,##0", isInput: true, note: "Change this number to dynamically update all costs!" },
-    { row: 7, label: "Faculty & Staff Ratio (Est. 8%)", formula: "=ROUND(C6*0.08, 0)", fmt: "#,##0", isInput: false, note: "Automatically calculated (approx. 400 staff)" },
-    { row: 8, label: "INR / USD Exchange Rate (₹ per $)", val: 82.5, fmt: "₹#,##0.00", isInput: true, note: "Current USD to INR rate" },
-    { row: 9, label: "Target Working Days per Month", val: 22, fmt: "0", isInput: false, note: "Standard college academic working days" },
-    { row: 10, label: "Domain & Pilot Launch Setup Fee (₹)", val: 5000, fmt: "₹#,##0", isInput: true, note: "Fixed Pilot Launch & Custom College Domain setup" },
+    { row: 6, label: "Number of Active Students (MAIN COST DRIVER)", val: 5000, fmt: "#,##0", isInput: true, note: "Change this number to dynamically update all monthly & yearly totals!" },
+    { row: 7, label: "Faculty & Staff Ratio (Est. 8%)", formula: "=ROUND(C6*0.08, 0)", fmt: "#,##0", isInput: false, note: "Calculated automatically (approx. 400 faculty & staff)" },
+    { row: 8, label: "Target Working Days per Month", val: 22, fmt: "0", isInput: false, note: "Standard college academic working calendar days" },
+    { row: 9, label: "Domain & Pilot Launch Setup Fee (Fixed ₹)", val: 5000, fmt: "₹#,##0", isInput: true, note: "Fixed Pilot Launch & Custom College Domain setup fee" },
   ];
 
   inputs.forEach((item) => {
@@ -84,35 +83,35 @@ async function createDeploymentBudgetExcel() {
 
     sheet.getCell(`E${item.row}`).value = item.note;
     sheet.getCell(`E${item.row}`).font = { name: "Calibri", size: 9, italic: true, color: { argb: "FF64748B" } };
-    sheet.getRow(item.row).height = 20;
+    sheet.getRow(item.row).height = 21;
   });
 
   // Section Header: One-time Setup
-  sheet.mergeCells("B12:E12");
-  const setupHeader = sheet.getCell("B12");
-  setupHeader.value = "2. ONE-TIME FIXED SETUP & INITIALIZATION COSTS";
+  sheet.mergeCells("B11:E11");
+  const setupHeader = sheet.getCell("B11");
+  setupHeader.value = "2. ONE-TIME FIXED SETUP & INITIALIZATION COSTS (INR ₹)";
   setupHeader.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   setupHeader.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF3730A3" } };
-  sheet.getRow(12).height = 24;
+  sheet.getRow(11).height = 25;
 
   // Table Headers
-  sheet.getCell("B13").value = "Item Description";
-  sheet.getCell("C13").value = "Cost in INR (₹)";
-  sheet.getCell("D13").value = "Cost in USD ($)";
-  sheet.getCell("E13").value = "Cost Basis & Specs";
+  sheet.getCell("B12").value = "Item Description";
+  sheet.getCell("C12").value = "Monthly Cost (₹ / Month)";
+  sheet.getCell("D12").value = "Annual Cost (₹ / Year)";
+  sheet.getCell("E12").value = "Detailed Pricing Basis & Component Breakdown";
 
-  ["B13", "C13", "D13", "E13"].forEach((c) => {
+  ["B12", "C12", "D12", "E12"].forEach((c) => {
     sheet.getCell(c).font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF1E293B" } };
     sheet.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE2E8F0" } };
     sheet.getCell(c).border = { bottom: { style: "medium", color: { argb: "FF94A3B8" } } };
   });
-  sheet.getRow(13).height = 20;
+  sheet.getRow(12).height = 21;
 
   // One Time Items
   const oneTimeItems = [
-    { row: 14, label: "Custom Domain & Pilot Launch Setup", inrFormula: "=C10", basis: "Fixed college custom subdomain & SSL configuration" },
-    { row: 15, label: "TRAI DLT SMS Entity Registration", inrVal: 5900, basis: "One-time Government DLT portal registration fee in India" },
-    { row: 16, label: "Initial Cloud Security & SSL Certificate", inrVal: 2500, basis: "Wildcard SSL & Cloudflare WAF firewall rule provisioning" },
+    { row: 13, label: "Custom Domain & Pilot Launch Setup", inrFormula: "=C9", basis: "Fixed setup for college subdomain (ecap.sphoorthy.edu.in) & SSL setup" },
+    { row: 14, label: "TRAI DLT SMS Entity Registration", inrVal: 5900, basis: "One-time Government mandatory DLT portal Registration & Sender ID registration in India" },
+    { row: 15, label: "Initial Cloud Security & SSL Certificate", inrVal: 2500, basis: "Wildcard SSL provisioning, DDoS protection & Cloudflare WAF firewall setup" },
   ];
 
   oneTimeItems.forEach((item) => {
@@ -126,97 +125,98 @@ async function createDeploymentBudgetExcel() {
     cCell.numberFormat = "₹#,##0";
 
     const dCell = sheet.getCell(`D${item.row}`);
-    dCell.value = { formula: `=C${item.row}/C8` };
+    dCell.value = { formula: `=C${item.row}` }; // One-time equal to annual
     dCell.font = { name: "Calibri", size: 10 };
-    dCell.numberFormat = "$#,##0.00";
+    dCell.numberFormat = "₹#,##0";
 
     sheet.getCell(`E${item.row}`).value = item.basis;
     sheet.getCell(`E${item.row}`).font = { name: "Calibri", size: 9, color: { argb: "FF475569" } };
-    sheet.getRow(item.row).height = 20;
+    sheet.getRow(item.row).height = 21;
   });
 
   // Subtotal One-Time Setup
-  sheet.getCell("B17").value = "SUBTOTAL: ONE-TIME SETUP COSTS";
-  sheet.getCell("B17").font = { name: "Calibri", size: 10, bold: true };
-  sheet.getCell("C17").value = { formula: "=SUM(C14:C16)" };
-  sheet.getCell("C17").font = { name: "Calibri", size: 10, bold: true };
-  sheet.getCell("C17").numberFormat = "₹#,##0";
-  sheet.getCell("D17").value = { formula: "=SUM(D14:D16)" };
-  sheet.getCell("D17").font = { name: "Calibri", size: 10, bold: true };
-  sheet.getCell("D17").numberFormat = "$#,##0.00";
-  ["B17", "C17", "D17", "E17"].forEach((c) => {
+  sheet.getCell("B16").value = "SUBTOTAL: ONE-TIME SETUP COSTS";
+  sheet.getCell("B16").font = { name: "Calibri", size: 10, bold: true };
+  sheet.getCell("C16").value = { formula: "=SUM(C13:C15)" };
+  sheet.getCell("C16").font = { name: "Calibri", size: 10, bold: true };
+  sheet.getCell("C16").numberFormat = "₹#,##0";
+  sheet.getCell("D16").value = { formula: "=SUM(D13:D15)" };
+  sheet.getCell("D16").font = { name: "Calibri", size: 10, bold: true };
+  sheet.getCell("D16").numberFormat = "₹#,##0";
+
+  ["B16", "C16", "D16", "E16"].forEach((c) => {
     sheet.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF1F5F9" } };
     sheet.getCell(c).border = {
       top: { style: "thin", color: { argb: "FFCBD5E1" } },
       bottom: { style: "double", color: { argb: "FF475569" } },
     };
   });
-  sheet.getRow(17).height = 22;
+  sheet.getRow(16).height = 22;
 
-  // Section Header: Monthly Recurring Infrastructure
-  sheet.mergeCells("B19:E19");
-  const monthlyHeader = sheet.getCell("B19");
-  monthlyHeader.value = "3. MONTHLY RECURRING OPERATIONAL COSTS (DYNAMICALLY SCALED BY STUDENT COUNT)";
+  // Section Header: Monthly & Annual Recurring Infrastructure
+  sheet.mergeCells("B18:E18");
+  const monthlyHeader = sheet.getCell("B18");
+  monthlyHeader.value = "3. MONTHLY & ANNUAL OPERATIONAL COSTS (SCALED DYNAMICALLY BY STUDENT COUNT)";
   monthlyHeader.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   monthlyHeader.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF065F46" } };
-  sheet.getRow(19).height = 24;
+  sheet.getRow(18).height = 25;
 
   // Table Headers
-  sheet.getCell("B20").value = "Infrastructure Layer / Service";
-  sheet.getCell("C20").value = "Monthly Cost (₹)";
-  sheet.getCell("D20").value = "Monthly Cost ($)";
-  sheet.getCell("E20").value = "Capacity Sizing & Volume Formulas";
+  sheet.getCell("B19").value = "Infrastructure Layer / Service Component";
+  sheet.getCell("C19").value = "Monthly Cost (₹ / Month)";
+  sheet.getCell("D19").value = "Annual Cost (₹ / Year)";
+  sheet.getCell("E19").value = "Detailed Capacity Formulas & Unit Rate Breakdown";
 
-  ["B20", "C20", "D20", "E20"].forEach((c) => {
+  ["B19", "C19", "D19", "E19"].forEach((c) => {
     sheet.getCell(c).font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF064E3B" } };
     sheet.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFA7F3D0" } };
     sheet.getCell(c).border = { bottom: { style: "medium", color: { argb: "FF059669" } } };
   });
-  sheet.getRow(20).height = 20;
+  sheet.getRow(19).height = 21;
 
   // Monthly Recurring Items
   const monthlyItems = [
     {
-      row: 21,
+      row: 20,
       label: "Frontend Web Hosting (Cloudflare Pages)",
       inrFormula: "0",
-      basis: "Free Plan: Unlimited global bandwidth, edge CDN caching & SSL",
+      basis: "100% Free Plan: Unlimited global bandwidth, CDN edge caching & SSL security",
+    },
+    {
+      row: 21,
+      label: "Backend API Compute (Render App Instance)",
+      inrFormula: "=IF(C6<=1000, 580, IF(C6<=5000, 2050, IF(C6<=10000, 4125, 8250)))",
+      basis: "Scales by user load: <1k (₹580/mo), 1-5k (₹2,050/mo), 5-10k (₹4,125/mo), 10k+ (₹8,250/mo)",
     },
     {
       row: 22,
-      label: "Backend API Service (Render App Instance)",
-      inrFormula: "=IF(C6<=1000, 580, IF(C6<=5000, 2050, IF(C6<=10000, 4125, 8250)))",
-      basis: "Scales automatically: 512MB (<1k), 2GB (1-5k), 4GB (5-10k), 8GB (10k+)",
+      label: "Database Cluster (MongoDB Atlas Dedicated)",
+      inrFormula: "=IF(C6<=2000, 4750, IF(C6<=5000, 4750, 9500))",
+      basis: "M10 Dedicated Instance ($0.08/hr = ₹4,750/mo) - 2GB RAM, 10GB SSD, 1 vCPU",
     },
     {
       row: 23,
-      label: "Database Cluster (MongoDB Atlas Dedicated)",
-      inrFormula: "=IF(C6<=2000, 4750, IF(C6<=5000, 4750, 9500))",
-      basis: "M10 Dedicated Instance ($0.08/hr) - 2GB RAM, 10GB storage, 1 vCPU",
+      label: "AWS S3 File Storage (Certificates, PDFs, Photos)",
+      inrFormula: "=ROUND((C6 * 0.02 * 1.90) + 100, 0)",
+      basis: "Est. 20 MB/student @ ₹1.90/GB/month + bandwidth (5,000 students = ~100 GB = ₹290/mo)",
     },
     {
       row: 24,
-      label: "AWS S3 File Storage (Certificates, PDFs, Photos)",
-      inrFormula: "=ROUND((C6 * 0.02 * 0.023 * C8) + 100, 0)",
-      basis: "Formula: Est. 20 MB storage/student @ ₹1.90/GB/month + transfer",
+      label: "Transactional SMS Gateway (DLT Approved)",
+      inrFormula: "=ROUND(C6 * 5 * 0.15, 0)",
+      basis: "Est. 5 SMS/student/month @ ₹0.15/SMS (5,000 students = 25,000 SMS/mo = ₹3,750/mo)",
     },
     {
       row: 25,
-      label: "Transactional SMS Gateway (DLT Approved)",
-      inrFormula: "=ROUND(C6 * 5 * 0.15, 0)",
-      basis: "Formula: Est. 5 SMS/student/month @ ₹0.15/SMS (Attendance alerts & OTPs)",
+      label: "Transactional Email Service (AWS SES API)",
+      inrFormula: "=ROUND(C6 * 20 * 0.00825, 0)",
+      basis: "Est. 20 emails/student/month @ ₹0.00825/email (5,000 students = 100,000 emails/mo = ₹825/mo)",
     },
     {
       row: 26,
-      label: "Transactional Email Service (AWS SES API)",
-      inrFormula: "=ROUND(C6 * 20 * 0.00825, 0)",
-      basis: "Formula: Est. 20 emails/student/month @ $0.10 per 1,000 emails",
-    },
-    {
-      row: 27,
       label: "System Maintenance & Security Contingency (10%)",
-      inrFormula: "=ROUND(SUM(C21:C26)*0.10, 0)",
-      basis: "10% buffer for bandwidth spikes, emergency backups & SLA monitoring",
+      inrFormula: "=ROUND(SUM(C20:C25)*0.10, 0)",
+      basis: "10% contingency buffer for traffic spikes, DB storage scaling & 24/7 SLA monitoring",
     },
   ];
 
@@ -230,49 +230,49 @@ async function createDeploymentBudgetExcel() {
     cCell.numberFormat = "₹#,##0";
 
     const dCell = sheet.getCell(`D${item.row}`);
-    dCell.value = { formula: `=C${item.row}/C8` };
+    dCell.value = { formula: `=C${item.row}*12` };
     dCell.font = { name: "Calibri", size: 10 };
-    dCell.numberFormat = "$#,##0.00";
+    dCell.numberFormat = "₹#,##0";
 
     sheet.getCell(`E${item.row}`).value = item.basis;
     sheet.getCell(`E${item.row}`).font = { name: "Calibri", size: 9, color: { argb: "FF334155" } };
-    sheet.getRow(item.row).height = 20;
+    sheet.getRow(item.row).height = 21;
   });
 
-  // Subtotal Monthly Recurring
-  sheet.getCell("B28").value = "TOTAL MONTHLY OPERATIONAL COST";
-  sheet.getCell("B28").font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF065F46" } };
-  sheet.getCell("C28").value = { formula: "=SUM(C21:C27)" };
-  sheet.getCell("C28").font = { name: "Calibri", size: 11, bold: true, color: { argb: "FF065F46" } };
-  sheet.getCell("C28").numberFormat = "₹#,##0";
-  sheet.getCell("D28").value = { formula: "=SUM(D21:D27)" };
-  sheet.getCell("D28").font = { name: "Calibri", size: 11, bold: true, color: { argb: "FF065F46" } };
-  sheet.getCell("D28").numberFormat = "$#,##0.00";
+  // Subtotal Monthly & Annual Recurring
+  sheet.getCell("B27").value = "TOTAL OPERATIONAL RECURRING COST";
+  sheet.getCell("B27").font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF065F46" } };
+  sheet.getCell("C27").value = { formula: "=SUM(C20:C26)" };
+  sheet.getCell("C27").font = { name: "Calibri", size: 11, bold: true, color: { argb: "FF065F46" } };
+  sheet.getCell("C27").numberFormat = "₹#,##0";
+  sheet.getCell("D27").value = { formula: "=SUM(D20:D26)" };
+  sheet.getCell("D27").font = { name: "Calibri", size: 11, bold: true, color: { argb: "FF065F46" } };
+  sheet.getCell("D27").numberFormat = "₹#,##0";
 
-  ["B28", "C28", "D28", "E28"].forEach((c) => {
+  ["B27", "C27", "D27", "E27"].forEach((c) => {
     sheet.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD1FAE5" } };
     sheet.getCell(c).border = {
       top: { style: "thin", color: { argb: "FF10B981" } },
       bottom: { style: "double", color: { argb: "FF047857" } },
     };
   });
-  sheet.getRow(28).height = 24;
+  sheet.getRow(27).height = 25;
 
   // Section Header: Summary & KPIs
-  sheet.mergeCells("B30:E30");
-  const summaryHeader = sheet.getCell("B30");
-  summaryHeader.value = "4. EXECUTIVE FINANCIAL SUMMARY & PER-STUDENT KEY PERFORMANCE INDICATORS";
+  sheet.mergeCells("B29:E29");
+  const summaryHeader = sheet.getCell("B29");
+  summaryHeader.value = "4. EXECUTIVE FINANCIAL SUMMARY & PER-STUDENT METRICS (INR ₹)";
   summaryHeader.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   summaryHeader.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E293B" } };
-  sheet.getRow(30).height = 24;
+  sheet.getRow(29).height = 25;
 
   // KPI Rows
   const kpis = [
-    { row: 31, label: "Total Monthly Recurring Cost (INR & USD)", inrFormula: "=C28", isBold: true, highlight: false },
-    { row: 32, label: "Total Annual Operational Cost (12 Months)", inrFormula: "=C28*12", isBold: true, highlight: false },
-    { row: 33, label: "FIRST YEAR TOTAL BUDGET (One-Time Setup + 12 Months Operating)", inrFormula: "=C17+(C28*12)", isBold: true, highlight: true },
-    { row: 34, label: "Per-Student Annual Infrastructure Cost (₹ / Student / Year)", inrFormula: "=ROUND(C33/C6, 2)", isBold: true, highlight: false, isPerStudent: true },
-    { row: 35, label: "Per-Student Monthly Infrastructure Cost (₹ / Student / Month)", inrFormula: "=ROUND(C34/12, 2)", isBold: true, highlight: false, isPerStudent: true },
+    { row: 30, label: "Total Monthly Recurring Cost (₹ / Month)", inrFormula: "=C27", dFormula: "=C27*12", isBold: true, highlight: false },
+    { row: 31, label: "Total Annual Operational Cost (12 Months)", inrFormula: "=C27", dFormula: "=D27", isBold: true, highlight: false },
+    { row: 32, label: "FIRST YEAR TOTAL BUDGET (One-Time Setup + 12 Months Operating)", inrFormula: "=C16+C27", dFormula: "=D16+D27", isBold: true, highlight: true },
+    { row: 33, label: "Per-Student Annual Infrastructure Cost (₹ / Student / Year)", inrFormula: "=ROUND(D32/C6, 2)", dFormula: "=ROUND(D32/C6, 2)", isBold: true, highlight: false, isPerStudent: true },
+    { row: 34, label: "Per-Student Monthly Infrastructure Cost (₹ / Student / Month)", inrFormula: "=ROUND(C33/12, 2)", dFormula: "=ROUND(D33/12, 2)", isBold: true, highlight: false, isPerStudent: true },
   ];
 
   kpis.forEach((kpi) => {
@@ -285,12 +285,12 @@ async function createDeploymentBudgetExcel() {
     cCell.numberFormat = kpi.isPerStudent ? "₹#,##0.00" : "₹#,##0";
 
     const dCell = sheet.getCell(`D${kpi.row}`);
-    dCell.value = { formula: `=C${kpi.row}/C8` };
+    dCell.value = { formula: kpi.dFormula };
     dCell.font = { name: "Calibri", size: kpi.highlight ? 12 : 11, bold: true, color: { argb: kpi.highlight ? "FF047857" : "FF000000" } };
-    dCell.numberFormat = kpi.isPerStudent ? "$#,##0.00" : "$#,##0.00";
+    dCell.numberFormat = kpi.isPerStudent ? "₹#,##0.00" : "₹#,##0";
 
     if (kpi.highlight) {
-      ["B33", "C33", "D33", "E33"].forEach((c) => {
+      [`B${kpi.row}`, `C${kpi.row}`, `D${kpi.row}`, `E${kpi.row}`].forEach((c) => {
         sheet.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFECFDF5" } };
         sheet.getCell(c).border = {
           top: { style: "medium", color: { argb: "FF059669" } },
@@ -302,10 +302,20 @@ async function createDeploymentBudgetExcel() {
     sheet.getRow(kpi.row).height = kpi.highlight ? 26 : 22;
   });
 
-  // Save Workbook
-  const filePath = path.join(__dirname, "../ECAP_ERP_College_Deployment_Budget_Calculator.xlsx");
-  await workbook.xlsx.writeFile(filePath);
-  console.log(`\n🎉 Excel Workbook successfully generated at:\n${filePath}\n`);
+  // Save Workbook with lock fallback
+  const filePath1 = path.join(__dirname, "../ECAP_ERP_College_Deployment_Budget_Calculator.xlsx");
+  const filePath2 = path.join(__dirname, "../../ECAP_ERP_College_Deployment_Budget_Calculator.xlsx");
+  
+  try {
+    await workbook.xlsx.writeFile(filePath2);
+    await workbook.xlsx.writeFile(filePath1);
+    console.log(`\n🎉 Excel Workbook updated successfully in INR with Per Year column!\n`);
+  } catch (err) {
+    const fallbackPath = path.join(__dirname, "../../ECAP_ERP_College_Deployment_Budget_Calculator_v2.xlsx");
+    await workbook.xlsx.writeFile(fallbackPath);
+    console.log(`\n🎉 Excel Workbook saved as ECAP_ERP_College_Deployment_Budget_Calculator_v2.xlsx!\n`);
+  }
 }
+
 
 createDeploymentBudgetExcel().catch(console.error);
