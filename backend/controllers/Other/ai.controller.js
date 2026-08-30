@@ -859,13 +859,15 @@ const chatCampusQuery = async (req, res) => {
       `;
     }
 
-    // Dynamic Real-Time Database Query Expansion for Student Lists, Faculty Directories & Sections
+    // Universal Multi-Collection Campus RAG Interceptor across ALL project data models
     let dynamicContext = "";
     const cleanMsg = message.toLowerCase();
 
-    // A. Student Directory & Section Query Interceptor (e.g. "sem 8 sec A students list", "students in CSE", "student list")
-    if (cleanMsg.includes("student") || cleanMsg.includes("list") || cleanMsg.includes("sec") || cleanMsg.includes("sem")) {
-      try {
+    try {
+      const queryPromises = [];
+
+      // A. Student Directory & Section Query Interceptor (e.g. "sem 8 sec A students list", "students in CSE", "student list")
+      if (cleanMsg.includes("student") || cleanMsg.includes("list") || cleanMsg.includes("sec") || cleanMsg.includes("sem") || cleanMsg.includes("roll")) {
         const queryFilter = {};
         const semMatch = message.match(/sem(?:ester)?\s*(\d+)/i);
         if (semMatch) queryFilter.semester = String(semMatch[1]);
@@ -876,39 +878,95 @@ const chatCampusQuery = async (req, res) => {
         const branchMatch = message.match(/\b(cse|ece|eee|mech|civil|it|ai|ds)\b/i);
         if (branchMatch) queryFilter.branch = new RegExp(branchMatch[1], "i");
 
-        if (cleanMsg.includes("student") || semMatch || secMatch || branchMatch) {
-          const studentList = await StudentDetail.find(queryFilter).limit(35);
-          if (studentList && studentList.length > 0) {
-            const formattedStudents = studentList.map((s, i) => 
-              `${i + 1}. **${s.firstName} ${s.lastName}** (Roll: ${s.enrollmentNo}, Branch: ${s.branch}, Sem ${s.semester}, Sec ${s.section}, Email: ${s.email})`
-            ).join("\n");
-
-            dynamicContext += `\n--- MATCHING STUDENTS DIRECTORY (${studentList.length} Found) ---\n${formattedStudents}\n`;
-          }
-        }
-      } catch (stErr) {
-        console.warn("Dynamic student query notice:", stErr.message);
+        queryPromises.push(
+          StudentDetail.find(queryFilter).limit(35).lean()
+            .then(studentList => {
+              if (studentList && studentList.length > 0) {
+                const formattedStudents = studentList.map((s, i) => 
+                  `${i + 1}. **${s.firstName} ${s.lastName}** (Roll: ${s.enrollmentNo}, Branch: ${s.branch}, Sem ${s.semester}, Sec ${s.section}, Email: ${s.email})`
+                ).join("\n");
+                dynamicContext += `\n--- MATCHING STUDENTS DIRECTORY (${studentList.length} Found) ---\n${formattedStudents}\n`;
+              }
+            }).catch(() => {})
+        );
       }
-    }
 
-    // B. Faculty Directory Query Interceptor (e.g. "faculty list", "professors", "CSE faculty")
-    if (cleanMsg.includes("faculty") || cleanMsg.includes("professor") || cleanMsg.includes("teacher")) {
-      try {
+      // B. Faculty Directory Query Interceptor (e.g. "faculty list", "professors", "CSE faculty")
+      if (cleanMsg.includes("faculty") || cleanMsg.includes("professor") || cleanMsg.includes("teacher") || cleanMsg.includes("staff")) {
         const FacultyDetail = mongoose.model("Faculty Detail");
         const deptMatch = message.match(/\b(cse|ece|eee|mech|civil|it|ai|ds)\b/i);
         const facFilter = deptMatch ? { department: new RegExp(deptMatch[1], "i") } : {};
 
-        const facultyList = await FacultyDetail.find(facFilter).limit(35);
-        if (facultyList && facultyList.length > 0) {
-          const formattedFaculty = facultyList.map((f, i) => 
-            `${i + 1}. **${f.firstName} ${f.lastName}** (Employee ID: ${f.employeeId}, Dept: ${f.department}, Post: ${f.post || "Faculty"}, Email: ${f.email})`
-          ).join("\n");
-
-          dynamicContext += `\n--- FACULTY DIRECTORY (${facultyList.length} Found) ---\n${formattedFaculty}\n`;
-        }
-      } catch (fErr) {
-        console.warn("Dynamic faculty query notice:", fErr.message);
+        queryPromises.push(
+          FacultyDetail.find(facFilter).limit(35).lean()
+            .then(facultyList => {
+              if (facultyList && facultyList.length > 0) {
+                const formattedFaculty = facultyList.map((f, i) => 
+                  `${i + 1}. **${f.firstName} ${f.lastName}** (Employee ID: ${f.employeeId}, Dept: ${f.department}, Post: ${f.post || "Faculty"}, Email: ${f.email})`
+                ).join("\n");
+                dynamicContext += `\n--- FACULTY DIRECTORY (${facultyList.length} Found) ---\n${formattedFaculty}\n`;
+              }
+            }).catch(() => {})
+        );
       }
+
+      // C. Notices & Announcements Interceptor
+      if (cleanMsg.includes("notice") || cleanMsg.includes("announcement") || cleanMsg.includes("circular") || cleanMsg.includes("news") || cleanMsg.includes("event")) {
+        try {
+          const Notice = mongoose.model("Notice");
+          queryPromises.push(
+            Notice.find().sort({ createdAt: -1 }).limit(10).lean()
+              .then(notices => {
+                if (notices && notices.length > 0) {
+                  const formattedNotices = notices.map((n, i) => 
+                    `${i + 1}. **${n.title || n.topic || "Notice"}**: ${n.content || n.notice || "No details"} (Date: ${n.date || (n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Recent")})`
+                  ).join("\n");
+                  dynamicContext += `\n--- CAMPUS NOTICES & ANNOUNCEMENTS (${notices.length} Found) ---\n${formattedNotices}\n`;
+                }
+              }).catch(() => {})
+          );
+        } catch (nErr) {}
+      }
+
+      // D. Materials & Question Papers Interceptor
+      if (cleanMsg.includes("material") || cleanMsg.includes("pyq") || cleanMsg.includes("paper") || cleanMsg.includes("pdf") || cleanMsg.includes("note")) {
+        try {
+          const Material = require("../../models/Other/material.model");
+          queryPromises.push(
+            Material.find().sort({ createdAt: -1 }).limit(12).lean()
+              .then(mats => {
+                if (mats && mats.length > 0) {
+                  const formattedMats = mats.map((m, i) => 
+                    `${i + 1}. **${m.title}** (${m.subject}, Sem ${m.semester}, Faculty: ${m.faculty}): [Download PDF](${m.link})`
+                  ).join("\n");
+                  dynamicContext += `\n--- UPLOADED STUDY MATERIALS (${mats.length} Found) ---\n${formattedMats}\n`;
+                }
+              }).catch(() => {})
+          );
+        } catch (mErr) {}
+      }
+
+      // E. Faculty Leave Applications & Status Interceptor
+      if (cleanMsg.includes("leave") || cleanMsg.includes("approval") || cleanMsg.includes("substitute") || cleanMsg.includes("absentee")) {
+        try {
+          const FacultyLeave = require("../../models/Faculty/leave.model");
+          queryPromises.push(
+            FacultyLeave.find().sort({ createdAt: -1 }).limit(15).lean()
+              .then(leaves => {
+                if (leaves && leaves.length > 0) {
+                  const formattedLeaves = leaves.map((l, i) => 
+                    `${i + 1}. **${l.facultyName}** (${l.leaveType}, ${l.startDate} to ${l.endDate}): Status = **${l.status.toUpperCase().replace(/_/g, " ")}**, Reason: "${l.reason}"${l.substituteName ? `, Substitute: ${l.substituteName}` : ""}`
+                  ).join("\n");
+                  dynamicContext += `\n--- FACULTY LEAVE RECORDS (${leaves.length} Found) ---\n${formattedLeaves}\n`;
+                }
+              }).catch(() => {})
+          );
+        } catch (lErr) {}
+      }
+
+      await Promise.all(queryPromises);
+    } catch (universalErr) {
+      console.warn("Universal RAG Interceptor notice:", universalErr.message);
     }
 
     const fullUserContext = (userContextText + "\n" + dynamicContext).trim();
@@ -937,11 +995,12 @@ const chatCampusQuery = async (req, res) => {
           ${fullUserContext}
           
           Guidelines:
+          - You are a Universal Project RAG Assistant. NEVER refuse a query or claim lack of access. Always extract matching records from the REAL-TIME LOGGED IN & DATABASE CONTEXT or draw from general knowledge to deliver a complete, helpful response.
           - Answer general knowledge, coding, writing, and scientific queries directly, comprehensively, and accurately.
-          - When asked for student lists, section lists, or faculty lists, read directly from the MATCHING STUDENTS DIRECTORY or FACULTY DIRECTORY context above and format as a clean Markdown list.
+          - When asked for student lists, section lists, faculty directories, notices, or leave records, format the data in a simple, clear, well-structured Markdown list with bullet points.
           - When outputting a timetable or schedule, provide ONLY the target day's active working periods. Do NOT output break periods or the entire week unless explicitly asked for the full weekly schedule.
           - When recommending or listing study materials, ALWAYS include the exact material title uploaded by faculty in bold, e.g.: **Material Title**: [Download PDF](link).
-          - Keep responses encouraging, well-structured, and formatted in clean GitHub Markdown.
+          - Keep responses clear, simple, professional, and readable.
         `;
 
         const finalPrompt = `
@@ -981,7 +1040,6 @@ const chatCampusQuery = async (req, res) => {
 
     // Fallback Mode (Standard keyword-based parser with Dynamic Directory Query support)
     let reply = "";
-    const cleanMsg = message.toLowerCase();
 
     if (dynamicContext && dynamicContext.trim().length > 0) {
       const cleanDir = dynamicContext.replace(/--- MATCHING STUDENTS DIRECTORY /g, "**Matching Students Directory ")
