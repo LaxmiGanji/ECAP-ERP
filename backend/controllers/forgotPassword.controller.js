@@ -466,7 +466,7 @@ const requestPasswordReset = async (req, res) => {
     // Build reset link
     const frontendBaseUrl = req.headers.origin || (process.env.FRONTEND_API_LINK
       ? process.env.FRONTEND_API_LINK.replace(/\/api\/?$/, "")
-      : "https://ecap-erp-frontend.onrender.com");
+      : "https://ecap-erp.pages.dev");
 
     const resetLink = `${frontendBaseUrl}/reset-password?token=${token}&role=${encodeURIComponent(role)}`;
 
