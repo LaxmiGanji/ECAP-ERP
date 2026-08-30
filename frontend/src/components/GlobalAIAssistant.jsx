@@ -6,6 +6,7 @@ import {
   FiX,
   FiSend,
   FiBookOpen,
+  FiFileText,
   FiSearch,
   FiDatabase,
   FiDownload,
@@ -387,9 +388,55 @@ Ask me any question or pick a quick suggestion below!`,
                             </div>
                           )}
 
-                          {/* Message Text */}
-                          <div className="text-xs leading-relaxed whitespace-pre-wrap">
+                          {/* Message Text with PDF Download Card Parser */}
+                          <div className="text-xs leading-relaxed whitespace-pre-wrap space-y-1">
                             {msg.text.split("\n").map((line, lIdx) => {
+                              if (!line || !line.trim()) return null;
+
+                              // Detect HTTP/Cloudinary/S3 PDF Links
+                              const urlMatch = line.match(/(https?:\/\/[^\s\)\"]+)/i);
+                              if (urlMatch) {
+                                const rawUrl = urlMatch[1];
+                                const cleanUrl = rawUrl.replace(/[\)\>\]]+$/, "");
+
+                                let fileTitle = line.replace(/\[\s*(https?:\/\/[^\s\]]+)\s*\]\([^\)]+\)/i, "")
+                                                    .replace(/(https?:\/\/[^\s\)\"]+)/gi, "")
+                                                    .replace(/\*+|\-+|\:|Link/gi, "")
+                                                    .trim();
+                                if (!fileTitle || fileTitle.length < 3) {
+                                  const parts = cleanUrl.split("/");
+                                  fileTitle = decodeURIComponent(parts[parts.length - 1] || "Study Material PDF").replace(/_\d+$/, "");
+                                }
+
+                                return (
+                                  <div key={lIdx} className="my-2 p-2.5 bg-slate-950/90 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition flex items-center justify-between gap-2 shadow-md">
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                      <div className="w-7 h-7 rounded-lg bg-red-950/80 border border-red-800/60 flex items-center justify-center text-red-400 flex-shrink-0">
+                                        <FiFileText className="w-3.5 h-3.5" />
+                                      </div>
+                                      <div className="overflow-hidden">
+                                        <p className="text-xs font-bold text-slate-200 truncate">
+                                          {fileTitle || "Study Material PDF"}
+                                        </p>
+                                        <span className="text-[9px] text-emerald-400 font-semibold bg-emerald-950/80 px-1.5 py-0.2 rounded border border-emerald-800/50 inline-block">
+                                          PDF Document
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <a
+                                      href={cleanUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="flex-shrink-0 inline-flex items-center gap-1 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg shadow-sm transition active:scale-95"
+                                    >
+                                      <FiDownload className="w-3 h-3" />
+                                      <span>Download PDF</span>
+                                    </a>
+                                  </div>
+                                );
+                              }
+
                               if (line.startsWith("### ") || line.startsWith("## ")) {
                                 return (
                                   <h3 key={lIdx} className="font-bold text-cyan-300 mt-2 mb-1 text-xs">
