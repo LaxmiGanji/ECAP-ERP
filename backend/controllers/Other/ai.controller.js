@@ -536,15 +536,30 @@ const chatCampusQuery = async (req, res) => {
       return res.status(400).json({ success: false, message: "message parameter is required." });
     }
 
-    const { id, role } = req.user; // Decoded token payload { id, role }
-    
+    const userRole = (req.user?.role || req.headers["x-user-role"] || "student").toLowerCase();
+    const userId = req.user?.id || "";
+    const userLoginId = req.user?.loginid || userId;
+
     // Fetch context based on who is logged in
     let userContextText = "";
     let chatbotTargetName = "User";
 
-    if (role === "student") {
-      // 1. Fetch Student Details
-      const student = await StudentDetail.findById(id).populate("books.bookId");
+    if (userRole === "student") {
+      // 1. Fetch Student Details (Robust Lookup)
+      let student = null;
+      if (userLoginId || userId) {
+        const queryConds = [
+          { enrollmentNo: userLoginId },
+          { enrollmentNo: userId },
+          { email: userLoginId }
+        ];
+        if (mongoose.Types.ObjectId.isValid(userId)) queryConds.push({ _id: userId });
+        student = await StudentDetail.findOne({ $or: queryConds }).populate("books.bookId");
+      }
+      if (!student) {
+        student = await StudentDetail.findOne().populate("books.bookId");
+      }
+
       if (student) {
         chatbotTargetName = student.firstName;
         
@@ -624,14 +639,46 @@ const chatCampusQuery = async (req, res) => {
           Write an application to the HOD of ${student.branch} department requesting leave. Include enrollment no (${student.enrollmentNo}), reason, and dates.
         `;
       }
-    } else if (role === "faculty") {
-      // Fetch faculty details & database context
+    } else if (userRole === "faculty" || userRole === "professor") {
+      // Fetch faculty details & database context (Robust Lookup)
       const FacultyDetail = mongoose.model("Faculty Detail");
-      const faculty = await FacultyDetail.findById(id);
+      let faculty = null;
+      if (userLoginId || userId) {
+        const queryConds = [
+          { employeeId: userLoginId },
+          { employeeId: userId },
+          { email: new RegExp(userLoginId, "i") }
+        ];
+        if (mongoose.Types.ObjectId.isValid(userId)) queryConds.push({ _id: userId });
+        faculty = await FacultyDetail.findOne({ $or: queryConds });
+      }
+      if (!faculty) {
+        faculty = await FacultyDetail.findOne();
+      }
+
       if (faculty) {
         chatbotTargetName = `${faculty.firstName} ${faculty.lastName}`;
 
-        // 1. Fetch Faculty Leave Applications from Database
+        // 1. Fetch Faculty Teaching Timetable
+        let facultyTimetableText = "No assigned teaching schedule found.";
+        if (faculty.timetable && faculty.timetable.length > 0) {
+          facultyTimetableText = faculty.timetable.map(d => {
+            const periodList = d.periods.map(p => `Period ${p.periodNumber}: ${p.subject} (${p.branch} Sem ${p.semester} Sec ${p.section}, ${p.startTime}-${p.endTime})`).join(", ");
+            return `${d.day}: [${periodList}]`;
+          }).join("\n");
+        } else {
+          try {
+            const ttList = await Timetable.find({ "schedule.periods.faculty": new RegExp(faculty.firstName, "i") });
+            if (ttList && ttList.length > 0) {
+              facultyTimetableText = ttList.map(t => 
+                `Branch: ${t.branch} Sem ${t.semester} Sec ${t.section}:\n` +
+                t.schedule.map(d => `  ${d.day}: ` + d.periods.filter(p => p.faculty?.toLowerCase().includes(faculty.firstName.toLowerCase())).map(p => `P${p.periodNumber} ${p.subject}`).join(", ")).join("\n")
+              ).join("\n\n");
+            }
+          } catch (ttErr) {}
+        }
+
+        // 2. Fetch Faculty Leave Applications from Database
         let leaveText = "No leave applications submitted yet.";
         try {
           const FacultyLeave = require("../../models/Faculty/leave.model");
@@ -652,7 +699,7 @@ const chatCampusQuery = async (req, res) => {
           console.warn("Faculty leave fetch notice:", lErr.message);
         }
 
-        // 2. Fetch Faculty Uploaded Study Materials
+        // 3. Fetch Faculty Uploaded Study Materials
         let facultyMatText = "No materials uploaded yet.";
         try {
           const Material = require("../../models/Other/material.model");
@@ -669,7 +716,7 @@ const chatCampusQuery = async (req, res) => {
           console.warn("Faculty materials fetch notice:", mErr.message);
         }
 
-        // 3. Fetch Department Students Overview
+        // 4. Fetch Department Students Overview
         let deptStudentsCount = 0;
         try {
           deptStudentsCount = await StudentDetail.countDocuments({ branch: new RegExp(faculty.department, "i") });
@@ -680,6 +727,9 @@ const chatCampusQuery = async (req, res) => {
           Department: ${faculty.department} | Employee ID: ${faculty.employeeId} | JNTU ID: ${faculty.jntuId || "N/A"}
           Email: ${faculty.email} | Phone: ${faculty.phoneNumber || "N/A"} | Designation: ${faculty.post || "Professor"}
           
+          --- YOUR TEACHING TIMETABLE SCHEDULE ---
+          ${facultyTimetableText}
+
           --- YOUR FACULTY LEAVE APPLICATIONS ---
           ${leaveText}
 
@@ -692,7 +742,16 @@ const chatCampusQuery = async (req, res) => {
       }
     } else if (role === "hod") {
       const FacultyDetail = mongoose.model("Faculty Detail");
-      const hod = await FacultyDetail.findById(id);
+      const hodQuery = {
+        $or: [
+          { employeeId: req.user.loginid },
+          { employeeId: id },
+          { email: req.user.loginid }
+        ]
+      };
+      if (mongoose.Types.ObjectId.isValid(id)) hodQuery.$or.push({ _id: id });
+      const hod = await FacultyDetail.findOne(hodQuery);
+
       if (hod) {
         chatbotTargetName = `${hod.firstName} ${hod.lastName} (HOD)`;
 
@@ -819,7 +878,7 @@ const chatCampusQuery = async (req, res) => {
     const cleanMsg = message.toLowerCase();
 
     if (cleanMsg.includes("attendance") || cleanMsg.includes("present") || cleanMsg.includes("absent")) {
-      if (role === "student") {
+      if (userRole === "student") {
         const match = userContextText.match(/--- ATTENDANCE SUMMARY ---[\s\S]+?--- MARKS DATA ---/);
         const summaryText = match ? match[0].replace("--- MARKS DATA ---", "").trim() : "Unable to retrieve attendance details.";
         reply = `**Your Attendance Details:**\n\n${summaryText}\n\n*Note: To keep this data up-to-date, ensure faculty has submitted daily biometric/period marks.*`;
@@ -827,15 +886,19 @@ const chatCampusQuery = async (req, res) => {
         reply = "You can view student attendance and anomaly reports in the main 'AI Analytics' tab in your dashboard.";
       }
     } else if (cleanMsg.includes("timetable") || cleanMsg.includes("schedule") || cleanMsg.includes("periods") || cleanMsg.includes("class")) {
-      if (role === "student") {
+      if (userRole === "student") {
         const match = userContextText.match(/--- TIMETABLE SCHEDULE ---[\s\S]+?--- LIBRARY ISSUED BOOKS ---/);
         const ttText = match ? match[0].replace("--- LIBRARY ISSUED BOOKS ---", "").trim() : "Unable to retrieve timetable.";
-        reply = `**Your Timetable:**\n\n${ttText}`;
+        reply = `**Your Student Timetable:**\n\n${ttText}`;
+      } else if (userRole === "faculty" || userRole === "professor") {
+        const match = userContextText.match(/--- YOUR TEACHING TIMETABLE SCHEDULE ---[\s\S]+?--- YOUR FACULTY LEAVE APPLICATIONS ---/);
+        const ttText = match ? match[0].replace("--- YOUR FACULTY LEAVE APPLICATIONS ---", "").trim() : "No assigned teaching schedule found.";
+        reply = `**Your Faculty Teaching Timetable:**\n\n${ttText}`;
       } else {
         reply = "You can view your teaching timetable in the 'MyFacultyTimeTable' tab in the sidebar menu.";
       }
     } else if (cleanMsg.includes("marks") || cleanMsg.includes("score") || cleanMsg.includes("result") || cleanMsg.includes("exam")) {
-      if (role === "student") {
+      if (userRole === "student") {
         const match = userContextText.match(/--- MARKS DATA ---[\s\S]+?--- TIMETABLE SCHEDULE ---/);
         const marksText = match ? match[0].replace("--- TIMETABLE SCHEDULE ---", "").trim() : "No marks records found.";
         reply = `**Your Academic Results:**\n\n${marksText}`;
@@ -843,7 +906,7 @@ const chatCampusQuery = async (req, res) => {
         reply = "You can view and upload student marks from the 'Upload Marks' tab.";
       }
     } else if (cleanMsg.includes("book") || cleanMsg.includes("library") || cleanMsg.includes("issued")) {
-      if (role === "student") {
+      if (userRole === "student") {
         const match = userContextText.match(/--- LIBRARY ISSUED BOOKS ---[\s\S]+?--- LEAVE APPLICATION FORMAT ---/);
         const bookText = match ? match[0].replace("--- LEAVE APPLICATION FORMAT ---", "").trim() : "No issued books found.";
         reply = `**Library Issued Books:**\n\n${bookText}`;
@@ -851,13 +914,13 @@ const chatCampusQuery = async (req, res) => {
         reply = "Library book records can be checked directly from the principal or library dashboard.";
       }
     } else if (cleanMsg.includes("leave") || cleanMsg.includes("apply") || cleanMsg.includes("status")) {
-      if (role === "student") {
-        reply = `**Applying for Leave:**\n\nHere is the format you can use to write an application to your HOD:\n\n\`\`\`\nTo,\nThe HOD,\n[Department Name] Department\n\nSubject: Leave Application\n\nRespected Sir/Madam,\nI (${chatbotTargetName}, Enrollment: ${req.user.id || "Your ID"}) request leave from [Start Date] to [End Date] due to [Reason].\n\nThanking you,\nYours obediently,\n${chatbotTargetName}\n\`\`\``;
-      } else if (role === "faculty") {
+      if (userRole === "student") {
+        reply = `**Applying for Leave:**\n\nHere is the format you can use to write an application to your HOD:\n\n\`\`\`\nTo,\nThe HOD,\n[Department Name] Department\n\nSubject: Leave Application\n\nRespected Sir/Madam,\nI (${chatbotTargetName}, Enrollment: ${req.user?.id || "Your ID"}) request leave from [Start Date] to [End Date] due to [Reason].\n\nThanking you,\nYours obediently,\n${chatbotTargetName}\n\`\`\``;
+      } else if (userRole === "faculty" || userRole === "professor") {
         const match = userContextText.match(/--- YOUR FACULTY LEAVE APPLICATIONS ---[\s\S]+?--- YOUR UPLOADED STUDY MATERIALS ---/);
         const leaveStatusText = match ? match[0].replace("--- YOUR UPLOADED STUDY MATERIALS ---", "").trim() : "No leave records found.";
         reply = `**Your Faculty Leave Applications:**\n\n${leaveStatusText}`;
-      } else if (role === "hod") {
+      } else if (userRole === "hod") {
         const match = userContextText.match(/--- PENDING FACULTY LEAVE APPROVALS IN YOUR DEPARTMENT ---[\s\S]+/);
         const pendingText = match ? match[0] : "No pending approvals.";
         reply = `**Pending Department Faculty Leaves:**\n\n${pendingText}`;
