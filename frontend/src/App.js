@@ -20,6 +20,7 @@ import Portfolio3D from "./Screens/Common/Portfolio3D";
 import AlumniHome from "./Screens/Alumni/AlumniHome";
 
 import CustomCreativeCursor from "./components/CustomCreativeCursor";
+import GlobalAIAssistant from "./components/GlobalAIAssistant";
 
 const HashRedirect = () => {
   useEffect(() => {
@@ -43,6 +44,7 @@ const App = () => {
       <Provider store={mystore}>
         <Router>
           <HashRedirect />
+          <GlobalAIAssistant />
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />

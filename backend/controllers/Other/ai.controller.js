@@ -576,6 +576,23 @@ const chatCampusQuery = async (req, res) => {
           ? student.books.filter(b => b.status === "issued").map(b => b.bookId ? `${b.bookId.bookname} (Author: ${b.bookId.authorname}, Return Date: ${b.returnDate ? new Date(b.returnDate).toLocaleDateString() : "N/A"})` : "Book").join(", ")
           : "";
 
+        // 5. Fetch Study Materials & Question Papers from Database
+        let materialsText = "No study materials currently listed.";
+        try {
+          const Material = require("../../models/Other/material.model");
+          const materialsList = await Material.find({
+            $or: [
+              { branch: new RegExp(student.branch, "i") },
+              { semester: student.semester }
+            ]
+          }).sort({ createdAt: -1 }).limit(10);
+          if (materialsList && materialsList.length > 0) {
+            materialsText = materialsList.map(m => `- [${m.subject}] "${m.title}" (Faculty: ${m.faculty}, Sem ${m.semester}) -> Link: ${m.link}`).join("\n");
+          }
+        } catch (mErr) {
+          console.warn("Materials fetch notice:", mErr.message);
+        }
+
         userContextText = `
           Student Name: ${student.firstName} ${student.lastName}
           Enrollment No: ${student.enrollmentNo}
@@ -599,6 +616,9 @@ const chatCampusQuery = async (req, res) => {
 
           --- LIBRARY ISSUED BOOKS ---
           ${issuedBooks || "No books currently issued."}
+
+          --- DATABASE STUDY MATERIALS & QUESTION PAPERS ---
+          ${materialsText}
 
           --- LEAVE APPLICATION FORMAT ---
           Write an application to the HOD of ${student.branch} department requesting leave. Include enrollment no (${student.enrollmentNo}), reason, and dates.
