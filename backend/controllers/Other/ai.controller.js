@@ -561,7 +561,7 @@ const chatCampusQuery = async (req, res) => {
       }
 
       if (student) {
-        chatbotTargetName = student.firstName;
+        chatbotTargetName = getCleanFullName(student);
         
         // 2. Fetch Attendance
         const subjects = await getStudentSubjects(student.branch, student.semester);
@@ -628,7 +628,7 @@ const chatCampusQuery = async (req, res) => {
         }
 
         userContextText = `
-          Student Name: ${student.firstName} ${student.lastName}
+          Student Name: ${getCleanFullName(student)}
           Enrollment No: ${student.enrollmentNo}
           Branch: ${student.branch} | Semester: ${student.semester} | Section: ${student.section}
           Email: ${student.email} | Phone: ${student.phoneNumber}
@@ -675,7 +675,7 @@ const chatCampusQuery = async (req, res) => {
       }
 
       if (faculty) {
-        chatbotTargetName = `${faculty.firstName} ${faculty.lastName}`;
+        chatbotTargetName = getCleanFullName(faculty);
 
         // 1. Build Full Weekly Faculty Timetable Context (All 7 Days)
         const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -766,7 +766,7 @@ const chatCampusQuery = async (req, res) => {
         } catch (dErr) {}
 
         userContextText = `
-          Faculty Name: ${faculty.firstName} ${faculty.lastName}
+          Faculty Name: ${getCleanFullName(faculty)}
           Department: ${faculty.department} | Employee ID: ${faculty.employeeId} | JNTU ID: ${faculty.jntuId || "N/A"}
           Email: ${faculty.email} | Phone: ${faculty.phoneNumber || "N/A"} | Designation: ${faculty.post || "Professor"}
           
@@ -805,7 +805,7 @@ const chatCampusQuery = async (req, res) => {
       }
 
       if (hod) {
-        chatbotTargetName = `${hod.firstName} ${hod.lastName} (HOD)`;
+        chatbotTargetName = `${getCleanFullName(hod)} (HOD)`;
 
         let pendingLeavesText = "No pending faculty leave applications requiring HOD approval.";
         try {
@@ -822,7 +822,7 @@ const chatCampusQuery = async (req, res) => {
         } catch (hErr) {}
 
         userContextText = `
-          HOD Name: ${hod.firstName} ${hod.lastName}
+          HOD Name: ${getCleanFullName(hod)}
           Department: ${hod.department || hod.branch}
           
           --- PENDING FACULTY LEAVE APPROVALS IN YOUR DEPARTMENT ---
