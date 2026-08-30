@@ -5,9 +5,14 @@ const nodemailer = require("nodemailer");
 const PasswordReset = require("../models/Other/passwordReset.model");
 const NotificationSettings = require("../models/Other/notificationSettings.model");
 
-// Helper to send email via HTTPS REST API (Port 443)
+// Helper to send email via Brevo HTTPS REST API (Port 443)
 const sendViaHttpsRest = (apiKey, toEmail, subject, htmlContent, textContent, fromEmail) => {
   return new Promise((resolve) => {
+    if (!apiKey || typeof apiKey !== "string") {
+      return resolve({ sentViaSMTP: false, error: "Missing API Key" });
+    }
+
+    const trimmedKey = apiKey.trim();
     const data = JSON.stringify({
       sender: { name: "Sphoorthy Engineering College - ECAP", email: fromEmail || "laxmiganji2005@gmail.com" },
       to: [{ email: toEmail }],
@@ -16,7 +21,7 @@ const sendViaHttpsRest = (apiKey, toEmail, subject, htmlContent, textContent, fr
       textContent: textContent
     });
 
-    console.log(`Sending email via HTTPS REST API (Port 443) to ${toEmail}...`);
+    console.log(`Sending email via Brevo REST API (Port 443) to ${toEmail}...`);
 
     const req = https.request(
       {
@@ -26,7 +31,7 @@ const sendViaHttpsRest = (apiKey, toEmail, subject, htmlContent, textContent, fr
         method: "POST",
         headers: {
           "accept": "application/json",
-          "api-key": apiKey,
+          "api-key": trimmedKey,
           "content-type": "application/json",
           "content-length": Buffer.byteLength(data)
         }
@@ -36,11 +41,11 @@ const sendViaHttpsRest = (apiKey, toEmail, subject, htmlContent, textContent, fr
         res.on("data", (chunk) => (body += chunk));
         res.on("end", () => {
           if (res.statusCode >= 200 && res.statusCode < 300) {
-            console.log(`✅ [PasswordReset] Email successfully sent via HTTPS REST API to ${toEmail}.`);
+            console.log(`✅ [PasswordReset] Email successfully sent via Brevo HTTPS REST API to ${toEmail}.`);
             resolve({ sentViaSMTP: true });
           } else {
-            console.warn(`⚠️ [PasswordReset] HTTPS REST API returned ${res.statusCode}: ${body}`);
-            resolve({ sentViaSMTP: false, error: body });
+            console.warn(`⚠️ [PasswordReset] Brevo HTTPS REST API returned ${res.statusCode}: ${body}`);
+            resolve({ sentViaSMTP: false, error: `Brevo API Error (${res.statusCode}): ${body}` });
           }
         });
       }
@@ -48,6 +53,132 @@ const sendViaHttpsRest = (apiKey, toEmail, subject, htmlContent, textContent, fr
 
     req.on("error", (e) => {
       console.error("❌ [PasswordReset] HTTPS REST API Error:", e.message);
+      resolve({ sentViaSMTP: false, error: e.message });
+    });
+
+    req.write(data);
+    req.end();
+  });
+};
+
+// Helper to send email via Sender.net REST API v2 (Port 443)
+const sendViaSenderApi = (apiKey, toEmail, subject, htmlContent, textContent, fromEmail) => {
+  return new Promise((resolve) => {
+    if (!apiKey || typeof apiKey !== "string") {
+      return resolve({ sentViaSMTP: false, error: "Missing Sender API Key" });
+    }
+
+    const trimmedKey = apiKey.trim();
+    const senderEmail = process.env.SENDER_FROM_EMAIL || fromEmail || "laxmiganji2005@gmail.com";
+    
+    const bodyData = {
+      from: {
+        email: senderEmail,
+        name: "Sphoorthy Engineering College - ECAP"
+      },
+      to: {
+        email: toEmail,
+        name: "ECAP User"
+      },
+      subject: subject,
+      html: htmlContent,
+      text: textContent
+    };
+
+    const data = JSON.stringify(bodyData);
+
+    console.log(`Sending email via Sender.net REST API (Port 443) to ${toEmail}...`);
+
+    const req = https.request(
+      {
+        hostname: "api.sender.net",
+        port: 443,
+        path: "/v2/message/send",
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${trimmedKey}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Content-Length": Buffer.byteLength(data)
+        }
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (chunk) => (body += chunk));
+        res.on("end", () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            console.log(`✅ [PasswordReset] Email successfully sent via Sender.net API to ${toEmail}.`);
+            resolve({ sentViaSMTP: true });
+          } else {
+            console.warn(`⚠️ [PasswordReset] Sender.net API returned ${res.statusCode}: ${body}`);
+            resolve({ sentViaSMTP: false, error: `Sender.net API Error (${res.statusCode}): ${body}` });
+          }
+        });
+      }
+    );
+
+    req.on("error", (e) => {
+      console.error("❌ [PasswordReset] Sender.net API Error:", e.message);
+      resolve({ sentViaSMTP: false, error: e.message });
+    });
+
+    req.write(data);
+    req.end();
+  });
+};
+
+// Helper to send email via Resend API (Port 443 - Works instantly without domain setup!)
+const sendViaResendApi = (apiKey, toEmail, subject, htmlContent, textContent, fromEmail) => {
+  return new Promise((resolve) => {
+    if (!apiKey || typeof apiKey !== "string") {
+      return resolve({ sentViaSMTP: false, error: "Missing Resend API Key" });
+    }
+
+    const trimmedKey = apiKey.trim();
+    // Resend free testing email address
+    const senderEmail = (fromEmail && !fromEmail.endsWith("@gmail.com")) ? fromEmail : "onboarding@resend.dev";
+    
+    const bodyData = {
+      from: `ECAP Portal <${senderEmail}>`,
+      to: [toEmail],
+      subject: subject,
+      html: htmlContent,
+      text: textContent
+    };
+
+    const data = JSON.stringify(bodyData);
+
+    console.log(`Sending email via Resend REST API (Port 443) to ${toEmail}...`);
+
+    const req = https.request(
+      {
+        hostname: "api.resend.com",
+        port: 443,
+        path: "/emails",
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${trimmedKey}`,
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(data)
+        }
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (chunk) => (body += chunk));
+        res.on("end", () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            console.log(`✅ [PasswordReset] Email successfully sent via Resend API to ${toEmail}.`);
+            resolve({ sentViaSMTP: true });
+          } else {
+            console.warn(`⚠️ [PasswordReset] Resend API returned ${res.statusCode}: ${body}`);
+            resolve({ sentViaSMTP: false, error: `Resend API Error (${res.statusCode}): ${body}` });
+          }
+        });
+      }
+    );
+
+    req.on("error", (e) => {
+      console.error("❌ [PasswordReset] Resend API Error:", e.message);
       resolve({ sentViaSMTP: false, error: e.message });
     });
 
@@ -151,17 +282,50 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
       </div>
     `;
 
-    const emailApiKey = process.env.EMAIL_API_KEY || process.env.BREVO_API_KEY || (settings && settings.emailApiKey);
+    const resendApiKey = process.env.RESEND_API_KEY || (process.env.EMAIL_API_KEY && process.env.EMAIL_API_KEY.trim().startsWith("re_")) ? (process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY) : null;
+    const senderApiKey = process.env.SENDER_API_KEY || (process.env.EMAIL_API_KEY && process.env.EMAIL_API_KEY.trim().startsWith("eyJ")) ? (process.env.SENDER_API_KEY || process.env.EMAIL_API_KEY) : null;
+    const brevoApiKey = process.env.BREVO_API_KEY || (process.env.EMAIL_API_KEY && process.env.EMAIL_API_KEY.trim().startsWith("xkeysib")) ? (process.env.BREVO_API_KEY || process.env.EMAIL_API_KEY) : null;
+    const genericApiKey = process.env.EMAIL_API_KEY || (settings && settings.emailApiKey);
+
     const subject = "🔒 ECAP Password Reset Request - Sphoorthy Engineering College";
     const textContent = `Hello ${loginid} (${role}),\n\nWe received a request to reset your password for your ECAP account.\n\nPlease use the link below to reset your password:\n${resetLink}\n\nThis link will expire in 1 hour.\n\nSphoorthy Engineering College ECAP System`;
 
-    // 1. If HTTPS REST API key is configured, send via HTTPS REST API over Port 443
-    if (emailApiKey) {
-      const restResult = await sendViaHttpsRest(emailApiKey, email, subject, htmlContent, textContent, smtpUser);
-      if (restResult.sentViaSMTP) return restResult;
+    // 1. Try Resend API if Resend key is provided (Instant zero-domain-setup option)
+    if (resendApiKey) {
+      const resendResult = await sendViaResendApi(resendApiKey, email, subject, htmlContent, textContent, smtpUser);
+      if (resendResult.sentViaSMTP) return resendResult;
+      console.warn("⚠️ Resend REST API attempt failed. Trying next transport fallback...");
     }
 
-    // 2. Otherwise try standard SMTP transport
+    // 2. Try Sender.net API if Sender key is provided
+    if (senderApiKey) {
+      const senderResult = await sendViaSenderApi(senderApiKey, email, subject, htmlContent, textContent, smtpUser);
+      if (senderResult.sentViaSMTP) return senderResult;
+      console.warn("⚠️ Sender.net REST API attempt failed. Trying next transport fallback...");
+    }
+
+    // 3. Try Brevo HTTPS REST API key if Brevo key is provided
+    if (brevoApiKey) {
+      const restResult = await sendViaHttpsRest(brevoApiKey, email, subject, htmlContent, textContent, smtpUser);
+      if (restResult.sentViaSMTP) return restResult;
+      console.warn("⚠️ Brevo HTTPS API attempt failed. Trying next transport fallback...");
+    }
+
+    // 4. Fallback for unclassified EMAIL_API_KEY
+    if (genericApiKey && !resendApiKey && !senderApiKey && !brevoApiKey) {
+      if (genericApiKey.trim().startsWith("re_")) {
+        const resendResult = await sendViaResendApi(genericApiKey, email, subject, htmlContent, textContent, smtpUser);
+        if (resendResult.sentViaSMTP) return resendResult;
+      } else if (genericApiKey.trim().startsWith("eyJ")) {
+        const senderResult = await sendViaSenderApi(genericApiKey, email, subject, htmlContent, textContent, smtpUser);
+        if (senderResult.sentViaSMTP) return senderResult;
+      } else {
+        const restResult = await sendViaHttpsRest(genericApiKey, email, subject, htmlContent, textContent, smtpUser);
+        if (restResult.sentViaSMTP) return restResult;
+      }
+    }
+
+    // 4. Try SMTP transport (Works on localhost & servers with unblocked SMTP ports)
     if (smtpHost && smtpUser && smtpPass) {
       try {
         const transportOptions = (smtpHost || "").includes("gmail")
@@ -198,20 +362,20 @@ const sendResetEmail = async (email, resetLink, role, loginid) => {
         return { sentViaSMTP: true };
       } catch (smtpErr) {
         console.warn(`⚠️ [PasswordReset] SMTP sending failed (${smtpErr.message}).`);
-        if (emailApiKey) {
-          return await sendViaHttpsRest(emailApiKey, email, subject, htmlContent, textContent, smtpUser);
-        }
-        return { sentViaSMTP: false, error: smtpErr.message };
       }
     }
 
     console.log(`\n======================================================`);
-    console.log(`📧 [ECAP PASSWORD RESET MAIL] (Free/Dev Mode)`);
+    console.log(`📧 [ECAP PASSWORD RESET MAIL] (Dev Console Fallback)`);
     console.log(`Recipient: ${email}`);
     console.log(`Role: ${role} | Login ID: ${loginid}`);
     console.log(`Reset Link: ${resetLink}`);
     console.log(`======================================================\n`);
-    return { sentViaSMTP: false, error: "SMTP host/user/pass not configured" };
+
+    return { 
+      sentViaSMTP: false, 
+      error: "Email delivery failed. Ensure valid BREVO_API_KEY (for Render) or Gmail App Password (for Localhost)." 
+    };
   } catch (err) {
     console.error("❌ [PasswordReset] Error sending email:", err);
     return { sentViaSMTP: false, error: err.message };

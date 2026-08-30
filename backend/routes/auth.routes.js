@@ -9,6 +9,7 @@ const {
 
 router.post("/google-login", googleLogin);
 router.post("/forgot-password", requestPasswordReset);
+router.post("/forgot-password-request", requestPasswordReset);
 router.get("/verify-reset-token", verifyResetToken);
 router.post("/reset-password", resetPassword);
 
