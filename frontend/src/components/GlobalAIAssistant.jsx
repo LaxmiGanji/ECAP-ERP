@@ -14,7 +14,6 @@ import {
   FiRefreshCw,
   FiGlobe,
   FiPaperclip,
-  FiSparkles,
   FiZap,
   FiUserCheck,
   FiClock,
@@ -329,7 +328,7 @@ Ask me any question or pick a quick suggestion below!`,
                       : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
                   }`}
                 >
-                  <FiSparkles className="w-3.5 h-3.5" />
+                  <FiZap className="w-3.5 h-3.5 text-amber-300" />
                   <span>AI Chat</span>
                 </button>
 

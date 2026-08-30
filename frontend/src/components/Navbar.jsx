@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { FiLogOut, FiMenu, FiUser, FiBell } from "react-icons/fi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RxDashboard } from "react-icons/rx";
@@ -7,7 +6,6 @@ import sphnLogo from "./sphn.png";
 const Navbar = () => {
   const router = useLocation();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
